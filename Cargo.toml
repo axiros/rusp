@@ -1,0 +1,8 @@
+[package]
+authors = ["Daniel Egger <daniel.egger@axiros.com>"]
+edition = "2018"
+name = "rusp"
+version = "0.1.0"
+
+[dependencies]
+quick-protobuf = "*"
