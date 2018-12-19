@@ -1,7 +1,7 @@
 mod tests {
-    use rusp::usp_record::Record;
-    use rusp::usp::Msg;
     use quick_protobuf::{BytesReader, MessageRead};
+    use rusp::usp::Msg;
+    use rusp::usp_record::Record;
 
     #[test]
     fn create_obj() {
@@ -86,4 +86,3 @@ mod tests {
         };
     }
 }
-
