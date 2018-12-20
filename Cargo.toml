@@ -5,4 +5,5 @@ name = "rusp"
 version = "0.1.0"
 
 [dependencies]
-quick-protobuf = "*"
+quick-protobuf = "0.6.3"
+structopt = "0.2.14"
