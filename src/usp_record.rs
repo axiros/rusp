@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 #![allow(nonstandard_style)]
 
 use super::*;
