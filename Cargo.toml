@@ -1,5 +1,5 @@
 [package]
-authors = ["Daniel Egger <daniel.egger@axiros.com>"]
+authors = ["Daniel Egger <daniel.egger@axiros.com>", "Axiros GmbH"]
 description = "The Rust USP toolkit"
 documentation = "https://docs.rs/crate/rusp"
 edition = "2018"
