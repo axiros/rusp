@@ -1,7 +1,12 @@
 [package]
 authors = ["Daniel Egger <daniel.egger@axiros.com>"]
+description = "The Rust USP toolkit"
+documentation = "https://docs.rs/crate/rusp"
 edition = "2018"
+license = "BSD 3-Clause"
 name = "rusp"
+readme = "README.md"
+repository = "https://github.com/axiros/rusp"
 version = "0.1.0"
 
 [dependencies]
