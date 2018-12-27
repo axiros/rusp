@@ -1,0 +1,11 @@
+language: rust
+rust:
+  - stable
+  - nightly
+cache: cargo
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+script:
+  - cargo build --release
