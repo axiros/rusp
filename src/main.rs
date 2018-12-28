@@ -1,6 +1,7 @@
 use quick_protobuf;
+use serde_json;
 use std::fs::File;
-use std::io::{stdin, BufReader, Read};
+use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::PathBuf;
 use structopt::*;
 
@@ -35,6 +36,19 @@ enum Rusp {
         /// Filenames of USP protobuf records to decode
         files: Vec<PathBuf>,
     },
+    /// Encode command line input into a single raw USP message
+    #[structopt(name = "encode_msg")]
+    EncodeMsg {
+        /// Filename (will output to standard output if omitted)
+        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        /// Output filename of file to encode USP protobuf message to
+        filename: Option<PathBuf>,
+        /// Type of message
+        #[structopt(subcommand)]
+        typ: MsgType,
+        /// The message ID to put in the USP Msg
+        msgid: String,
+    },
     #[structopt(name = "extract_msg")]
     ExtractMsg {
         #[structopt(parse(from_os_str))]
@@ -43,6 +57,15 @@ enum Rusp {
         /// Output filenames of USP protobuf message to write into
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
+    },
+}
+
+#[derive(StructOpt, Debug)]
+enum MsgType {
+    Get {
+        /// A JSON array of Strings resembling the paths for the Get operation
+        #[structopt(multiple = true)]
+        paths: Vec<String>,
     },
 }
 
@@ -90,6 +113,32 @@ fn decode_record_stdin() {
     println!("{}", decode_record(&contents));
 }
 
+fn encode_msg(msgid: &str, filename: Option<PathBuf>, typ: &MsgType) {
+    use quick_protobuf::{message::MessageWrite, Writer};
+
+    let mut buf = Vec::new();
+    let mut writer = Writer::new(&mut buf);
+    let v: Vec<String>;
+
+    let msg = usp_generator::usp_msg(
+        &msgid,
+        match typ {
+            MsgType::Get { ref paths } => {
+                v = serde_json::from_str(&paths.join(" ")).unwrap();
+                usp_generator::usp_get_request(v.iter().map(std::ops::Deref::deref).collect())
+            }
+        },
+    );
+    msg.write_message(&mut writer)
+        .expect("Cannot write message");
+
+    if filename.is_some() {
+        std::fs::write(filename.unwrap(), buf).unwrap();
+    } else {
+        stdout().write_all(&buf).unwrap();
+    }
+}
+
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) {
     use self::usp_record::mod_Record::OneOfrecord_type::*;
 
@@ -120,6 +169,11 @@ fn main() {
         Rusp::DecodeRecord {} => decode_record_stdin(),
         Rusp::DecodeMsgFiles { files } => decode_msg_files(files),
         Rusp::DecodeMsg {} => decode_msg_stdin(),
+        Rusp::EncodeMsg {
+            msgid,
+            filename,
+            typ,
+        } => encode_msg(&msgid, filename, &typ),
         Rusp::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
     }
 }
