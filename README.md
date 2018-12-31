@@ -30,6 +30,38 @@ The toolkit includes:
   * Decoding of **USP** Record Protobuf bytestreams from file(s)
   * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
 
+## How to us it?
+
+### rusp binary
+
+**rusp** includes a binary with the same name demonstrating some of the uses.
+
+At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode a USP **Get** message.
+
+In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
+
+```
+# cargo install rusp
+```
+
+After this you should be able to use the `rusp` binary, which has built-in help for all the commands to guide the way.
+
+### rusp library
+
+**rusp** can also be used as a library in your own Rust applications. To use **rusp** as a library you simply need to add the **rusp** and most likely **quick-protobuf** crates to your `Cargo.toml` as dependencies:
+
+```
+...
+
+[dependencies]
+rusp = "0.2.0"
+quick-protobuf = "0.6.3"
+
+...
+```
+
+Documentation and examples for its use can be found on [docs.rs](https://docs.rs/rusp/latest/rusp/index.html).
+
 ## What else?
 
 You may use this crate however you like under the **BSD 3-Clause License**.
