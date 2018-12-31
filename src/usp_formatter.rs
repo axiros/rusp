@@ -708,8 +708,121 @@ impl std::fmt::Display for usp::GetSupportedDMResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
+        writeln!(f, "{:aby$}GetSupportedDMResp: [", "", aby = aby)?;
+        for result in self.req_obj_results.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+
+        writeln!(f, "{:aby$}]", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetSupportedDMResp::RequestedObjectResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}RequestedObjectResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}req_obj_path: {}",
+            "",
+            self.req_obj_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_code: {}",
+            "",
+            self.err_code.unwrap_or(0),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_msg: {}",
+            "",
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}data_model_inst_uri: {}",
+            "",
+            self.data_model_inst_uri
+                .clone()
+                .unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        for result in self.supported_objs.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedObjectResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}RequestedObjectResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}supported_obj_path: {}",
+            "",
+            self.supported_obj_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}access: {:?}", "", self.access, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}is_multi_instance: {}",
+            "",
+            self.is_multi_instance
+                .clone()
+                .unwrap_or_else(|| false.into()),
+            aby = aby2
+        )?;
+        for result in self.supported_commands.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        for result in self.supported_events.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        for result in self.supported_params.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedCommandResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.req_obj_results, aby = aby2)
+        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedEventResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        // TODO: Implement
+        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedParamResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        // TODO: Implement
+        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
     }
 }
 
@@ -718,8 +831,71 @@ impl std::fmt::Display for usp::GetInstancesResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.req_path_results, aby = aby2)
+        writeln!(f, "{:aby$}GetInstancesResp: [", "", aby = aby)?;
+        for result in self.req_path_results.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+
+        writeln!(f, "{:aby$}]", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetInstancesResp::RequestedPathResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}RequestedPathResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}requested_path: {}",
+            "",
+            self.requested_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_code: {}",
+            "",
+            self.err_code.unwrap_or(0),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_msg: {}",
+            "",
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        for result in self.curr_insts.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_GetInstancesResp::CurrInstance<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
+
+        writeln!(f, "{:aby$}{{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}instantiated_obj_path: {}",
+            "",
+            self.instantiated_obj_path
+                .clone()
+                .unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}unique_keys: {{", "", aby = aby2)?;
+        for (k, v) in self.unique_keys.iter() {
+            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}},", "", aby = aby)
     }
 }
 
@@ -738,8 +914,74 @@ impl std::fmt::Display for usp::OperateResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.operation_results, aby = aby2)
+        writeln!(f, "{:aby$}OperateResp: {{", "", aby = aby)?;
+        for res in self.operation_results.iter() {
+            write!(f, "{:aby$}", res, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_OperateResp::OperationResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        use crate::usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::*;
+
+        writeln!(f, "{:aby$}OperationResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}executed_command: {}",
+            "",
+            self.executed_command.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        write!(f, "{:aby$}operation_resp: ", "", aby = aby2)?;
+        match &self.operation_resp {
+            req_obj_path(ref m) => writeln!(f, "{}", m),
+            req_output_args(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            cmd_failure(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            None => Ok(()),
+        }?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "OutputArgs: {{")?;
+        for (k, v) in self.output_args.iter() {
+            writeln!(f, "{:aby$}{} : {}", "", k, v, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}CommandFailure: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}err_msg: {}",
+            "",
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_code: {}",
+            "",
+            self.err_code.unwrap_or(0),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -971,7 +1213,7 @@ impl std::fmt::Display for usp::mod_AddResp::CreatedObjectResult<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f, "{:aby$}RequestedPathResult: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}CreatedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
             "{:aby$}requested_path: {}",
