@@ -5,13 +5,10 @@ use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::PathBuf;
 use structopt::*;
 
-mod usp;
-mod usp_decoder;
-mod usp_formatter;
-mod usp_generator;
-mod usp_record;
-
-use self::usp_decoder::*;
+use rusp::{
+    usp_decoder::{decode_msg, decode_record},
+    usp_generator,
+};
 
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
@@ -140,7 +137,7 @@ fn encode_msg(msgid: &str, filename: Option<PathBuf>, typ: &MsgType) {
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) {
-    use self::usp_record::mod_Record::OneOfrecord_type::*;
+    use rusp::usp_record::mod_Record::OneOfrecord_type::*;
 
     let fp = File::open(&in_file).unwrap_or_else(|_| panic!("Could not open file {:?}", in_file));
     let mut buf_reader = BufReader::new(fp);
