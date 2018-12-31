@@ -43,9 +43,10 @@ enum Rusp {
         /// Type of message
         #[structopt(subcommand)]
         typ: MsgType,
-        /// The message ID to put in the USP Msg
+        /// The message ID to use in the USP Msg header
         msgid: String,
     },
+    /// Extract the USP message from a USP record
     #[structopt(name = "extract_msg")]
     ExtractMsg {
         #[structopt(parse(from_os_str))]
@@ -59,6 +60,7 @@ enum Rusp {
 
 #[derive(StructOpt, Debug)]
 enum MsgType {
+    /// Generate a USP Get request message
     Get {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[structopt(multiple = true)]
