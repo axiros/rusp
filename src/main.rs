@@ -50,9 +50,19 @@ enum Rusp {
     #[structopt(name = "extract_msg")]
     ExtractMsg {
         #[structopt(parse(from_os_str))]
-        /// Input filenames of USP protobuf record to decode
+        /// Input filename of USP protobuf record to decode
         in_file: PathBuf,
-        /// Output filenames of USP protobuf message to write into
+        /// Output filename of USP protobuf message to write into
+        #[structopt(parse(from_os_str))]
+        out_file: PathBuf,
+    },
+    /// Extract the USP message body from a USP record
+    #[structopt(name = "extract_msg_body")]
+    ExtractMsgBody {
+        #[structopt(parse(from_os_str))]
+        /// Input filename of USP protobuf record to decode
+        in_file: PathBuf,
+        /// Output filename of USP protobuf message body to write into
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
@@ -129,7 +139,7 @@ fn encode_msg(msgid: &str, filename: Option<PathBuf>, typ: &MsgType) {
         },
     );
     msg.write_message(&mut writer)
-        .expect("Cannot write message");
+        .expect("Cannot encode message");
 
     if filename.is_some() {
         std::fs::write(filename.unwrap(), buf).unwrap();
@@ -160,6 +170,36 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) {
     }
 }
 
+fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) {
+    use quick_protobuf::{message::MessageWrite, Writer};
+    use rusp::usp_record::mod_Record::OneOfrecord_type::*;
+
+    let fp = File::open(&in_file).unwrap_or_else(|_| panic!("Could not open file {:?}", in_file));
+    let mut buf_reader = BufReader::new(fp);
+    let mut contents = Vec::new();
+    buf_reader
+        .read_to_end(&mut contents)
+        .unwrap_or_else(|_| panic!("Could not read from file {:?}", in_file));
+
+    let record = decode_record(&contents);
+
+    match record.record_type {
+        no_session_context(context) => {
+            let mut buf = Vec::new();
+            let mut writer = Writer::new(&mut buf);
+
+            let payload = context.payload.unwrap();
+            let msg = decode_msg(&payload);
+            let body = msg.body.unwrap();
+            body.write_message(&mut writer)
+                .expect("Cannot encode message");
+            std::fs::write(&out_file, buf).unwrap();
+        }
+        session_context(_) => unreachable!(),
+        None => unreachable!(),
+    }
+}
+
 fn main() {
     let opt = Rusp::from_args();
 
@@ -174,5 +214,6 @@ fn main() {
             typ,
         } => encode_msg(&msgid, filename, &typ),
         Rusp::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
+        Rusp::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
     }
 }
