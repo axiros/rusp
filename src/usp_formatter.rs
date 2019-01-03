@@ -778,9 +778,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedObjectResult<'_
             f,
             "{:aby$}is_multi_instance: {}",
             "",
-            self.is_multi_instance
-                .clone()
-                .unwrap_or_else(|| false.into()),
+            self.is_multi_instance.unwrap_or_else(|| false),
             aby = aby2
         )?;
         for result in self.supported_commands.iter() {
