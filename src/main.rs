@@ -76,6 +76,12 @@ enum MsgType {
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
+    /// Generate a USP GetResp response message
+    GetResp {
+        /// A JSON array of Strings resembling the result data for the GetResp operation
+        #[structopt(multiple = true)]
+        result: Vec<String>,
+    },
 }
 
 fn decode_msg_files(files: Vec<PathBuf>) {
@@ -122,24 +128,29 @@ fn decode_record_stdin() {
     println!("{}", decode_record(&contents));
 }
 
-fn encode_msg(msgid: &str, filename: Option<PathBuf>, typ: &MsgType) {
+fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
     use quick_protobuf::{message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
     let mut writer = Writer::new(&mut buf);
-    let v: Vec<String>;
 
-    let msg = usp_generator::usp_msg(
-        &msgid,
-        match typ {
-            MsgType::Get { ref paths } => {
-                v = serde_json::from_str(&paths.join(" ")).unwrap();
-                usp_generator::usp_get_request(v.iter().map(std::ops::Deref::deref).collect())
-            }
-        },
-    );
-    msg.write_message(&mut writer)
-        .expect("Cannot encode message");
+    match typ {
+        MsgType::Get { paths } => {
+            let v: Vec<String> = serde_json::from_str(&paths.join(" ")).unwrap();
+            let body =
+                usp_generator::usp_get_request(v.iter().map(std::ops::Deref::deref).collect());
+
+            usp_generator::usp_msg(msgid, body).write_message(&mut writer)
+        }
+        MsgType::GetResp { result } => {
+            let getresp_json: usp_generator::GetResp =
+                serde_json::from_str(&result.join(" ")).unwrap();
+            let body = usp_generator::usp_get_response_from_json(&getresp_json);
+
+            usp_generator::usp_msg(msgid, body).write_message(&mut writer)
+        }
+    }
+    .expect("Cannot encode message");
 
     if filename.is_some() {
         std::fs::write(filename.unwrap(), buf).unwrap();
@@ -212,7 +223,7 @@ fn main() {
             msgid,
             filename,
             typ,
-        } => encode_msg(&msgid, filename, &typ),
+        } => encode_msg(msgid, filename, typ),
         Rusp::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
         Rusp::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
     }

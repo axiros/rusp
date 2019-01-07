@@ -1,6 +1,10 @@
 use std::borrow::Cow;
+use std::collections::HashMap;
 
-use crate::usp::{Body, Get, GetResp, Header, Msg, Request, Response};
+use serde;
+use serde_derive::{Deserialize, Serialize};
+
+use crate::usp::{Body, Get, Header, Msg, Request, Response};
 
 use crate::usp::mod_Body::OneOfmsg_body::*;
 use crate::usp::mod_Request::OneOfreq_type::*;
@@ -18,11 +22,11 @@ use crate::usp::mod_Response::OneOfresp_type::*;
 /// ```
 /// use rusp::usp_generator::{usp_msg, usp_get_request};
 /// let newmsg = usp_msg(
-///     &"fancymsgid",
+///     "fancymsgid".to_string(),
 ///     usp_get_request(vec!["Device.", "Device.DeviceInfo."]),
 /// );
 /// ```
-pub fn usp_msg<'a>(msg_id: &'a str, body: Body<'a>) -> Msg<'a> {
+pub fn usp_msg(msg_id: String, body: Body) -> Msg {
     use crate::usp::mod_Header::MsgType::*;
 
     let msg_type = match &body.msg_body {
@@ -56,7 +60,7 @@ pub fn usp_msg<'a>(msg_id: &'a str, body: Body<'a>) -> Msg<'a> {
 
     Msg {
         header: Some(Header {
-            msg_id: Some(std::borrow::Cow::Borrowed(msg_id)),
+            msg_id: Some(std::borrow::Cow::from(msg_id)),
             msg_type: Some(msg_type),
         }),
         body: Some(body),
@@ -91,7 +95,7 @@ pub fn usp_get_request(params: Vec<&str>) -> Body {
     }
 }
 
-/// Wraps the body of a USP Msg with a USP GetResp response
+/// Creates a body for USP Msg with a USP GetResp response
 ///
 /// # Arguments
 ///
@@ -113,6 +117,7 @@ pub fn usp_get_response<'a>(
     )>,
 ) -> Body<'a> {
     use crate::usp::mod_GetResp::{RequestedPathResult, ResolvedPathResult};
+    use crate::usp::GetResp;
     use std::collections::HashMap;
 
     Body {
@@ -149,13 +154,71 @@ pub fn usp_get_response<'a>(
                             },
                         });
                     }
-                    /*
-                    for path in requested_paths {
-                        getr.req_path_results.push(Cow::Borrowed(path));
-                    }*/
                     getr
                 }),
             }
         }),
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ResolvedPathResult {
+    resolved_path: String,
+    result_params: HashMap<String, String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RequestedPathResult {
+    requested_path: String,
+    err_code: u32,
+    err_msg: String,
+    resolved_path_results: Vec<ResolvedPathResult>,
+}
+
+pub type GetResp = Vec<RequestedPathResult>;
+
+/// Creates a body for USP Msg with a USP GetResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the GetResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::{usp_get_response_from_json, GetResp};
+/// let json = r#"[{"requested_path": "bar", "err_code" : 0, "err_msg" : "", "resolved_path_results" : [{"resolved_path": "Device.", "result_params": {"Device.Foo": "bar"}}]}]"#;
+/// let deserialised : GetResp = serde_json::from_str(&json).unwrap();
+/// let resp = usp_get_response_from_json(&deserialised);
+/// ```
+pub fn usp_get_response_from_json(getresp: &[RequestedPathResult]) -> Body {
+    let mut d: Vec<(&str, Result<Vec<(&str, Vec<(&str, &str)>)>, (u32, &str)>)> =
+        Default::default();
+    for req_path_result in getresp {
+        //let name = &req_path_result.requested_path;
+        match req_path_result.err_code {
+            0 => {
+                let mut resolved_path_result: Vec<(&str, Vec<(&str, &str)>)> = Default::default();
+
+                for res_path in &req_path_result.resolved_path_results {
+                    resolved_path_result.push((
+                        &res_path.resolved_path,
+                        res_path
+                            .result_params
+                            .iter()
+                            .map(|(k, v)| (k.as_str(), v.as_str()))
+                            .collect(),
+                    ));
+                }
+                d.push((&req_path_result.requested_path, Ok(resolved_path_result)))
+            }
+
+            _ => d.push((
+                &req_path_result.requested_path,
+                Err((req_path_result.err_code, &req_path_result.err_msg)),
+            )),
+        };
+    }
+
+    usp_get_response(d)
 }
