@@ -128,29 +128,35 @@ fn decode_record_stdin() {
     println!("{}", decode_record(&contents));
 }
 
-fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
-    use quick_protobuf::{message::MessageWrite, Writer};
-
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
+fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
+    use quick_protobuf::serialize_into_vec;
 
     match typ {
         MsgType::Get { paths } => {
             let paths = paths.join(" ");
             let v: Vec<&str> = serde_json::from_str(&paths).unwrap();
-            let body = usp_generator::usp_get_request(v.as_slice());
-
-            usp_generator::usp_msg(msgid, body).write_message(&mut writer)
+            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
         MsgType::GetResp { result } => {
             let result = result.join(" ");
             let getresp_json: usp_generator::GetResp = serde_json::from_str(&result).unwrap();
-            let body = usp_generator::usp_get_response_from_json(&getresp_json);
-
-            usp_generator::usp_msg(msgid, body).write_message(&mut writer)
+            serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
         }
     }
-    .expect("Cannot encode message");
+    .expect("Cannot encode message")
+}
+
+fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
+    use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
+
+    let mut buf = Vec::new();
+    let mut writer = Writer::new(&mut buf);
+
+    let encoded_body = encode_msg_body_buf(typ);
+    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body).unwrap();
+    usp_generator::usp_msg(msgid, body)
+        .write_message(&mut writer)
+        .expect("Failed encoding USP Msg");
 
     if filename.is_some() {
         std::fs::write(filename.unwrap(), buf).unwrap();
