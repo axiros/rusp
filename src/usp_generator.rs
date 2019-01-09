@@ -23,7 +23,7 @@ use crate::usp::mod_Response::OneOfresp_type::*;
 /// use rusp::usp_generator::{usp_msg, usp_get_request};
 /// let newmsg = usp_msg(
 ///     "fancymsgid".to_string(),
-///     usp_get_request(vec!["Device.", "Device.DeviceInfo."]),
+///     usp_get_request(&["Device.", "Device.DeviceInfo."]),
 /// );
 /// ```
 pub fn usp_msg(msg_id: String, body: Body) -> Msg {
@@ -77,9 +77,9 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 ///
 /// ```
 /// use rusp::usp_generator::usp_get_request;
-/// let req = usp_get_request(vec!["Device.", "Device.DeviceInfo."]);
+/// let req = usp_get_request(&["Device.", "Device.DeviceInfo."]);
 /// ```
-pub fn usp_get_request(params: Vec<&str>) -> Body {
+pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
     Body {
         msg_body: request({
             Request {
@@ -162,20 +162,20 @@ pub fn usp_get_response<'a>(
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ResolvedPathResult {
-    resolved_path: String,
-    result_params: HashMap<String, String>,
+struct ResolvedPathResult<'a> {
+    resolved_path: &'a str,
+    result_params: HashMap<&'a str, &'a str>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct RequestedPathResult {
-    requested_path: String,
+pub struct RequestedPathResult<'a> {
+    requested_path: &'a str,
     err_code: u32,
-    err_msg: String,
-    resolved_path_results: Vec<ResolvedPathResult>,
+    err_msg: &'a str,
+    resolved_path_results: Vec<ResolvedPathResult<'a>>,
 }
 
-pub type GetResp = Vec<RequestedPathResult>;
+pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 
 /// Creates a body for USP Msg with a USP GetResp response
 ///
@@ -191,7 +191,7 @@ pub type GetResp = Vec<RequestedPathResult>;
 /// let deserialised : GetResp = serde_json::from_str(&json).unwrap();
 /// let resp = usp_get_response_from_json(&deserialised);
 /// ```
-pub fn usp_get_response_from_json(getresp: &[RequestedPathResult]) -> Body {
+pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Body<'a> {
     let mut d: Vec<(&str, Result<Vec<(&str, Vec<(&str, &str)>)>, (u32, &str)>)> =
         Default::default();
     for req_path_result in getresp {
@@ -206,7 +206,7 @@ pub fn usp_get_response_from_json(getresp: &[RequestedPathResult]) -> Body {
                         res_path
                             .result_params
                             .iter()
-                            .map(|(k, v)| (k.as_str(), v.as_str()))
+                            .map(|(k, v)| (*k, *v))
                             .collect(),
                     ));
                 }

@@ -136,15 +136,15 @@ fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
 
     match typ {
         MsgType::Get { paths } => {
-            let v: Vec<String> = serde_json::from_str(&paths.join(" ")).unwrap();
-            let body =
-                usp_generator::usp_get_request(v.iter().map(std::ops::Deref::deref).collect());
+            let paths = paths.join(" ");
+            let v: Vec<&str> = serde_json::from_str(&paths).unwrap();
+            let body = usp_generator::usp_get_request(v.as_slice());
 
             usp_generator::usp_msg(msgid, body).write_message(&mut writer)
         }
         MsgType::GetResp { result } => {
-            let getresp_json: usp_generator::GetResp =
-                serde_json::from_str(&result.join(" ")).unwrap();
+            let result = result.join(" ");
+            let getresp_json: usp_generator::GetResp = serde_json::from_str(&result).unwrap();
             let body = usp_generator::usp_get_response_from_json(&getresp_json);
 
             usp_generator::usp_msg(msgid, body).write_message(&mut writer)
