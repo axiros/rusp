@@ -36,6 +36,8 @@ enum Rusp {
     /// Encode command line input into a single raw USP message
     #[structopt(name = "encode_msg")]
     EncodeMsg {
+        /// The message ID to use in the USP Msg header
+        msgid: String,
         /// Filename (will output to standard output if omitted)
         #[structopt(parse(from_os_str), short = "f", long = "file")]
         /// Output filename of file to encode USP protobuf message to
@@ -43,8 +45,17 @@ enum Rusp {
         /// Type of message
         #[structopt(subcommand)]
         typ: MsgType,
-        /// The message ID to use in the USP Msg header
-        msgid: String,
+    },
+    /// Encode command line input into a single raw USP message body
+    #[structopt(name = "encode_msg_body")]
+    EncodeMsgBody {
+        /// Filename (will output to standard output if omitted)
+        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        /// Output filename of file to encode USP protobuf message to
+        filename: Option<PathBuf>,
+        /// Type of message
+        #[structopt(subcommand)]
+        typ: MsgType,
     },
     /// Extract the USP message from a USP record
     #[structopt(name = "extract_msg")]
@@ -146,6 +157,23 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
     .expect("Cannot encode message")
 }
 
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) {
+    use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
+
+    let mut buf = Vec::new();
+    let mut writer = Writer::new(&mut buf);
+
+    let encoded_body = encode_msg_body_buf(typ);
+    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body).unwrap();
+    body.write_message(&mut writer)
+        .expect("Failed encoding USP Msg");
+    if filename.is_some() {
+        std::fs::write(filename.unwrap(), buf).unwrap();
+    } else {
+        stdout().write_all(&buf).unwrap();
+    }
+}
+
 fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
@@ -225,6 +253,7 @@ fn main() {
         Rusp::DecodeRecord {} => decode_record_stdin(),
         Rusp::DecodeMsgFiles { files } => decode_msg_files(files),
         Rusp::DecodeMsg {} => decode_msg_stdin(),
+        Rusp::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ),
         Rusp::EncodeMsg {
             msgid,
             filename,
