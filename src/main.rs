@@ -57,7 +57,7 @@ enum Rusp {
         #[structopt(subcommand)]
         typ: MsgType,
     },
-    /// Extract the USP message from a USP record
+    /// Extract the USP message from an USP record
     #[structopt(name = "extract_msg")]
     ExtractMsg {
         #[structopt(parse(from_os_str))]
@@ -67,7 +67,7 @@ enum Rusp {
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
-    /// Extract the USP message body from a USP record
+    /// Extract the USP message body from an USP record
     #[structopt(name = "extract_msg_body")]
     ExtractMsgBody {
         #[structopt(parse(from_os_str))]
@@ -81,13 +81,21 @@ enum Rusp {
 
 #[derive(StructOpt, Debug)]
 enum MsgType {
-    /// Generate a USP Get request message
+    /// Generate an USP Error message
+    Error {
+        /// The USP error code (MUST be between 7000 and 7999)
+        code: u32,
+        /// An (optional) error message. Standard error messages will be computed from the error
+        /// code if not provided
+        message: Option<String>,
+    },
+    /// Generate an USP Get request message
     Get {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
-    /// Generate a USP GetResp response message
+    /// Generate an USP GetResp response message
     GetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
         #[structopt(multiple = true)]
@@ -143,6 +151,9 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
     use quick_protobuf::serialize_into_vec;
 
     match typ {
+        MsgType::Error { code, message } => {
+            serialize_into_vec(&usp_generator::usp_simple_error(code, message))
+        }
         MsgType::Get { paths } => {
             let paths = paths.join(" ");
             let v: Vec<&str> = serde_json::from_str(&paths).unwrap();

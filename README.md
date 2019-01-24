@@ -29,6 +29,7 @@ The toolkit includes:
   * Decoding of **USP** Record Protobuf bytestreams from standard input
   * Decoding of **USP** Record Protobuf bytestreams from file(s)
   * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
+  * Generation of **USP** Msg Protobuf bytestreams for selected messages and Error
 
 ## How to us it?
 

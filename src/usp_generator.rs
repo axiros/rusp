@@ -1,10 +1,9 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use serde;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::usp::{Body, Get, Header, Msg, Request, Response};
+use crate::usp::{Body, Error, Get, Header, Msg, Request, Response};
 
 use crate::usp::mod_Body::OneOfmsg_body::*;
 use crate::usp::mod_Request::OneOfreq_type::*;
@@ -64,6 +63,78 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
             msg_type: Some(msg_type),
         }),
         body: Some(body),
+    }
+}
+
+/// Creates a body for USP Msg with an USP Error
+///
+/// # Arguments
+///
+/// * `code` - The USP error code, MUST be between 7000 and 7999
+/// * `message` - A `Option<String>` containing the user readable messge. Will be automatically
+///               filled in for standard error codes if not supplied
+///
+/// # Examples
+///
+/// ```
+/// use rusp::usp_generator::usp_simple_error;
+/// let err = usp_simple_error(7001, None);
+/// ```
+///
+/// ```
+/// use rusp::usp_generator::usp_simple_error;
+/// let err = usp_simple_error(7803, Some("Funny custom vendor error".into()));
+/// ```
+///
+/// ```should_panic
+/// use rusp::usp_generator::usp_simple_error;
+/// let err = usp_simple_error(8000, None);
+/// ```
+pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
+    let err_msg = message.unwrap_or(
+        match code {
+            7000 => "Message failed",
+            7001 => "Message not supported",
+            7002 => "Request denied (no reason specified)",
+            7003 => "Internal error",
+            7004 => "Invalid arguments",
+            7005 => "Resources exceeded",
+            7006 => "Permission denied",
+            7007 => "Invalid configuration",
+            7008 => "Invalid path syntax",
+            7009 => "Parameter action failed",
+            7010 => "Unsupported parameter",
+            7011 => "Invalid type",
+            7012 => "Invalid value",
+            7013 => "Attempt to update non-writeable parameter",
+            7014 => "Value conflict",
+            7015 => "Operation error",
+            7016 => "Object does not exist",
+            7017 => "Object could not be created",
+            7018 => "Object is not a table",
+            7019 => "Attempt to create non-creatable Object",
+            7020 => "Object could not be updated",
+            7021 => "Required parameter failed",
+            7022 => "Command failure",
+            7023 => "Command canceled",
+            7024 => "Delete failure",
+            7025 => "Object exists with duplicate key",
+            7026 => "Invalid path",
+            7027 => "Invalid Command Arguments",
+            7800..=7999 => "Vendor specific",
+            _ => unreachable!(),
+        }
+        .to_string(),
+    );
+
+    Body {
+        msg_body: error({
+            Error {
+                err_code: Some(code),
+                err_msg: Some(err_msg.into()),
+                param_errs: [].to_vec(),
+            }
+        }),
     }
 }
 
