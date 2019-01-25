@@ -93,13 +93,15 @@ impl std::fmt::Display for usp::Header<'_> {
             self.msg_id.clone().unwrap(),
             aby = aby2
         )?;
-        write!(
-            f,
-            "{:aby$}msg_type: {}",
-            "",
-            self.msg_type.unwrap(),
-            aby = aby2
-        )?;
+        if self.msg_type.is_some() {
+            write!(
+                f,
+                "{:aby$}msg_type: {}",
+                "",
+                self.msg_type.unwrap(),
+                aby = aby2
+            )?;
+        }
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
