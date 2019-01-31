@@ -77,6 +77,23 @@ enum Rusp {
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
+    /// Wrap msg from stdin into a single raw USP record
+    #[structopt(name = "wrap_msg_raw")]
+    WrapMsgRaw {
+        #[structopt(long = "version")]
+        /// USP specification version
+        version: Option<String>,
+        #[structopt(long = "from")]
+        /// Sender Id
+        from: Option<String>,
+        #[structopt(long = "to")]
+        /// Recipient Id
+        to: Option<String>,
+        /// Filename (will output to standard output if omitted)
+        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        /// Output filename of file to encode USP protobuf record to
+        filename: Option<PathBuf>,
+    },
 }
 
 #[derive(StructOpt, Debug)]
@@ -256,6 +273,38 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) {
     }
 }
 
+fn wrap_msg_raw(
+    version: Option<String>,
+    from: Option<String>,
+    to: Option<String>,
+    filename: Option<PathBuf>,
+) {
+    use quick_protobuf::{message::MessageWrite, Writer};
+
+    let mut msg = Vec::new();
+    stdin()
+        .read_to_end(&mut msg)
+        .expect("Couldn't read USP Msg from stdin");
+
+    let mut buf = Vec::new();
+    let mut writer = Writer::new(&mut buf);
+
+    usp_generator::usp_no_session_context_record(
+        version.as_ref().map(|v| v.as_str()),
+        from.as_ref().map(|v| v.as_str()),
+        to.as_ref().map(|v| v.as_str()),
+        &msg,
+    )
+    .write_message(&mut writer)
+    .expect("Failed encoding USP Record");
+
+    if filename.is_some() {
+        std::fs::write(filename.unwrap(), buf).unwrap();
+    } else {
+        stdout().write_all(&buf).unwrap();
+    }
+}
+
 fn main() {
     let opt = Rusp::from_args();
 
@@ -272,5 +321,11 @@ fn main() {
         } => encode_msg(msgid, filename, typ),
         Rusp::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
         Rusp::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
+        Rusp::WrapMsgRaw {
+            version,
+            from,
+            to,
+            filename,
+        } => wrap_msg_raw(version, from, to, filename),
     }
 }
