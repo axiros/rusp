@@ -4,10 +4,7 @@ use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::usp::{Body, Error, Get, Header, Msg, Request, Response};
-
-use crate::usp::mod_Body::OneOfmsg_body::*;
-use crate::usp::mod_Request::OneOfreq_type::*;
-use crate::usp::mod_Response::OneOfresp_type::*;
+use crate::usp_record::Record;
 
 /// Wraps the body of a USP Msg into a USP Msg with the specified message ID
 ///
@@ -26,7 +23,10 @@ use crate::usp::mod_Response::OneOfresp_type::*;
 /// );
 /// ```
 pub fn usp_msg(msg_id: String, body: Body) -> Msg {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Header::MsgType::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
 
     let msg_type = match &body.msg_body {
         request(ref req) => match &req.req_type {
@@ -91,6 +91,8 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 /// let err = usp_simple_error(8000, None);
 /// ```
 pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+
     let err_msg = message.unwrap_or(
         match code {
             7000 => "Message failed",
@@ -151,6 +153,9 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
 /// let req = usp_get_request(&["Device.", "Device.DeviceInfo."]);
 /// ```
 pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
     Body {
         msg_body: request({
             Request {
@@ -187,7 +192,9 @@ pub fn usp_get_response<'a>(
         Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
     )>,
 ) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_GetResp::{RequestedPathResult, ResolvedPathResult};
+    use crate::usp::mod_Response::OneOfresp_type::*;
     use crate::usp::GetResp;
     use std::collections::HashMap;
 
@@ -292,4 +299,48 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
     }
 
     usp_get_response(d)
+}
+
+/// Wraps a Usp Msg into an "no_session_context" USP Record with the specified record information
+///
+/// # Arguments
+///
+/// * `msg_id` - The message ID to put into the USP Msg
+/// * `body` - The message body USP Msg
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::{usp_no_session_context_record};
+/// let newrecord = usp_no_session_context_record(
+///     None,
+///     Some("proto::myfancyrecipient"),
+///     Some("proto::anonymous"),
+///     &[],
+/// );
+/// ```
+pub fn usp_no_session_context_record<'a>(
+    version: Option<&'a str>,
+    to_id: Option<&'a str>,
+    from_id: Option<&'a str>,
+    msg: &'a [u8],
+) -> Record<'a> {
+    use crate::usp_record::mod_Record::OneOfrecord_type::no_session_context;
+    use crate::usp_record::NoSessionContextRecord;
+
+    let version = version.or(Some("1.0"));
+    let to_id = to_id.or(Some("proto::to_rusp"));
+    let from_id = from_id.or(Some("proto::from_rusp"));
+
+    Record {
+        version: version.map(|v| v.into()),
+        to_id: to_id.map(|v| v.into()),
+        from_id: from_id.map(|v| v.into()),
+        sender_cert: None,
+        mac_signature: None,
+        payload_security: None,
+        record_type: no_session_context(NoSessionContextRecord {
+            payload: Some(msg.into()),
+        }),
+    }
 }
