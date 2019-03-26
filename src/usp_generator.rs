@@ -3,8 +3,9 @@ use std::collections::HashMap;
 
 use serde_derive::{Deserialize, Serialize};
 
-use crate::usp::{Body, Error, Get, Header, Msg, Request, Response};
+use crate::usp::{Body, Error, Get, Header, Msg, Notify, Request, Response};
 use crate::usp_record::Record;
+use crate::usp_types::NotifyType;
 
 /// Wraps the body of a USP Msg into a USP Msg with the specified message ID
 ///
@@ -93,7 +94,7 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
 
-    let err_msg = message.unwrap_or(
+    let err_msg = message.unwrap_or_else(|| {
         match code {
             7000 => "Message failed",
             7001 => "Message not supported",
@@ -126,8 +127,8 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
             7800..=7999 => "Vendor specific",
             _ => unreachable!(),
         }
-        .to_string(),
-    );
+        .to_string()
+    });
 
     Body {
         msg_body: error({
@@ -165,6 +166,61 @@ pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
                         getr.param_paths.push(Cow::Borrowed(path));
                     }
                     getr
+                }),
+            }
+        }),
+    }
+}
+
+/// Wraps the body of a USP Msg with a USP Notify request
+///
+/// # Arguments
+///
+/// * `sub_id` - The subscription_id for the Notify
+/// * `send_resp` - Whether this requests expects a response to be sent
+/// * `typ` - A filled out `NotifyType` structure
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_types::NotifyType;
+/// use rusp::usp_generator::usp_notify_request;
+/// let req = usp_notify_request("", true, NotifyType::OnBoardRequest {
+///     oui: "ABCABC".to_string(),
+///     product_class: "PC".to_string(),
+///     serial_number: "000000".to_string(),
+///     agent_supported_protocol_versions: "1.0".to_string()
+/// });
+/// ```
+pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> Body<'_> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Notify::OnBoardRequest;
+    use crate::usp::mod_Notify::OneOfnotification::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: notify({
+                    let mut notr = Notify::default();
+                    notr.subscription_id = Some(sub_id.into());
+                    notr.send_resp = Some(send_resp);
+                    notr.notification = match typ {
+                        NotifyType::OnBoardRequest {
+                            oui,
+                            product_class,
+                            serial_number,
+                            agent_supported_protocol_versions,
+                        } => on_board_req(OnBoardRequest {
+                            agent_supported_protocol_versions: Some(
+                                agent_supported_protocol_versions.into(),
+                            ),
+                            oui: Some(oui.into()),
+                            product_class: Some(product_class.into()),
+                            serial_number: Some(serial_number.into()),
+                        }),
+                    };
+                    notr
                 }),
             }
         }),

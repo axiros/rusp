@@ -7,6 +7,7 @@ use structopt::*;
 
 use rusp::{
     usp_decoder::{decode_msg, decode_record},
+    usp_types::NotifyType,
     usp_generator,
 };
 
@@ -118,7 +119,18 @@ enum MsgType {
         #[structopt(multiple = true)]
         result: Vec<String>,
     },
+    /// Generate an USP Notify "request" message
+    Notify {
+        /// Subscription ID
+        sub_id: String,
+        /// Do we expect a resonse?
+        send_resp: bool,
+        /// Type of notification
+        #[structopt(subcommand)]
+        typ: NotifyType,
+    },
 }
+
 
 fn decode_msg_files(files: Vec<PathBuf>) {
     for file in files {
@@ -181,6 +193,11 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             let getresp_json: usp_generator::GetResp = serde_json::from_str(&result).unwrap();
             serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
         }
+        MsgType::Notify {
+            sub_id,
+            send_resp,
+            typ,
+        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
     }
     .expect("Cannot encode message")
 }
