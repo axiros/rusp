@@ -90,7 +90,7 @@ impl std::fmt::Display for usp::Header<'_> {
             f,
             "{:aby$}msg_id: {}",
             "",
-            self.msg_id.clone().unwrap(),
+            self.msg_id.clone().expect("Message must contain a message id"),
             aby = aby2
         )?;
         if self.msg_type.is_some() {
@@ -388,7 +388,7 @@ impl std::fmt::Display for usp::Notify<'_> {
             f,
             "{:aby$}subscription_id: {}",
             "",
-            self.subscription_id.clone().unwrap(),
+            self.subscription_id.clone().unwrap_or("".into()),
             aby = aby2
         )?;
         writeln!(
