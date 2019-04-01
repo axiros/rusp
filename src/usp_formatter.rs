@@ -90,7 +90,9 @@ impl std::fmt::Display for usp::Header<'_> {
             f,
             "{:aby$}msg_id: {}",
             "",
-            self.msg_id.clone().expect("Message must contain a message id"),
+            self.msg_id
+                .clone()
+                .expect("Message must contain a message id"),
             aby = aby2
         )?;
         if self.msg_type.is_some() {
@@ -904,8 +906,55 @@ impl std::fmt::Display for usp::SetResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.updated_obj_results, aby = aby2)
+        writeln!(f, "{:aby$}SetResp: {{", "", aby = aby)?;
+        for res in self.updated_obj_results.iter() {
+            write!(f, "{:aby$}", res, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_SetResp::UpdatedObjectResult<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}UpdatedObjectResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}requested_path: {}",
+            "",
+            self.requested_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        write!(
+            f,
+            "{:aby$}oper_status: {:aby$}",
+            "",
+            self.oper_status.clone().unwrap(),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display for usp::mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        use
+            crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::*;
+
+        match &self.oper_status {
+            status => match status {
+                // TODO: Implement
+                oper_success(ref m) => write!(f, "{:aby$?}", m, aby = aby),
+                // TODO: Implement
+                oper_failure(ref m) => write!(f, "{:aby$?}", m, aby = aby),
+                None => writeln!(f, "{:aby$}None", "", aby = aby2),
+            },
+        }
     }
 }
 
