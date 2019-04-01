@@ -506,12 +506,12 @@ impl std::fmt::Display for usp::Set<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f, "{:aby$}Add: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}Set: {{", "", aby = aby)?;
         writeln!(
             f,
             "{:aby$}allow_partial: {}",
             "",
-            self.allow_partial.unwrap(),
+            self.allow_partial.unwrap_or(false),
             aby = aby2
         )?;
         for result in self.update_objs.iter() {
@@ -565,7 +565,7 @@ impl std::fmt::Display for usp::mod_Set::UpdateParamSetting<'_> {
             f,
             "{:aby$}required: {}",
             "",
-            self.required.unwrap(),
+            self.required.unwrap_or(false),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -582,7 +582,7 @@ impl std::fmt::Display for usp::Add<'_> {
             f,
             "{:aby$}allow_partial: {}",
             "",
-            self.allow_partial.unwrap(),
+            self.allow_partial.unwrap_or(false),
             aby = aby2
         )?;
         for result in self.create_objs.iter() {
@@ -636,7 +636,7 @@ impl std::fmt::Display for usp::mod_Add::CreateParamSetting<'_> {
             f,
             "{:aby$}required: {}",
             "",
-            self.required.unwrap(),
+            self.required.unwrap_or(false),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -653,7 +653,7 @@ impl std::fmt::Display for usp::Delete<'_> {
             f,
             "{:aby$}allow_partial: {}",
             "",
-            self.allow_partial.unwrap(),
+            self.allow_partial.unwrap_or(false),
             aby = aby2
         )?;
         writeln!(
