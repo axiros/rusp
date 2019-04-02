@@ -906,11 +906,11 @@ impl std::fmt::Display for usp::SetResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f, "{:aby$}SetResp: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}SetResp: [", "", aby = aby)?;
         for res in self.updated_obj_results.iter() {
             write!(f, "{:aby$}", res, aby = aby2)?;
         }
-        writeln!(f, "{:aby$}}}", "", aby = aby)
+        writeln!(f, "{:aby$}]", "", aby = aby)
     }
 }
 
@@ -1113,7 +1113,7 @@ impl std::fmt::Display
         writeln!(f, "OperationSuccess: {{")?;
         writeln!(
             f,
-            "{:aby$}instantiated_path: [ {} ]",
+            "{:aby$}affected_path: [ {} ]",
             "",
             self.affected_paths.join(", "),
             aby = aby2
