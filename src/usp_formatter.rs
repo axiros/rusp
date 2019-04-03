@@ -725,6 +725,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::RequestedObjectResult<'_
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
 
         writeln!(f, "{:aby$}RequestedObjectResult: {{", "", aby = aby)?;
         writeln!(
@@ -757,9 +758,11 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::RequestedObjectResult<'_
                 .unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
+        writeln!(f, "{:aby$}supported_objs: [", "", aby = aby2)?;
         for result in self.supported_objs.iter() {
-            write!(f, "{:aby$}", result, aby = aby2)?;
+            write!(f, "{:aby$}", result, aby = aby3)?;
         }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -769,7 +772,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedObjectResult<'_
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f, "{:aby$}RequestedObjectResult: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}SupportedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
             "{:aby$}supported_obj_path: {}",
