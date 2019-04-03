@@ -65,7 +65,7 @@ impl std::fmt::Display for usp_record::mod_Record::PayloadSecurity {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
     }
 }
 
@@ -246,7 +246,7 @@ impl std::fmt::Display for usp::mod_Error::ParamError<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.param_path, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.param_path, aby = aby2)
     }
 }
 
@@ -419,7 +419,7 @@ impl std::fmt::Display for usp::mod_Notify::Event<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.event_name, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.event_name, aby = aby2)
     }
 }
 
@@ -429,7 +429,7 @@ impl std::fmt::Display for usp::mod_Notify::ValueChange<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.param_path, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.param_path, aby = aby2)
     }
 }
 
@@ -439,7 +439,7 @@ impl std::fmt::Display for usp::mod_Notify::ObjectCreation<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.obj_path, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.obj_path, aby = aby2)
     }
 }
 
@@ -449,7 +449,7 @@ impl std::fmt::Display for usp::mod_Notify::ObjectDeletion<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.obj_path, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.obj_path, aby = aby2)
     }
 }
 
@@ -459,7 +459,7 @@ impl std::fmt::Display for usp::mod_Notify::OperationComplete<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.operation_resp, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.operation_resp, aby = aby2)
     }
 }
 
@@ -777,7 +777,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedObjectResult<'_
             self.supported_obj_path.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
-        writeln!(f, "{:aby$}access: {:?}", "", self.access, aby = aby2)?;
+        writeln!(f, "{:aby$}access: {:#?}", "", self.access, aby = aby2)?;
         writeln!(
             f,
             "{:aby$}is_multi_instance: {}",
@@ -804,7 +804,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedCommandResult<'
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
     }
 }
 
@@ -814,7 +814,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedEventResult<'_>
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
     }
 }
 
@@ -824,7 +824,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedParamResult<'_>
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
     }
 }
 
@@ -949,9 +949,9 @@ impl std::fmt::Display for usp::mod_SetResp::mod_UpdatedObjectResult::OperationS
         match &self.oper_status {
             status => match status {
                 // TODO: Implement
-                oper_success(ref m) => write!(f, "{:aby$?}", m, aby = aby),
+                oper_success(ref m) => write!(f, "{:#aby$?}", m, aby = aby),
                 // TODO: Implement
-                oper_failure(ref m) => write!(f, "{:aby$?}", m, aby = aby),
+                oper_failure(ref m) => write!(f, "{:#aby$?}", m, aby = aby),
                 None => writeln!(f, "{:aby$}None", "", aby = aby2),
             },
         }
@@ -1040,7 +1040,7 @@ impl std::fmt::Display for usp::NotifyResp<'_> {
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$}{:?}", "", self.subscription_id, aby = aby2)
+        writeln!(f, "{:aby$}{:#?}", "", self.subscription_id, aby = aby2)
     }
 }
 
@@ -1052,7 +1052,7 @@ impl std::fmt::Display for usp::GetSupportedProtocolResp<'_> {
         // TODO: Implement
         writeln!(
             f,
-            "{:aby$}{:?}",
+            "{:aby$}{:#?}",
             "",
             self.agent_supported_protocol_versions,
             aby = aby2
@@ -1365,6 +1365,6 @@ impl std::fmt::Display
         let aby2 = aby + INDENT;
 
         // TODO: Implement
-        writeln!(f, "{:aby$?}{}", "", self, aby = aby2)
+        writeln!(f, "{:#aby$?}{}", "", self, aby = aby2)
     }
 }
