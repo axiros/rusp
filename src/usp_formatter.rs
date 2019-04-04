@@ -219,16 +219,16 @@ impl std::fmt::Display for usp::Error<'_> {
         writeln!(f, "{:aby$}Error: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}err_msg: {}",
+            "{:aby$}err_code: {}",
             "",
-            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            self.err_code.unwrap_or(0),
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}err_code: {}",
+            "{:aby$}err_msg: {}",
             "",
-            self.err_code.unwrap_or(0),
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}param_errs: [", "", aby = aby2)?;
@@ -826,8 +826,22 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedParamResult<'_>
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}SupportedParamResult {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}param_name: {}",
+            "",
+            self.param_name.clone().unwrap(),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}access: {:#?}",
+            "",
+            self.access.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -951,13 +965,61 @@ impl std::fmt::Display for usp::mod_SetResp::mod_UpdatedObjectResult::OperationS
 
         match &self.oper_status {
             status => match status {
-                // TODO: Implement
-                oper_success(ref m) => write!(f, "{:#aby$?}", m, aby = aby),
-                // TODO: Implement
-                oper_failure(ref m) => write!(f, "{:#aby$?}", m, aby = aby),
+                oper_success(ref m) => write!(f, "{:#aby$}", m, aby = aby),
+                oper_failure(ref m) => write!(f, "{:#aby$}", m, aby = aby),
                 None => writeln!(f, "{:aby$}None", "", aby = aby2),
             },
         }
+    }
+}
+
+impl std::fmt::Display
+    for usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'_>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
+
+        writeln!(f, "OperationSuccess: {{")?;
+        writeln!(f, "{:aby$}updated_inst_results: [", "", aby = aby2)?;
+        for r in self.updated_inst_results.iter() {
+            write!(f, "{:#aby$?}", r, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display
+    for usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'_>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
+
+        writeln!(f, "OperationFailure: {{")?;
+        writeln!(
+            f,
+            "{:aby$}err_code: {}",
+            "",
+            self.err_code.unwrap_or(0),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_msg: {}",
+            "",
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}updated_inst_results: [", "", aby = aby2)?;
+        for r in self.updated_inst_failures.iter() {
+            write!(f, "{:#aby$?}", r, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -1021,16 +1083,16 @@ impl std::fmt::Display for usp::mod_OperateResp::mod_OperationResult::CommandFai
         writeln!(f, "{:aby$}CommandFailure: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}err_msg: {}",
+            "{:aby$}err_code: {}",
             "",
-            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            self.err_code.unwrap_or(0),
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}err_code: {}",
+            "{:aby$}err_msg: {}",
             "",
-            self.err_code.unwrap_or(0),
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1141,16 +1203,16 @@ impl std::fmt::Display
         writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}err_msg: {}",
+            "{:aby$}err_code: {}",
             "",
-            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            self.err_code.unwrap_or(0),
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}err_code: {}",
+            "{:aby$}err_msg: {}",
             "",
-            self.err_code.unwrap_or(0),
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1167,13 +1229,6 @@ impl std::fmt::Display
         writeln!(f, "{:aby$}UnaffectedPathError: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}unaffected_path: {}",
-            "",
-            self.unaffected_path.clone().unwrap_or_else(|| "".into()),
-            aby = aby2
-        )?;
-        writeln!(
-            f,
             "{:aby$}err_code: {}",
             "",
             self.err_code.unwrap_or(0),
@@ -1184,6 +1239,13 @@ impl std::fmt::Display
             "{:aby$}err_msg: {}",
             "",
             self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}unaffected_path: {}",
+            "",
+            self.unaffected_path.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1313,16 +1375,16 @@ impl std::fmt::Display
         writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}err_msg: {}",
+            "{:aby$}err_code: {}",
             "",
-            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            self.err_code.unwrap_or(0),
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}err_code: {}",
+            "{:aby$}err_msg: {}",
             "",
-            self.err_code.unwrap_or(0),
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
