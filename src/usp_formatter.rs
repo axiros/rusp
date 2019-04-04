@@ -1371,7 +1371,6 @@ impl std::fmt::Display
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f)?;
         writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
         writeln!(
             f,
@@ -1429,7 +1428,28 @@ impl std::fmt::Display
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:#aby$?}{}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}ParameterError: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}param: {}",
+            "",
+            self.param.clone().expect("Parameter name cannot be empty"),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_code: {}",
+            "",
+            self.err_code.unwrap_or(0),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}err_msg: {}",
+            "",
+            self.err_msg.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
