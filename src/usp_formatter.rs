@@ -984,9 +984,37 @@ impl std::fmt::Display
         writeln!(f, "OperationSuccess: {{")?;
         writeln!(f, "{:aby$}updated_inst_results: [", "", aby = aby2)?;
         for r in self.updated_inst_results.iter() {
-            write!(f, "{:#aby$?}", r, aby = aby3)?;
+            write!(f, "{:#aby$}", r, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl std::fmt::Display
+    for usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult<'_>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
+
+        writeln!(f, "{:aby$}UpdatedInstanceResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}affected_path: {}",
+            "",
+            self.affected_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}updated_params: {{", "", aby = aby2)?;
+        for (k, v) in self.updated_params.iter() {
+            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
+        for r in self.param_errs.iter() {
+            write!(f, "{:#aby$?}", r, aby = aby3)?;
+        }
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
