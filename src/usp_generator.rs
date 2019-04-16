@@ -67,7 +67,7 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
     }
 }
 
-/// Creates a body for USP Msg with an USP Error
+/// Creates a body for a USP Msg with an USP Error
 ///
 /// # Arguments
 ///
@@ -227,7 +227,7 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
     }
 }
 
-/// Creates a body for USP Msg with a USP GetResp response
+/// Creates a body for a USP Msg with a USP GetResp response
 ///
 /// # Arguments
 ///
@@ -311,7 +311,7 @@ pub struct RequestedPathResult<'a> {
 
 pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 
-/// Creates a body for USP Msg with a USP GetResp response
+/// Creates a body for a USP Msg with a USP GetResp response
 ///
 /// # Arguments
 ///
@@ -397,6 +397,36 @@ pub fn usp_no_session_context_record<'a>(
         payload_security: None,
         record_type: no_session_context(NoSessionContextRecord {
             payload: Some(msg.into()),
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP NotifyResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the NotifyResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_notify_response;
+/// let resp = usp_notify_response("fancy_sub_id");
+/// ```
+pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::NotifyResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: notify_resp({
+                    NotifyResp {
+                        subscription_id: Some(Cow::Borrowed(subscription_id)),
+                    }
+                }),
+            }
         }),
     }
 }

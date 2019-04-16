@@ -390,7 +390,7 @@ impl std::fmt::Display for usp::Notify<'_> {
             f,
             "{:aby$}subscription_id: {}",
             "",
-            self.subscription_id.clone().unwrap_or("".into()),
+            self.subscription_id.clone().unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(
@@ -838,7 +838,7 @@ impl std::fmt::Display for usp::mod_GetSupportedDMResp::SupportedParamResult<'_>
             f,
             "{:aby$}access: {:#?}",
             "",
-            self.access.clone().unwrap_or_else(|| "".into()),
+            self.access.unwrap_or_else(|| "".into()),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)

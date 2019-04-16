@@ -7,8 +7,8 @@ use structopt::*;
 
 use rusp::{
     usp_decoder::{decode_msg, decode_record},
-    usp_types::NotifyType,
     usp_generator,
+    usp_types::NotifyType,
 };
 
 #[derive(StructOpt)]
@@ -129,8 +129,12 @@ enum MsgType {
         #[structopt(subcommand)]
         typ: NotifyType,
     },
+    /// Generate an USP Notify "response" message
+    NotifyResp {
+        /// Subscription ID
+        sub_id: String,
+    },
 }
-
 
 fn decode_msg_files(files: Vec<PathBuf>) {
     for file in files {
@@ -198,6 +202,9 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             send_resp,
             typ,
         } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
+        MsgType::NotifyResp { sub_id } => {
+            serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
+        }
     }
     .expect("Cannot encode message")
 }
@@ -307,9 +314,9 @@ fn wrap_msg_raw(
     let mut writer = Writer::new(&mut buf);
 
     usp_generator::usp_no_session_context_record(
-        version.as_ref().map(|v| v.as_str()),
-        from.as_ref().map(|v| v.as_str()),
-        to.as_ref().map(|v| v.as_str()),
+        version.as_ref().map(String::as_str),
+        from.as_ref().map(String::as_str),
+        to.as_ref().map(String::as_str),
         &msg,
     )
     .write_message(&mut writer)
