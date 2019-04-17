@@ -1132,8 +1132,15 @@ impl std::fmt::Display for usp::NotifyResp<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.subscription_id, aby = aby2)
+        writeln!(f, "{:aby$}NotifyResp: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}subscription_id: {}",
+            "",
+            self.subscription_id.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
