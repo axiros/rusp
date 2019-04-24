@@ -330,6 +330,8 @@ fn wrap_msg_raw(
 }
 
 fn main() {
+    color_backtrace::install();
+
     let opt = Rusp::from_args();
 
     match opt {
