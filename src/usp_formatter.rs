@@ -417,9 +417,29 @@ impl std::fmt::Display for usp::mod_Notify::Event<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.event_name, aby = aby2)
+        writeln!(f, "{:aby$}Event: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}obj_path: {}",
+            "",
+            self.obj_path.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}event_name: {}",
+            "",
+            self.event_name.clone().unwrap_or_else(|| "".into()),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}params: {{", "", aby = aby2)?;
+        for (k, v) in self.params.iter() {
+            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -914,7 +934,7 @@ impl std::fmt::Display for usp::mod_GetInstancesResp::CurrInstance<'_> {
             writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
-        writeln!(f, "{:aby$}}},", "", aby = aby)
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
