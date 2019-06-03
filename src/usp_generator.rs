@@ -252,7 +252,6 @@ pub fn usp_get_response<'a>(
     use crate::usp::mod_GetResp::{RequestedPathResult, ResolvedPathResult};
     use crate::usp::mod_Response::OneOfresp_type::*;
     use crate::usp::GetResp;
-    use std::collections::HashMap;
 
     Body {
         msg_body: response({

@@ -100,7 +100,7 @@ enum Rusp {
 #[derive(StructOpt, Debug)]
 enum MsgType {
     /// Generate an USP Error message
-    Error {
+    USPError {
         /// The USP error code (MUST be between 7000 and 7999)
         code: u32,
         /// An (optional) error message. Standard error messages will be computed from the error
@@ -108,19 +108,19 @@ enum MsgType {
         message: Option<String>,
     },
     /// Generate an USP Get request message
-    Get {
+    USPGet {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
     /// Generate an USP GetResp response message
-    GetResp {
+    USPGetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
         #[structopt(multiple = true)]
         result: Vec<String>,
     },
     /// Generate an USP Notify "request" message
-    Notify {
+    USPNotify {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a resonse?
@@ -130,7 +130,7 @@ enum MsgType {
         typ: NotifyType,
     },
     /// Generate an USP Notify "response" message
-    NotifyResp {
+    USPNotifyResp {
         /// Subscription ID
         sub_id: String,
     },
@@ -184,25 +184,25 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
     use quick_protobuf::serialize_into_vec;
 
     match typ {
-        MsgType::Error { code, message } => {
+        MsgType::USPError { code, message } => {
             serialize_into_vec(&usp_generator::usp_simple_error(code, message))
         }
-        MsgType::Get { paths } => {
+        MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
             let v: Vec<&str> = serde_json::from_str(&paths).unwrap();
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
-        MsgType::GetResp { result } => {
+        MsgType::USPGetResp { result } => {
             let result = result.join(" ");
             let getresp_json: usp_generator::GetResp = serde_json::from_str(&result).unwrap();
             serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
         }
-        MsgType::Notify {
+        MsgType::USPNotify {
             sub_id,
             send_resp,
             typ,
         } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
-        MsgType::NotifyResp { sub_id } => {
+        MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
         }
     }
@@ -329,10 +329,9 @@ fn wrap_msg_raw(
     }
 }
 
-fn main() {
+#[paw::main]
+fn main(opt: Rusp) {
     color_backtrace::install();
-
-    let opt = Rusp::from_args();
 
     match opt {
         Rusp::DecodeRecordFiles { files } => decode_record_files(files),
