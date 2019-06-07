@@ -25,11 +25,11 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        assert!(record.version == Some("1.0".into()));
-        assert!(record.from_id == Some("proto::ax-usp-agent-nossl-websocket".into()));
-        assert!(record.payload_security == None);
-        assert!(record.mac_signature == None);
-        assert!(record.sender_cert == None);
+        assert!(record.version == "1.0");
+        assert!(record.from_id == "proto::ax-usp-agent-nossl-websocket");
+        assert!(record.payload_security == "".into());
+        assert!(record.mac_signature == vec!());
+        assert!(record.sender_cert == vec!());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -37,33 +37,31 @@ mod tests {
         });
 
         if let no_session_context(context) = record.record_type {
-            if let Some(payload) = context.payload {
-                let mut reader = BytesReader::from_bytes(&payload);
-                let msg = Msg::from_reader(&mut reader, &payload).expect("Cannot read Msg");
-                assert!(msg.header.is_some());
+            let mut reader = BytesReader::from_bytes(&context.payload);
+            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+            assert!(msg.header.is_some());
 
-                if let Some(header) = msg.header {
-                    assert!(header.msg_id == Some("test".into()));
-                    assert!(header.msg_type == Some(NOTIFY));
-                }
+            if let Some(header) = msg.header {
+                assert!(header.msg_id == "test");
+                assert!(header.msg_type == NOTIFY);
+            }
 
-                if let Some(body) = msg.body {
-                    if let request(req) = body.msg_body {
-                        assert!(if let notify(_) = req.req_type {
-                            true
-                        } else {
-                            false
-                        });
+            if let Some(body) = msg.body {
+                if let request(req) = body.msg_body {
+                    assert!(if let notify(_) = req.req_type {
+                        true
+                    } else {
+                        false
+                    });
 
-                        if let notify(a) = req.req_type {
-                            assert!(a.subscription_id == Some("subscription_id".into()));
-                            assert!(a.send_resp == None);
-                            if let on_board_req(n) = a.notification {
-                                assert!(n.oui == Some("oui".into()));
-                                assert!(n.product_class == Some("product_class".into()));
-                                assert!(n.serial_number == Some("serial_number".into()));
-                                assert!(n.agent_supported_protocol_versions == Some("1.0".into()));
-                            }
+                    if let notify(a) = req.req_type {
+                        assert!(a.subscription_id == "subscription_id");
+                        assert!(a.send_resp == false);
+                        if let on_board_req(n) = a.notification {
+                            assert!(n.oui == "oui");
+                            assert!(n.product_class == "product_class");
+                            assert!(n.serial_number == "serial_number");
+                            assert!(n.agent_supported_protocol_versions == "1.0");
                         }
                     }
                 }
@@ -95,12 +93,12 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        assert!(record.version == Some("1.0".into()));
-        assert!(record.to_id == Some("proto::ax-usp-agent-nossl-websocket".into()));
-        assert!(record.from_id == Some("proto::ax-usp-controller-nossl".into()));
-        assert!(record.payload_security == None);
-        assert!(record.mac_signature == None);
-        assert!(record.sender_cert == None);
+        assert!(record.version == "1.0");
+        assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
+        assert!(record.from_id == "proto::ax-usp-controller-nossl");
+        assert!(record.payload_security == "".into());
+        assert!(record.mac_signature == vec!());
+        assert!(record.sender_cert == vec!());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -108,42 +106,38 @@ mod tests {
         });
 
         if let no_session_context(context) = record.record_type {
-            if let Some(payload) = context.payload {
-                let mut reader = BytesReader::from_bytes(&payload);
-                let msg = Msg::from_reader(&mut reader, &payload).expect("Cannot read Msg");
-                assert!(msg.header.is_some());
+            let mut reader = BytesReader::from_bytes(&context.payload);
+            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+            assert!(msg.header.is_some());
 
-                if let Some(header) = msg.header {
-                    assert!(header.msg_id == Some("AXSS-1544114083.761508".into()));
-                    assert!(header.msg_type == Some(ADD));
-                }
+            if let Some(header) = msg.header {
+                assert!(header.msg_id == "AXSS-1544114083.761508");
+                assert!(header.msg_type == ADD);
+            }
 
-                if let Some(body) = msg.body {
-                    if let request(req) = body.msg_body {
-                        assert!(if let add(_) = req.req_type {
-                            true
-                        } else {
-                            false
-                        });
+            if let Some(body) = msg.body {
+                if let request(req) = body.msg_body {
+                    assert!(if let add(_) = req.req_type {
+                        true
+                    } else {
+                        false
+                    });
 
-                        if let add(a) = req.req_type {
-                            assert!(a.allow_partial == Some(true));
-                            assert!(a.create_objs.len() == 1);
-                            let createobj = &a.create_objs[0];
-                            assert!(
-                                createobj.obj_path == Some("Device.LocalAgent.Controller.".into())
-                            );
-                            assert!(createobj.param_settings.len() == 2);
-                            let param1 = &createobj.param_settings[0];
-                            assert!(param1.param == Some("Alias".into()));
-                            assert!(param1.value == Some("test".into()));
-                            assert!(param1.required == Some(true));
+                    if let add(a) = req.req_type {
+                        assert!(a.allow_partial == true);
+                        assert!(a.create_objs.len() == 1);
+                        let createobj = &a.create_objs[0];
+                        assert!(createobj.obj_path == "Device.LocalAgent.Controller.");
+                        assert!(createobj.param_settings.len() == 2);
+                        let param1 = &createobj.param_settings[0];
+                        assert!(param1.param == "Alias");
+                        assert!(param1.value == "test");
+                        assert!(param1.required == true);
 
-                            let param2 = &createobj.param_settings[1];
-                            assert!(param2.param == Some("EndpointID".into()));
-                            assert!(param2.value == Some("test".into()));
-                            assert!(param2.required == Some(true));
-                        }
+                        let param2 = &createobj.param_settings[1];
+                        assert!(param2.param == "EndpointID");
+                        assert!(param2.value == "test");
+                        assert!(param2.required == true);
                     }
                 }
             }
@@ -171,12 +165,12 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        assert!(record.version == Some("1.0".into()));
-        assert!(record.to_id == Some("proto::ax-usp-agent-nossl-websocket".into()));
-        assert!(record.from_id == Some("proto::ax-usp-controller-nossl".into()));
-        assert!(record.payload_security == None);
-        assert!(record.mac_signature == None);
-        assert!(record.sender_cert == None);
+        assert!(record.version == "1.0");
+        assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
+        assert!(record.from_id == "proto::ax-usp-controller-nossl");
+        assert!(record.payload_security == "".into());
+        assert!(record.mac_signature == vec!());
+        assert!(record.sender_cert == vec!());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -184,29 +178,27 @@ mod tests {
         });
 
         if let no_session_context(context) = record.record_type {
-            if let Some(payload) = context.payload {
-                let mut reader = BytesReader::from_bytes(&payload);
-                let msg = Msg::from_reader(&mut reader, &payload).expect("Cannot read Msg");
-                assert!(msg.header.is_some());
+            let mut reader = BytesReader::from_bytes(&context.payload);
+            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+            assert!(msg.header.is_some());
 
-                if let Some(header) = msg.header {
-                    assert!(header.msg_id == Some("AXSS-1544114102.668439".into()));
-                    assert!(header.msg_type == Some(DELETE));
-                }
+            if let Some(header) = msg.header {
+                assert!(header.msg_id == "AXSS-1544114102.668439");
+                assert!(header.msg_type == DELETE);
+            }
 
-                if let Some(body) = msg.body {
-                    if let request(req) = body.msg_body {
-                        assert!(if let delete(_) = req.req_type {
-                            true
-                        } else {
-                            false
-                        });
+            if let Some(body) = msg.body {
+                if let request(req) = body.msg_body {
+                    assert!(if let delete(_) = req.req_type {
+                        true
+                    } else {
+                        false
+                    });
 
-                        if let delete(a) = req.req_type {
-                            assert!(a.allow_partial == Some(true));
-                            assert!(a.obj_paths.len() == 1);
-                            assert!(&a.obj_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
-                        }
+                    if let delete(a) = req.req_type {
+                        assert!(a.allow_partial == true);
+                        assert!(a.obj_paths.len() == 1);
+                        assert!(&a.obj_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
                     }
                 }
             }
@@ -234,12 +226,12 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        assert!(record.version == Some("1.0".into()));
-        assert!(record.to_id == Some("proto::ax-usp-agent-nossl-websocket".into()));
-        assert!(record.from_id == Some("proto::ax-usp-controller-nossl".into()));
-        assert!(record.payload_security == None);
-        assert!(record.mac_signature == None);
-        assert!(record.sender_cert == None);
+        assert!(record.version == "1.0");
+        assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
+        assert!(record.from_id == "proto::ax-usp-controller-nossl");
+        assert!(record.payload_security == "".into());
+        assert!(record.mac_signature == vec!());
+        assert!(record.sender_cert == vec!());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -247,28 +239,26 @@ mod tests {
         });
 
         if let no_session_context(context) = record.record_type {
-            if let Some(payload) = context.payload {
-                let mut reader = BytesReader::from_bytes(&payload);
-                let msg = Msg::from_reader(&mut reader, &payload).expect("Cannot read Msg");
-                assert!(msg.header.is_some());
+            let mut reader = BytesReader::from_bytes(&context.payload);
+            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+            assert!(msg.header.is_some());
 
-                if let Some(header) = msg.header {
-                    assert!(header.msg_id == Some("AXSS-1544114045.442596".into()));
-                    assert!(header.msg_type == Some(GET));
-                }
+            if let Some(header) = msg.header {
+                assert!(header.msg_id == "AXSS-1544114045.442596");
+                assert!(header.msg_type == GET);
+            }
 
-                if let Some(body) = msg.body {
-                    if let request(req) = body.msg_body {
-                        assert!(if let get(_) = req.req_type {
-                            true
-                        } else {
-                            false
-                        });
+            if let Some(body) = msg.body {
+                if let request(req) = body.msg_body {
+                    assert!(if let get(_) = req.req_type {
+                        true
+                    } else {
+                        false
+                    });
 
-                        if let get(a) = req.req_type {
-                            assert!(a.param_paths.len() == 1);
-                            assert!(&a.param_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
-                        }
+                    if let get(a) = req.req_type {
+                        assert!(a.param_paths.len() == 1);
+                        assert!(&a.param_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
                     }
                 }
             }

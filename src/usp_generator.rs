@@ -60,8 +60,8 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 
     Msg {
         header: Some(Header {
-            msg_id: Some(std::borrow::Cow::from(msg_id)),
-            msg_type: Some(msg_type),
+            msg_id: std::borrow::Cow::from(msg_id),
+            msg_type,
         }),
         body: Some(body),
     }
@@ -133,8 +133,8 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
     Body {
         msg_body: error({
             Error {
-                err_code: Some(code),
-                err_msg: Some(err_msg.into()),
+                err_code: code,
+                err_msg: err_msg.into(),
                 param_errs: [].to_vec(),
             }
         }),
@@ -203,8 +203,8 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
             Request {
                 req_type: notify({
                     let mut notr = Notify::default();
-                    notr.subscription_id = Some(sub_id.into());
-                    notr.send_resp = Some(send_resp);
+                    notr.subscription_id = sub_id.into();
+                    notr.send_resp = send_resp;
                     notr.notification = match typ {
                         NotifyType::OnBoardRequest {
                             oui,
@@ -212,12 +212,11 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
                             serial_number,
                             agent_supported_protocol_versions,
                         } => on_board_req(OnBoardRequest {
-                            agent_supported_protocol_versions: Some(
-                                agent_supported_protocol_versions.into(),
-                            ),
-                            oui: Some(oui.into()),
-                            product_class: Some(product_class.into()),
-                            serial_number: Some(serial_number.into()),
+                            agent_supported_protocol_versions: agent_supported_protocol_versions
+                                .into(),
+                            oui: oui.into(),
+                            product_class: product_class.into(),
+                            serial_number: serial_number.into(),
                         }),
                     };
                     notr
@@ -264,7 +263,7 @@ pub fn usp_get_response<'a>(
                                 let mut respaths = Vec::default();
                                 for (path, params) in success {
                                     respaths.push(ResolvedPathResult {
-                                        resolved_path: Some(Cow::Borrowed(path)),
+                                        resolved_path: Cow::Borrowed(path),
                                         result_params: params
                                             .into_iter()
                                             .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
@@ -273,16 +272,16 @@ pub fn usp_get_response<'a>(
                                 }
 
                                 RequestedPathResult {
-                                    requested_path: Some(Cow::Borrowed(path)),
-                                    err_code: Option::None,
-                                    err_msg: Option::None,
+                                    requested_path: Cow::Borrowed(path),
+                                    err_code: 0,
+                                    err_msg: Cow::Borrowed(""),
                                     resolved_path_results: respaths,
                                 }
                             }
                             Err(failure) => RequestedPathResult {
-                                requested_path: Some(Cow::Borrowed(path)),
-                                err_code: Some(failure.0),
-                                err_msg: Some(Cow::Borrowed(failure.1)),
+                                requested_path: Cow::Borrowed(path),
+                                err_code: failure.0,
+                                err_msg: Cow::Borrowed(failure.1),
                                 resolved_path_results: Vec::default(),
                             },
                         });
@@ -368,34 +367,30 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 /// ```
 /// use rusp::usp_generator::{usp_no_session_context_record};
 /// let newrecord = usp_no_session_context_record(
-///     None,
-///     Some("proto::myfancyrecipient"),
-///     Some("proto::anonymous"),
+///     "",
+///     "proto::myfancyrecipient",
+///     "proto::anonymous",
 ///     &[],
 /// );
 /// ```
 pub fn usp_no_session_context_record<'a>(
-    version: Option<&'a str>,
-    to_id: Option<&'a str>,
-    from_id: Option<&'a str>,
+    version: &'a str,
+    to_id: &'a str,
+    from_id: &'a str,
     msg: &'a [u8],
 ) -> Record<'a> {
     use crate::usp_record::mod_Record::OneOfrecord_type::no_session_context;
     use crate::usp_record::NoSessionContextRecord;
 
-    let version = version.or(Some("1.0"));
-    let to_id = to_id.or(Some("proto::to_rusp"));
-    let from_id = from_id.or(Some("proto::from_rusp"));
-
     Record {
-        version: version.map(|v| v.into()),
-        to_id: to_id.map(|v| v.into()),
-        from_id: from_id.map(|v| v.into()),
-        sender_cert: None,
-        mac_signature: None,
-        payload_security: None,
+        version: version.into(),
+        to_id: to_id.into(),
+        from_id: from_id.into(),
+        sender_cert: Cow::Borrowed(b""),
+        mac_signature: Cow::Borrowed(b""),
+        payload_security: "".into(),
         record_type: no_session_context(NoSessionContextRecord {
-            payload: Some(msg.into()),
+            payload: msg.into(),
         }),
     }
 }
@@ -422,7 +417,7 @@ pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
             Response {
                 resp_type: notify_resp({
                     NotifyResp {
-                        subscription_id: Some(Cow::Borrowed(subscription_id)),
+                        subscription_id: Cow::Borrowed(subscription_id),
                     }
                 }),
             }

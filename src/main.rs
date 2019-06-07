@@ -259,7 +259,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) {
 
     match record.record_type {
         no_session_context(context) => {
-            let msg = context.payload.unwrap();
+            let msg = context.payload;
             std::fs::write(&out_file, &msg).unwrap();
         }
         session_context(_) => unreachable!(),
@@ -285,7 +285,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) {
             let mut buf = Vec::new();
             let mut writer = Writer::new(&mut buf);
 
-            let payload = context.payload.unwrap();
+            let payload = context.payload;
             let msg = decode_msg(&payload);
             let body = msg.body.unwrap();
             body.write_message(&mut writer)
@@ -314,9 +314,9 @@ fn wrap_msg_raw(
     let mut writer = Writer::new(&mut buf);
 
     usp_generator::usp_no_session_context_record(
-        version.as_ref().map(String::as_str),
-        from.as_ref().map(String::as_str),
-        to.as_ref().map(String::as_str),
+        version.as_ref().map(String::as_str).unwrap(),
+        from.as_ref().map(String::as_str).unwrap(),
+        to.as_ref().map(String::as_str).unwrap(),
         &msg,
     )
     .write_message(&mut writer)
