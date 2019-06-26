@@ -383,8 +383,10 @@ impl std::fmt::Display for usp::mod_Notify::ValueChange<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.param_path, aby = aby2)
+        writeln!(f, "{:aby$}ValueChange: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}param_path: {}", "", self.param_path, aby = aby2)?;
+        writeln!(f, "{:aby$}param_value: {}", "", self.param_value, aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -392,9 +394,16 @@ impl std::fmt::Display for usp::mod_Notify::ObjectCreation<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.obj_path, aby = aby2)
+        writeln!(f, "{:aby$}ObjectCreation: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}unique_keys: {{", "", aby = aby2)?;
+        for (k, v) in self.unique_keys.iter() {
+            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -403,8 +412,9 @@ impl std::fmt::Display for usp::mod_Notify::ObjectDeletion<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.obj_path, aby = aby2)
+        writeln!(f, "{:aby$}ObjectDeletion: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
