@@ -135,6 +135,17 @@ enum MsgType {
         /// Subscription ID
         sub_id: String,
     },
+    /// Generate an USP Set "request" message
+    USPSet {
+        /// Do we allow partial execution?
+        #[structopt(short = "a", long = "allow_partial")]
+        allow_partial: bool,
+        /// A JSON structure resesembling the input for a Set operation
+	///
+        /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
+        #[structopt(multiple = true)]
+        args: Vec<String>,
+    },
 }
 
 fn decode_msg_files(files: Vec<PathBuf>) {
@@ -190,7 +201,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
         }
         MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
-            let v: Vec<&str> = serde_json::from_str(&paths).unwrap();
+            let v = serde_json::from_str::<Vec<&str>>(&paths).unwrap();
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
         MsgType::USPGetResp { result } => {
@@ -205,6 +216,21 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
         } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
         MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
+        }
+        MsgType::USPSet {
+            allow_partial,
+            args,
+        } => {
+            let args = args.join(" ");
+            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).unwrap();
+
+            serialize_into_vec(&usp_generator::usp_set_request(
+                allow_partial,
+                v.iter()
+                    .map(|(path, par)| (*path, par.as_slice()))
+                    .collect::<Vec<_>>()
+                    .as_slice(),
+            ))
         }
     }
     .expect("Cannot encode message")

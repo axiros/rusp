@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use serde_derive::{Deserialize, Serialize};
 
-use crate::usp::{Body, Error, Get, Header, Msg, Notify, Request, Response};
+use crate::usp::{Body, Error, Get, Header, Msg, Notify, Request, Response, Set};
 use crate::usp_record::Record;
 use crate::usp_types::NotifyType;
 
@@ -141,11 +141,11 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
     }
 }
 
-/// Wraps the body of a USP Msg with a USP Get request
+/// Generates a body of a USP Msg with a USP Get request
 ///
 /// # Arguments
 ///
-/// * `params` - A vector of parameter/object names to put into the Get request
+/// * `params` - An array of parameter/object names to put into the Get request
 ///
 /// # Example
 ///
@@ -166,6 +166,53 @@ pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
                         getr.param_paths.push(Cow::Borrowed(path));
                     }
                     getr
+                }),
+            }
+        }),
+    }
+}
+
+/// Generates a body of a USP Msg with a USP Set request
+///
+/// # Arguments
+///
+/// * `allow_partial` - A boolean indicating whether partial execution of the Set command is permitted
+/// * `args` - An array of tuples consisting of an object path and a arrow of tuples consisting of parametername, value and required flag to put into the Set request
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_set_request;
+/// let req = usp_set_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
+/// ```
+pub fn usp_set_request<'a>(
+    allow_partial: bool,
+    args: &[(&'a str, &[(&'a str, &'a str, bool)])],
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: set({
+                    let mut setr = Set::default();
+                    setr.allow_partial = allow_partial;
+                    for (dir, pars) in args {
+                        let mut obj: crate::usp::mod_Set::UpdateObject =
+                            crate::usp::mod_Set::UpdateObject::default();
+                        obj.obj_path = std::borrow::Cow::Borrowed(dir);
+                        for par in *pars {
+                            obj.param_settings
+                                .push(crate::usp::mod_Set::UpdateParamSetting {
+                                    param: std::borrow::Cow::Borrowed(par.0),
+                                    value: std::borrow::Cow::Borrowed(par.1),
+                                    required: par.2,
+                                });
+                        }
+                        setr.update_objs.push(obj);
+                    }
+                    setr
                 }),
             }
         }),
