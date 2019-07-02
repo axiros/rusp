@@ -123,7 +123,8 @@ enum MsgType {
     USPNotify {
         /// Subscription ID
         sub_id: String,
-        /// Do we expect a resonse?
+        /// Do we expect a response?
+        #[structopt(short = "s", long = "send_resp")]
         send_resp: bool,
         /// Type of notification
         #[structopt(subcommand)]
