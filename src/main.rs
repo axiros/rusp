@@ -141,7 +141,7 @@ enum MsgType {
         #[structopt(short = "a", long = "allow_partial")]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Set operation
-	///
+        ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
         #[structopt(multiple = true)]
         args: Vec<String>,

@@ -910,10 +910,10 @@ impl fmt::Display
         for (k, v) in self.updated_params.iter() {
             writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
         }
-        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         for r in self.param_errs.iter() {
-            write!(f, "{:#aby$?}", r, aby = aby3)?;
+            write!(f, "{:#aby$}", r, aby = aby3)?;
         }
+        writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -934,6 +934,21 @@ impl fmt::Display
             write!(f, "{:#aby$?}", r, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl fmt::Display
+    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'_>
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}ParameterError: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}param: {}", "", self.param, aby = aby2)?;
+        writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
