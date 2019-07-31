@@ -37,7 +37,15 @@ The toolkit includes:
 
 **rusp** includes a binary with the same name demonstrating some of the uses.
 
-At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode a USP **Get** message.
+At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode USP
+* **Error**
+* **Get**
+* **GetResp**
+* **GetSupportedDM**
+* **Notify**
+* **NotifyResp**
+* **Set**
+messages via commandline tool.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -55,7 +63,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.2.0"
+rusp = "0.4.0"
 quick-protobuf = "0.6.3"
 
 ...
