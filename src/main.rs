@@ -1,5 +1,6 @@
 use quick_protobuf;
 use serde_json;
+use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::PathBuf;
@@ -168,51 +169,51 @@ enum MsgType {
     },
 }
 
-fn decode_msg_files(files: Vec<PathBuf>) {
+fn decode_msg_files(files: Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
     for file in files {
-        let fp = File::open(&file).unwrap_or_else(|_| panic!("Could not open file {:?}", file));
+        let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
         let mut contents = Vec::new();
-        buf_reader
-            .read_to_end(&mut contents)
-            .unwrap_or_else(|_| panic!("Could not read from file {:?}", file));
+        buf_reader.read_to_end(&mut contents)?;
 
         println!("{}", decode_msg(&contents));
     }
+
+    Ok(())
 }
 
-fn decode_msg_stdin() {
+fn decode_msg_stdin() -> Result<(), Box<dyn Error>> {
     let mut contents = Vec::new();
-    stdin()
-        .read_to_end(&mut contents)
-        .expect("Couldn't read USP Msg from stdin");
+    stdin().read_to_end(&mut contents)?;
 
     println!("{}", decode_msg(&contents));
+
+    Ok(())
 }
 
-fn decode_record_files(files: Vec<PathBuf>) {
+fn decode_record_files(files: Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
     for file in files {
-        let fp = File::open(&file).unwrap_or_else(|_| panic!("Could not open file {:?}", file));
+        let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
         let mut contents = Vec::new();
-        buf_reader
-            .read_to_end(&mut contents)
-            .unwrap_or_else(|_| panic!("Could not read from file {:?}", file));
+        buf_reader.read_to_end(&mut contents)?;
 
         println!("{}", decode_record(&contents));
     }
+
+    Ok(())
 }
 
-fn decode_record_stdin() {
+fn decode_record_stdin() -> Result<(), Box<dyn Error>> {
     let mut contents = Vec::new();
-    stdin()
-        .read_to_end(&mut contents)
-        .expect("Couldn't read USP Record from stdin");
+    stdin().read_to_end(&mut contents)?;
 
     println!("{}", decode_record(&contents));
+
+    Ok(())
 }
 
-fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
+fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
     use quick_protobuf::serialize_into_vec;
 
     match typ {
@@ -221,7 +222,13 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
         }
         MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths).unwrap();
+            let v = serde_json::from_str::<Vec<&str>>(&paths).map_err(|e| {
+                format!(
+                    "Please provide a JSON array with datamodel paths, got '{}': {}",
+                    paths.trim(),
+                    e
+                )
+            })?;
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
         MsgType::USPGetSupportedDM {
@@ -232,8 +239,13 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             paths,
         } => {
             let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths).unwrap();
-
+            let v = serde_json::from_str::<Vec<&str>>(&paths).map_err(|e| {
+                format!(
+                    "Please provide a JSON array with datamodel paths, got '{}': {}",
+                    paths.trim(),
+                    e
+                )
+            })?;
             serialize_into_vec(&usp_generator::usp_get_supported_dm_request(
                 v.as_slice(),
                 first_level_only,
@@ -244,7 +256,14 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
-            let getresp_json: usp_generator::GetResp = serde_json::from_str(&result).unwrap();
+            let getresp_json: usp_generator::GetResp =
+                serde_json::from_str(&result).map_err(|e| {
+                    format!(
+                        "Please provide an appropriate JSON datastructure, got '{}': {}",
+                        result.trim(),
+                        e
+                    )
+                })?;
             serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
         }
         MsgType::USPNotify {
@@ -260,8 +279,15 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             args,
         } => {
             let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).unwrap();
-
+            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).map_err(
+                |e| {
+                    format!(
+                        "Please provide an appropriate JSON datastructure, got '{}': {}",
+                        args.trim(),
+                        e
+                    )
+                },
+            )?;
             serialize_into_vec(&usp_generator::usp_set_request(
                 allow_partial,
                 v.iter()
@@ -271,77 +297,86 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             ))
         }
     }
-    .expect("Cannot encode message")
+    .map_err(|_| "Cannot encode message".into())
 }
 
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) {
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<(), Box<dyn Error>> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
     let mut writer = Writer::new(&mut buf);
 
-    let encoded_body = encode_msg_body_buf(typ);
-    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body).unwrap();
+    let encoded_body = encode_msg_body_buf(typ)?;
+    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
+        .map_err(|e| format!("Could not deserialise Msg body: {}", e))?;
     body.write_message(&mut writer)
         .expect("Failed encoding USP Msg");
-    if filename.is_some() {
-        std::fs::write(filename.unwrap(), buf).unwrap();
+
+    if let Some(filename) = filename {
+        std::fs::write(filename, buf)?;
     } else {
-        stdout().write_all(&buf).unwrap();
+        stdout().write_all(&buf)?;
     }
+
+    Ok(())
 }
 
-fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) {
+fn encode_msg(
+    msgid: String,
+    filename: Option<PathBuf>,
+    typ: MsgType,
+) -> Result<(), Box<dyn Error>> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
     let mut writer = Writer::new(&mut buf);
 
-    let encoded_body = encode_msg_body_buf(typ);
-    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body).unwrap();
+    let encoded_body = encode_msg_body_buf(typ)?;
+    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
+        .map_err(|e| format!("Could not deserialise Msg body: {}", e))?;
     usp_generator::usp_msg(msgid, body)
         .write_message(&mut writer)
         .expect("Failed encoding USP Msg");
 
-    if filename.is_some() {
-        std::fs::write(filename.unwrap(), buf).unwrap();
+    if let Some(filename) = filename {
+        std::fs::write(filename, buf)?;
     } else {
-        stdout().write_all(&buf).unwrap();
+        stdout().write_all(&buf)?;
     }
+
+    Ok(())
 }
 
-fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) {
+fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn Error>> {
     use rusp::usp_record::mod_Record::OneOfrecord_type::*;
 
-    let fp = File::open(&in_file).unwrap_or_else(|_| panic!("Could not open file {:?}", in_file));
+    let fp = File::open(&in_file)?;
     let mut buf_reader = BufReader::new(fp);
     let mut contents = Vec::new();
-    buf_reader
-        .read_to_end(&mut contents)
-        .unwrap_or_else(|_| panic!("Could not read from file {:?}", in_file));
+    buf_reader.read_to_end(&mut contents)?;
 
     let record = decode_record(&contents);
 
     match record.record_type {
         no_session_context(context) => {
             let msg = context.payload;
-            std::fs::write(&out_file, &msg).unwrap();
+            std::fs::write(&out_file, &msg)?;
         }
         session_context(_) => unreachable!(),
         None => unreachable!(),
     }
+
+    Ok(())
 }
 
-fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) {
+fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn Error>> {
     use quick_protobuf::{message::MessageWrite, Writer};
     use rusp::usp_record::mod_Record::OneOfrecord_type::*;
 
-    let fp = File::open(&in_file).unwrap_or_else(|_| panic!("Could not open file {:?}", in_file));
+    let fp = File::open(&in_file)?;
     let mut buf_reader = BufReader::new(fp);
     let mut contents = Vec::new();
-    buf_reader
-        .read_to_end(&mut contents)
-        .unwrap_or_else(|_| panic!("Could not read from file {:?}", in_file));
+    buf_reader.read_to_end(&mut contents)?;
 
     let record = decode_record(&contents);
 
@@ -355,11 +390,13 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) {
             let body = msg.body.unwrap();
             body.write_message(&mut writer)
                 .expect("Cannot encode message");
-            std::fs::write(&out_file, buf).unwrap();
+            std::fs::write(&out_file, buf)?;
         }
         session_context(_) => unreachable!(),
         None => unreachable!(),
     }
+
+    Ok(())
 }
 
 fn wrap_msg_raw(
@@ -367,13 +404,11 @@ fn wrap_msg_raw(
     from: Option<String>,
     to: Option<String>,
     filename: Option<PathBuf>,
-) {
+) -> Result<(), Box<dyn Error>> {
     use quick_protobuf::{message::MessageWrite, Writer};
 
     let mut msg = Vec::new();
-    stdin()
-        .read_to_end(&mut msg)
-        .expect("Couldn't read USP Msg from stdin");
+    stdin().read_to_end(&mut msg)?;
 
     let mut buf = Vec::new();
     let mut writer = Writer::new(&mut buf);
@@ -387,15 +422,17 @@ fn wrap_msg_raw(
     .write_message(&mut writer)
     .expect("Failed encoding USP Record");
 
-    if filename.is_some() {
-        std::fs::write(filename.unwrap(), buf).unwrap();
+    if let Some(filename) = filename {
+        std::fs::write(filename, buf)?;
     } else {
-        stdout().write_all(&buf).unwrap();
+        stdout().write_all(&buf)?;
     }
+
+    Ok(())
 }
 
 #[paw::main]
-fn main(opt: Rusp) {
+fn main(opt: Rusp) -> Result<(), Box<dyn Error>> {
     color_backtrace::install();
 
     match opt {
@@ -418,4 +455,10 @@ fn main(opt: Rusp) {
             filename,
         } => wrap_msg_raw(version, from, to, filename),
     }
+    .map_err(|e| {
+        eprintln!("Whoopsiedoodles! Something went wrong, this is what we've got:");
+        e
+    })?;
+
+    Ok(())
 }
