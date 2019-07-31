@@ -119,26 +119,46 @@ enum MsgType {
         #[structopt(multiple = true)]
         result: Vec<String>,
     },
+    /// Generate an USP GetSupportedDM request message
+    USPGetSupportedDM {
+        /// Only return the first level of recursive structures?
+        #[structopt(parse(try_from_str))]
+        first_level_only: bool,
+        /// Return commands?
+        #[structopt(parse(try_from_str))]
+        return_commands: bool,
+        /// Return events?
+        #[structopt(parse(try_from_str))]
+        return_events: bool,
+        /// Return parameters?
+        #[structopt(parse(try_from_str))]
+        return_params: bool,
+        /// A JSON array ressembling the paths we're interested in
+        ///
+        /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
+        #[structopt(multiple = true)]
+        paths: Vec<String>,
+    },
     /// Generate an USP Notify "request" message
     USPNotify {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a response?
-        #[structopt(short = "s", long = "send_resp")]
+        #[structopt(parse(try_from_str))]
         send_resp: bool,
         /// Type of notification
         #[structopt(subcommand)]
         typ: NotifyType,
     },
-    /// Generate an USP Notify "response" message
+    /// Generate an USP Notify response message
     USPNotifyResp {
         /// Subscription ID
         sub_id: String,
     },
-    /// Generate an USP Set "request" message
+    /// Generate an USP Set request message
     USPSet {
         /// Do we allow partial execution?
-        #[structopt(short = "a", long = "allow_partial")]
+        #[structopt(parse(try_from_str))]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Set operation
         ///
@@ -203,6 +223,24 @@ fn encode_msg_body_buf(typ: MsgType) -> Vec<u8> {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&paths).unwrap();
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
+        }
+        MsgType::USPGetSupportedDM {
+            first_level_only,
+            return_commands,
+            return_events,
+            return_params,
+            paths,
+        } => {
+            let paths = paths.join(" ");
+            let v = serde_json::from_str::<Vec<&str>>(&paths).unwrap();
+
+            serialize_into_vec(&usp_generator::usp_get_supported_dm_request(
+                v.as_slice(),
+                first_level_only,
+                return_commands,
+                return_events,
+                return_params,
+            ))
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
