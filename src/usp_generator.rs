@@ -3,7 +3,9 @@ use std::collections::HashMap;
 
 use serde_derive::{Deserialize, Serialize};
 
-use crate::usp::{Body, Error, Get, GetSupportedDM, Header, Msg, Notify, Request, Response, Set};
+use crate::usp::{
+    Body, Error, Get, GetInstances, GetSupportedDM, Header, Msg, Notify, Request, Response, Set,
+};
 use crate::usp_record::Record;
 use crate::usp_types::NotifyType;
 
@@ -273,11 +275,46 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
     }
 }
 
+/// Generates a body of a USP Msg with a USP GetInstances request
+///
+/// # Arguments
+///
+/// * `obj_paths` - An array of parameter/object names to put into the GetInstances request
+/// * `first_level_only` - Whether to just return information for the requested path or recursively
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_get_instances_request;
+/// let req = usp_get_instances_request(&["Device.", "Device.DeviceInfo."], true);
+/// ```
+pub fn usp_get_instances_request<'a>(obj_paths: &[&'a str], first_level_only: bool) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: get_instances({
+                    let mut getinr = GetInstances {
+                        first_level_only,
+                        ..Default::default()
+                    };
+                    for path in obj_paths {
+                        getinr.obj_paths.push(Cow::Borrowed(path));
+                    }
+                    getinr
+                }),
+            }
+        }),
+    }
+}
+
 /// Generates a body of a USP Msg with a USP GetSupportedDM request
 ///
 /// # Arguments
 ///
-/// * `paths` - An array of parameter/object names to put into the Get request
+/// * `paths` - An array of parameter/object names to put into the GetSupportedDM request
 /// * `first_level_only` - Whether to just return information for the requested path or recursively
 /// * `return_commands` - Return commands in response
 /// * `return_events` - Return events in response

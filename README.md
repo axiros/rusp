@@ -41,10 +41,12 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 * **Error**
 * **Get**
 * **GetResp**
+* **GetInstances**
 * **GetSupportedDM**
 * **Notify**
 * **NotifyResp**
 * **Set**
+
 messages via commandline tool.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:

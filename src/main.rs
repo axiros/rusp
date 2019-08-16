@@ -120,6 +120,17 @@ enum MsgType {
         #[structopt(multiple = true)]
         result: Vec<String>,
     },
+    /// Generate an USP GetInstances request message
+    USPGetInstances {
+        /// Only return the first level of recursive structures?
+        #[structopt(parse(try_from_str))]
+        first_level_only: bool,
+        /// A JSON array ressembling the object paths we're interested in
+        ///
+        /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
+        #[structopt(multiple = true)]
+        obj_paths: Vec<String>,
+    },
     /// Generate an USP GetSupportedDM request message
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
@@ -230,6 +241,23 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
                 )
             })?;
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
+        }
+        MsgType::USPGetInstances {
+            first_level_only,
+            obj_paths,
+        } => {
+            let obj_paths = obj_paths.join(" ");
+            let v = serde_json::from_str::<Vec<&str>>(&obj_paths).map_err(|e| {
+                format!(
+                    "Please provide a JSON array with datamodel paths, got '{}': {}",
+                    obj_paths.trim(),
+                    e
+                )
+            })?;
+            serialize_into_vec(&usp_generator::usp_get_instances_request(
+                v.as_slice(),
+                first_level_only,
+            ))
         }
         MsgType::USPGetSupportedDM {
             first_level_only,
