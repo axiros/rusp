@@ -731,9 +731,27 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}SupportedCommandResult {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}command_name: {}",
+            "",
+            self.command_name,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}input_arg_names: [", "", aby = aby2)?;
+        for result in self.input_arg_names.iter() {
+            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}output_arg_names: [", "", aby = aby2)?;
+        for result in self.output_arg_names.iter() {
+            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
