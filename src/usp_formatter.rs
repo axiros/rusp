@@ -741,9 +741,16 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedEventResult<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+        let aby3 = aby2 + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
+        writeln!(f, "{:aby$}SupportedEventResult {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}event_name: {}", "", self.event_name, aby = aby2)?;
+        writeln!(f, "{:aby$}arg_names: [", "", aby = aby2)?;
+        for result in self.arg_names.iter() {
+            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
