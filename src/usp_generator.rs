@@ -4,7 +4,8 @@ use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::usp::{
-    Body, Error, Get, GetInstances, GetSupportedDM, Header, Msg, Notify, Request, Response, Set,
+    Body, Error, Get, GetInstances, GetSupportedDM, Header, Msg, Notify, Operate, Request,
+    Response, Set,
 };
 use crate::usp_record::Record;
 use crate::usp_types::NotifyType;
@@ -269,6 +270,49 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
                         }),
                     };
                     notr
+                }),
+            }
+        }),
+    }
+}
+
+/// Generates a body of a USP Msg with a USP Operate request
+///
+/// # Arguments
+///
+/// * `command` - The full pathname of of the command to execute
+/// * `command_key` - The command key to use in the request to allow later matching with a result
+/// * `send_resp` - A boolean indicating whether a response is expected in reply to this request
+/// * `args` - An array of tuples containing the command input arguments with path names and values
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_operate_request;
+/// let req = usp_operate_request("Device.Reboot()", "acommandkey", true, &[]);
+/// ```
+pub fn usp_operate_request<'a>(
+    command: &'a str,
+    command_key: &'a str,
+    send_resp: bool,
+    args: &[(&'a str, &'a str)],
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: operate({
+                    let mut operater = Operate::default();
+                    operater.command = command.into();
+                    operater.command_key = command_key.into();
+                    operater.send_resp = send_resp;
+                    operater.input_args = args
+                        .iter()
+                        .map(|(k, v)| (Cow::Borrowed(*k), Cow::Borrowed(*v)))
+                        .collect::<HashMap<_, _>>();
+                    operater
                 }),
             }
         }),

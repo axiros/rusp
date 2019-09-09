@@ -151,7 +151,7 @@ enum MsgType {
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
-    /// Generate an USP Notify "request" message
+    /// Generate an USP Notify request message
     USPNotify {
         /// Subscription ID
         sub_id: String,
@@ -166,6 +166,19 @@ enum MsgType {
     USPNotifyResp {
         /// Subscription ID
         sub_id: String,
+    },
+    /// Generate an USP Operate request message
+    USPOperate {
+        /// The full pathname of of the command to execute
+        command: String,
+        /// * The command key to use in the request to allow later matching with a result
+        command_key: String,
+        /// A boolean indicating whether a response is expected in reply to this request
+        #[structopt(parse(try_from_str))]
+        send_resp: bool,
+        /// A JSON array of arrays containing the command input arguments with path names and values
+        #[structopt(multiple = true)]
+        args: Vec<String>,
     },
     /// Generate an USP Set request message
     USPSet {
@@ -301,6 +314,31 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
         } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
         MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
+        }
+        MsgType::USPOperate {
+            command,
+            command_key,
+            send_resp,
+            args,
+        } => {
+            let args = args.join(" ");
+            let v = if args.len() > 0 {
+                serde_json::from_str::<Vec<(&str, &str)>>(&args).map_err(|e| {
+                    format!(
+                        "Please provide an appropriate JSON datastructure, got '{}': {}",
+                        args.trim(),
+                        e
+                    )
+                })?
+            } else {
+                Vec::new()
+            };
+            serialize_into_vec(&usp_generator::usp_operate_request(
+                &command,
+                &command_key,
+                send_resp,
+                v.into_iter().collect::<Vec<_>>().as_slice(),
+            ))
         }
         MsgType::USPSet {
             allow_partial,
