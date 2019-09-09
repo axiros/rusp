@@ -31,7 +31,7 @@ The toolkit includes:
   * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
   * Generation of **USP** Msg Protobuf bytestreams for selected messages and Error
 
-## How to us it?
+## How to use it?
 
 ### rusp binary
 
@@ -40,11 +40,12 @@ The toolkit includes:
 At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode USP
 * **Error**
 * **Get**
-* **GetResp**
 * **GetInstances**
+* **GetResp**
 * **GetSupportedDM**
 * **Notify**
 * **NotifyResp**
+* **Operate**
 * **Set**
 
 messages via commandline tool.
@@ -65,7 +66,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.4.0"
+rusp = "0.5.0"
 quick-protobuf = "0.6.3"
 
 ...
