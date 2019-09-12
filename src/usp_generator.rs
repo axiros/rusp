@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::usp::{
-    Body, Error, Get, GetInstances, GetSupportedDM, Header, Msg, Notify, Operate, Request,
-    Response, Set,
+    Body, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg, Notify,
+    Operate, Request, Response, Set,
 };
 use crate::usp_record::Record;
 use crate::usp_types::NotifyType;
@@ -395,6 +395,35 @@ pub fn usp_get_supported_dm_request<'a>(
                         getsdmr.obj_paths.push(Cow::Borrowed(path));
                     }
                     getsdmr
+                }),
+            }
+        }),
+    }
+}
+
+/// Generates a body of a USP Msg with a USP GetSupportedProtocol request
+///
+/// # Arguments
+///
+/// * `cspv` - The controller supported protocol version
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_get_supported_prototol_request;
+/// let req = usp_get_supported_prototol_request("1.1");
+/// ```
+pub fn usp_get_supported_prototol_request<'a>(cspv: &'a str) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: get_supported_protocol({
+                    GetSupportedProtocol {
+                        controller_supported_protocol_versions: Cow::Borrowed(cspv),
+                    }
                 }),
             }
         }),

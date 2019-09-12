@@ -151,6 +151,11 @@ enum MsgType {
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
+    /// Generate an USP GetSupportedProtocol request message
+    USPGetSupportedProtocol {
+        /// Controller Supported Protocol Version
+        cspv: String,
+    },
     /// Generate an USP Notify request message
     USPNotify {
         /// Subscription ID
@@ -294,6 +299,9 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
                 return_events,
                 return_params,
             ))
+        }
+        MsgType::USPGetSupportedProtocol { cspv } => {
+            serialize_into_vec(&usp_generator::usp_get_supported_prototol_request(&cspv))
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
