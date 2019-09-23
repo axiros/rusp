@@ -12,6 +12,8 @@ use rusp::{
     usp_types::NotifyType,
 };
 
+type Bool = bool;
+
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
 enum Rusp {
@@ -123,8 +125,7 @@ enum MsgType {
     /// Generate an USP GetInstances request message
     USPGetInstances {
         /// Only return the first level of recursive structures?
-        #[structopt(parse(try_from_str))]
-        first_level_only: bool,
+        first_level_only: Bool,
         /// A JSON array ressembling the object paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
@@ -134,17 +135,13 @@ enum MsgType {
     /// Generate an USP GetSupportedDM request message
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
-        #[structopt(parse(try_from_str))]
-        first_level_only: bool,
+        first_level_only: Bool,
         /// Return commands?
-        #[structopt(parse(try_from_str))]
-        return_commands: bool,
+        return_commands: Bool,
         /// Return events?
-        #[structopt(parse(try_from_str))]
-        return_events: bool,
+        return_events: Bool,
         /// Return parameters?
-        #[structopt(parse(try_from_str))]
-        return_params: bool,
+        return_params: Bool,
         /// A JSON array ressembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
@@ -161,8 +158,7 @@ enum MsgType {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a response?
-        #[structopt(parse(try_from_str))]
-        send_resp: bool,
+        send_resp: Bool,
         /// Type of notification
         #[structopt(subcommand)]
         typ: NotifyType,
@@ -179,8 +175,7 @@ enum MsgType {
         /// * The command key to use in the request to allow later matching with a result
         command_key: String,
         /// A boolean indicating whether a response is expected in reply to this request
-        #[structopt(parse(try_from_str))]
-        send_resp: bool,
+        send_resp: Bool,
         /// A JSON array of arrays containing the command input arguments with path names and values
         #[structopt(multiple = true)]
         args: Vec<String>,
@@ -188,8 +183,7 @@ enum MsgType {
     /// Generate an USP Set request message
     USPSet {
         /// Do we allow partial execution?
-        #[structopt(parse(try_from_str))]
-        allow_partial: bool,
+        allow_partial: Bool,
         /// A JSON structure resesembling the input for a Set operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
