@@ -102,6 +102,16 @@ enum Rusp {
 
 #[derive(StructOpt, Debug)]
 enum MsgType {
+    /// Generate an USP Add request message
+    USPAdd {
+        /// Do we allow partial execution?
+        allow_partial: Bool,
+        /// A JSON structure resesembling the input for a Add operation
+        ///
+        /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
+        #[structopt(multiple = true)]
+        args: Vec<String>,
+    },
     /// Generate an USP Error message
     USPError {
         /// The USP error code (MUST be between 7000 and 7999)
@@ -240,6 +250,28 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
     use quick_protobuf::serialize_into_vec;
 
     match typ {
+        MsgType::USPAdd {
+            allow_partial,
+            args,
+        } => {
+            let args = args.join(" ");
+            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).map_err(
+                |e| {
+                    format!(
+                        "Please provide an appropriate JSON datastructure, got '{}': {}",
+                        args.trim(),
+                        e
+                    )
+                },
+            )?;
+            serialize_into_vec(&usp_generator::usp_add_request(
+                allow_partial,
+                v.iter()
+                    .map(|(path, par)| (*path, par.as_slice()))
+                    .collect::<Vec<_>>()
+                    .as_slice(),
+            ))
+        }
         MsgType::USPError { code, message } => {
             serialize_into_vec(&usp_generator::usp_simple_error(code, message))
         }

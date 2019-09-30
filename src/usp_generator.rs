@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::usp::{
-    Body, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg, Notify,
+    Add, Body, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg, Notify,
     Operate, Request, Response, Set,
 };
 use crate::usp_record::Record;
@@ -175,6 +175,52 @@ pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
     }
 }
 
+/// Generates a body of a USP Msg with a USP Add request
+///
+/// # Arguments
+///
+/// * `allow_partial` - A boolean indicating whether partial execution of the Set command is permitted
+/// * `args` - An array of tuples consisting of an object path and a arrow of tuples consisting of parametername, value and required flag to put into the Set request
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_add_request;
+/// let req = usp_add_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
+/// ```
+pub fn usp_add_request<'a>(
+    allow_partial: bool,
+    args: &[(&'a str, &[(&'a str, &'a str, bool)])],
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: add({
+                    let mut addr = Add::default();
+                    addr.allow_partial = allow_partial;
+                    for (dir, pars) in args {
+                        let mut obj: crate::usp::mod_Add::CreateObject =
+                            crate::usp::mod_Add::CreateObject::default();
+                        obj.obj_path = std::borrow::Cow::Borrowed(dir);
+                        for par in *pars {
+                            obj.param_settings
+                                .push(crate::usp::mod_Add::CreateParamSetting {
+                                    param: std::borrow::Cow::Borrowed(par.0),
+                                    value: std::borrow::Cow::Borrowed(par.1),
+                                    required: par.2,
+                                });
+                        }
+                        addr.create_objs.push(obj);
+                    }
+                    addr
+                }),
+            }
+        }),
+    }
+}
 /// Generates a body of a USP Msg with a USP Set request
 ///
 /// # Arguments
