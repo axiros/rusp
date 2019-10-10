@@ -533,8 +533,6 @@ fn wrap_msg_raw(
 
 #[paw::main]
 fn main(opt: Rusp) -> Result<(), Box<dyn Error>> {
-    color_backtrace::install();
-
     match opt {
         Rusp::DecodeRecordFiles { files } => decode_record_files(files),
         Rusp::DecodeRecord {} => decode_record_stdin(),
