@@ -14,9 +14,9 @@ impl fmt::Display for Record<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}Record {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}version: {}", "", self.version, aby = aby2)?;
-        writeln!(f, "{:aby$}to_id: {}", "", self.to_id, aby = aby2)?;
-        writeln!(f, "{:aby$}from_id: {}", "", self.from_id, aby = aby2)?;
+        writeln!(f, "{:aby$}version: \"{}\"", "", self.version, aby = aby2)?;
+        writeln!(f, "{:aby$}to_id: \"{}\"", "", self.to_id, aby = aby2)?;
+        writeln!(f, "{:aby$}from_id: \"{}\"", "", self.from_id, aby = aby2)?;
         writeln!(
             f,
             "{:aby$}payload_security: {}",
@@ -75,7 +75,7 @@ impl fmt::Display for Header<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}Header: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}msg_id: {}", "", self.msg_id, aby = aby2)?;
+        writeln!(f, "{:aby$}msg_id: \"{}\"", "", self.msg_id, aby = aby2)?;
         write!(f, "{:aby$}msg_type: {}", "", self.msg_type, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -191,7 +191,7 @@ impl fmt::Display for Error<'_> {
 
         writeln!(f, "{:aby$}Error: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}param_errs: [", "", aby = aby2)?;
         for result in self.param_errs.iter() {
             write!(f, "{:aby$}", result, aby = aby3)?;
@@ -235,7 +235,12 @@ impl fmt::Display for Get<'_> {
             f,
             "{:aby$}Get {{ param_paths: [ {} ] }}",
             "",
-            self.param_paths.join(", "),
+            self.param_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby
         )
     }
@@ -249,28 +254,28 @@ impl fmt::Display for GetSupportedDM<'_> {
         writeln!(f, "{:aby$}GetSupportedDM: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}first_level_only: {:aby$}",
+            "{:aby$}first_level_only: {}",
             "",
             self.first_level_only,
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}return_commands: {:aby$}",
+            "{:aby$}return_commands: {}",
             "",
             self.return_commands,
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}return_events: {:aby$}",
+            "{:aby$}return_events: {}",
             "",
             self.return_events,
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}return_params: {:aby$}",
+            "{:aby$}return_params: {}",
             "",
             self.return_params,
             aby = aby2
@@ -279,7 +284,12 @@ impl fmt::Display for GetSupportedDM<'_> {
             f,
             "{:aby$}obj_paths: [ {} ]",
             "",
-            self.obj_paths.join(", "),
+            self.obj_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -294,7 +304,7 @@ impl fmt::Display for GetSupportedProtocol<'_> {
         writeln!(f, "{:aby$}GetSupportedProtocol: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}controller_supported_protocol_versions: {:aby$}",
+            "{:aby$}controller_supported_protocol_versions: \"{}\"",
             "",
             self.controller_supported_protocol_versions,
             aby = aby2
@@ -310,24 +320,18 @@ impl fmt::Display for Operate<'_> {
         let aby3 = aby2 + INDENT;
 
         writeln!(f, "{:aby$}Operate: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}command: {:aby$}", "", self.command, aby = aby2)?;
+        writeln!(f, "{:aby$}command: \"{}\"", "", self.command, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}command_key: {:aby$}",
+            "{:aby$}command_key: \"{}\"",
             "",
             self.command_key,
             aby = aby2
         )?;
-        writeln!(
-            f,
-            "{:aby$}send_resp: {:aby$}",
-            "",
-            self.send_resp,
-            aby = aby2
-        )?;
+        writeln!(f, "{:aby$}send_resp: {}", "", self.send_resp, aby = aby2)?;
         writeln!(f, "{:aby$}input_args: {{", "", aby = aby2)?;
         for (k, v) in self.input_args.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -343,7 +347,7 @@ impl fmt::Display for Notify<'_> {
         writeln!(f, "{:aby$}Notify: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}subscription_id: {}",
+            "{:aby$}subscription_id: \"{}\"",
             "",
             self.subscription_id,
             aby = aby2
@@ -369,11 +373,17 @@ impl fmt::Display for mod_Notify::Event<'_> {
         let aby3 = aby2 + INDENT;
 
         writeln!(f, "{:aby$}Event: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
-        writeln!(f, "{:aby$}event_name: {}", "", self.event_name, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}event_name: \"{}\"",
+            "",
+            self.event_name,
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}params: {{", "", aby = aby2)?;
         for (k, v) in self.params.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -386,10 +396,16 @@ impl fmt::Display for mod_Notify::ValueChange<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}ValueChange: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}param_path: {}", "", self.param_path, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}param_value: {}",
+            "{:aby$}param_path: \"{}\"",
+            "",
+            self.param_path,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}param_value: \"{}\"",
             "",
             self.param_value,
             aby = aby2
@@ -405,10 +421,10 @@ impl fmt::Display for mod_Notify::ObjectCreation<'_> {
         let aby3 = aby2 + INDENT;
 
         writeln!(f, "{:aby$}ObjectCreation: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
         writeln!(f, "{:aby$}unique_keys: {{", "", aby = aby2)?;
         for (k, v) in self.unique_keys.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -421,7 +437,7 @@ impl fmt::Display for mod_Notify::ObjectDeletion<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}ObjectDeletion: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -434,15 +450,15 @@ impl fmt::Display for mod_Notify::OperationComplete<'_> {
         writeln!(f, "{:aby$}OperationComplete: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}command_name: {}",
+            "{:aby$}command_name: \"{}\"",
             "",
             self.command_name,
             aby = aby2
         )?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}command_key: {}",
+            "{:aby$}command_key: \"{}\"",
             "",
             self.command_key,
             aby = aby2
@@ -465,24 +481,24 @@ impl fmt::Display for mod_Notify::OnBoardRequest<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}OnBoardRequest: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}oui: {}", "", self.oui, aby = aby2)?;
+        writeln!(f, "{:aby$}oui: \"{}\"", "", self.oui, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}product_class: {}",
+            "{:aby$}product_class: \"{}\"",
             "",
             self.product_class,
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}serial_number: {}",
+            "{:aby$}serial_number: \"{}\"",
             "",
             self.serial_number,
             aby = aby2
         )?;
         writeln!(
             f,
-            "{:aby$}agent_supported_protocol_versions: {}",
+            "{:aby$}agent_supported_protocol_versions: \"{}\"",
             "",
             self.agent_supported_protocol_versions,
             aby = aby2
@@ -517,7 +533,7 @@ impl fmt::Display for mod_Set::UpdateObject<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}UpdateObject: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
         for ps in self.param_settings.iter() {
             write!(f, "{:aby$}", ps, aby = aby2)?;
         }
@@ -531,8 +547,8 @@ impl fmt::Display for mod_Set::UpdateParamSetting<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}UpdateParamSetting: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}param: {}", "", self.param, aby = aby2)?;
-        writeln!(f, "{:aby$}value: {}", "", self.value, aby = aby2)?;
+        writeln!(f, "{:aby$}param: \"{}\"", "", self.param, aby = aby2)?;
+        writeln!(f, "{:aby$}value: \"{}\"", "", self.value, aby = aby2)?;
         writeln!(f, "{:aby$}required: {}", "", self.required, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -564,7 +580,7 @@ impl fmt::Display for mod_Add::CreateObject<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}CreateObject: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}obj_path: {}", "", self.obj_path, aby = aby2)?;
+        writeln!(f, "{:aby$}obj_path: \"{}\"", "", self.obj_path, aby = aby2)?;
         for ps in self.param_settings.iter() {
             write!(f, "{:aby$}", ps, aby = aby2)?;
         }
@@ -578,8 +594,8 @@ impl fmt::Display for mod_Add::CreateParamSetting<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}CreateParamSetting: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}param: {}", "", self.param, aby = aby2)?;
-        writeln!(f, "{:aby$}value: {}", "", self.value, aby = aby2)?;
+        writeln!(f, "{:aby$}param: \"{}\"", "", self.param, aby = aby2)?;
+        writeln!(f, "{:aby$}value: \"{}\"", "", self.value, aby = aby2)?;
         writeln!(f, "{:aby$}required: {}", "", self.required, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -602,7 +618,12 @@ impl fmt::Display for Delete<'_> {
             f,
             "{:aby$}obj_paths: [ {} ]",
             "",
-            self.obj_paths.join(", "),
+            self.obj_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -626,7 +647,12 @@ impl fmt::Display for GetInstances<'_> {
             f,
             "{:aby$}obj_paths: [ {} ]",
             "",
-            self.obj_paths.join(", "),
+            self.obj_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -670,16 +696,16 @@ impl fmt::Display for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
         writeln!(f, "{:aby$}RequestedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}req_obj_path: {}",
+            "{:aby$}req_obj_path: \"{}\"",
             "",
             self.req_obj_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}data_model_inst_uri: {}",
+            "{:aby$}data_model_inst_uri: \"{}\"",
             "",
             self.data_model_inst_uri,
             aby = aby2
@@ -701,7 +727,7 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
         writeln!(f, "{:aby$}SupportedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}supported_obj_path: {}",
+            "{:aby$}supported_obj_path: \"{}\"",
             "",
             self.supported_obj_path,
             aby = aby2
@@ -736,19 +762,19 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
         writeln!(f, "{:aby$}SupportedCommandResult {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}command_name: {}",
+            "{:aby$}command_name: \"{}\"",
             "",
             self.command_name,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}input_arg_names: [", "", aby = aby2)?;
         for result in self.input_arg_names.iter() {
-            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\"", "", result, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
         writeln!(f, "{:aby$}output_arg_names: [", "", aby = aby2)?;
         for result in self.output_arg_names.iter() {
-            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\"", "", result, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -762,10 +788,16 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedEventResult<'_> {
         let aby3 = aby2 + INDENT;
 
         writeln!(f, "{:aby$}SupportedEventResult {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}event_name: {}", "", self.event_name, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}event_name: \"{}\"",
+            "",
+            self.event_name,
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}arg_names: [", "", aby = aby2)?;
         for result in self.arg_names.iter() {
-            writeln!(f, "{:aby$}{}", "", result, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\"", "", result, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -778,7 +810,13 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}SupportedParamResult {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}param_name: {}", "", self.param_name, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}param_name: \"{}\"",
+            "",
+            self.param_name,
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}access: {:#?}", "", self.access, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -806,13 +844,13 @@ impl fmt::Display for mod_GetInstancesResp::RequestedPathResult<'_> {
         writeln!(f, "{:aby$}RequestedPathResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}requested_path: {}",
+            "{:aby$}requested_path: \"{}\"",
             "",
             self.requested_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         for result in self.curr_insts.iter() {
             write!(f, "{:aby$}", result, aby = aby2)?;
         }
@@ -829,14 +867,14 @@ impl fmt::Display for mod_GetInstancesResp::CurrInstance<'_> {
         writeln!(f, "{:aby$}{{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}instantiated_obj_path: {}",
+            "{:aby$}instantiated_obj_path: \"{}\"",
             "",
             self.instantiated_obj_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}unique_keys: {{", "", aby = aby2)?;
         for (k, v) in self.unique_keys.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -864,7 +902,7 @@ impl fmt::Display for mod_SetResp::UpdatedObjectResult<'_> {
         writeln!(f, "{:aby$}UpdatedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}requested_path: {}",
+            "{:aby$}requested_path: \"{}\"",
             "",
             self.requested_path,
             aby = aby2
@@ -926,14 +964,14 @@ impl fmt::Display
         writeln!(f, "{:aby$}UpdatedInstanceResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}affected_path: {}",
+            "{:aby$}affected_path: \"{}\"",
             "",
             self.affected_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}updated_params: {{", "", aby = aby2)?;
         for (k, v) in self.updated_params.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         for r in self.param_errs.iter() {
             write!(f, "{:#aby$}", r, aby = aby3)?;
@@ -953,7 +991,7 @@ impl fmt::Display
 
         writeln!(f, "OperationFailure: {{")?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}updated_inst_results: [", "", aby = aby2)?;
         for r in self.updated_inst_failures.iter() {
             write!(f, "{:#aby$?}", r, aby = aby3)?;
@@ -973,7 +1011,7 @@ impl fmt::Display
         writeln!(f, "{:aby$}ParameterError: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}param: {}", "", self.param, aby = aby2)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -1001,14 +1039,14 @@ impl fmt::Display for mod_OperateResp::OperationResult<'_> {
         writeln!(f, "{:aby$}OperationResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}executed_command: {}",
+            "{:aby$}executed_command: \"{}\"",
             "",
             self.executed_command,
             aby = aby2
         )?;
-        write!(f, "{:aby$}operation_resp: ", "", aby = aby2)?;
+        writeln!(f, "{:aby$}operation_resp: ", "", aby = aby2)?;
         match &self.operation_resp {
-            req_obj_path(ref m) => writeln!(f, "{}", m),
+            req_obj_path(ref m) => writeln!(f, "\"{}\"", m),
             req_output_args(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             cmd_failure(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             None => Ok(()),
@@ -1024,7 +1062,7 @@ impl fmt::Display for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
 
         writeln!(f, "OutputArgs: {{")?;
         for (k, v) in self.output_args.iter() {
-            writeln!(f, "{:aby$}{} : {}", "", k, v, aby = aby2)?;
+            writeln!(f, "{:aby$}\"{}\" : \"{}\"", "", k, v, aby = aby2)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -1037,7 +1075,7 @@ impl fmt::Display for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
 
         writeln!(f, "{:aby$}CommandFailure: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -1050,7 +1088,7 @@ impl fmt::Display for NotifyResp<'_> {
         writeln!(f, "{:aby$}NotifyResp: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}subscription_id: {}",
+            "{:aby$}subscription_id: \"{}\"",
             "",
             self.subscription_id,
             aby = aby2
@@ -1083,7 +1121,7 @@ impl fmt::Display for mod_DeleteResp::DeletedObjectResult<'_> {
         writeln!(f, "{:aby$}DeletedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}requested_path: {}",
+            "{:aby$}requested_path: \"{}\"",
             "",
             self.requested_path,
             aby = aby2
@@ -1129,7 +1167,12 @@ impl fmt::Display
             f,
             "{:aby$}affected_path: [ {} ]",
             "",
-            self.affected_paths.join(", "),
+            self.affected_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}unaffected_path_errs: [", "", aby = aby2)?;
@@ -1151,7 +1194,7 @@ impl fmt::Display
         writeln!(f)?;
         writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -1165,10 +1208,10 @@ impl fmt::Display
 
         writeln!(f, "{:aby$}UnaffectedPathError: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(
             f,
-            "{:aby$}unaffected_path: {}",
+            "{:aby$}unaffected_path: \"{}\"",
             "",
             self.unaffected_path,
             aby = aby2
@@ -1185,13 +1228,13 @@ impl fmt::Display for mod_GetResp::RequestedPathResult<'_> {
         writeln!(f, "{:aby$}RequestedPathResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}requested_path: {}",
+            "{:aby$}requested_path: \"{}\"",
             "",
             self.requested_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         for result in self.resolved_path_results.iter() {
             write!(f, "{:aby$}", result, aby = aby2)?;
         }
@@ -1208,14 +1251,14 @@ impl fmt::Display for mod_GetResp::ResolvedPathResult<'_> {
         writeln!(f, "{:aby$}ResolvedPathResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}resolved_path: {}",
+            "{:aby$}resolved_path: \"{}\"",
             "",
             self.resolved_path,
             aby = aby2
         )?;
         writeln!(f, "{:aby$}result_params: {{", "", aby = aby2)?;
         for (k, v) in self.result_params.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1243,7 +1286,7 @@ impl fmt::Display for mod_AddResp::CreatedObjectResult<'_> {
         writeln!(f, "{:aby$}CreatedObjectResult: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}requested_path: {}",
+            "{:aby$}requested_path: \"{}\"",
             "",
             self.requested_path,
             aby = aby2
@@ -1285,7 +1328,7 @@ impl fmt::Display
 
         writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -1302,7 +1345,7 @@ impl fmt::Display
         writeln!(f, "{:aby$}OperationSuccess: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}instantiated_path: {}",
+            "{:aby$}instantiated_path: \"{}\"",
             "",
             self.instantiated_path,
             aby = aby2
@@ -1314,7 +1357,7 @@ impl fmt::Display
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
         writeln!(f, "{:aby$}unique_keys: {{", "", aby = aby2)?;
         for (k, v) in self.unique_keys.iter() {
-            writeln!(f, "{:aby$}{}: {}", "", k, v, aby = aby3)?;
+            writeln!(f, "{:aby$}\"{}\": \"{}\"", "", k, v, aby = aby3)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1329,9 +1372,9 @@ impl fmt::Display
         let aby2 = aby + INDENT;
 
         writeln!(f, "{:aby$}ParameterError: {{", "", aby = aby)?;
-        writeln!(f, "{:aby$}param: {}", "", self.param, aby = aby2)?;
+        writeln!(f, "{:aby$}param: \"{}\"", "", self.param, aby = aby2)?;
         writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
-        writeln!(f, "{:aby$}err_msg: {}", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
