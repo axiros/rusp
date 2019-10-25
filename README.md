@@ -22,6 +22,7 @@ The toolkit includes:
   * Higher level access to serialisation/deserialisation functionality
   * Convenience functions to generate messages
   * Pretty printing of **USP** records and messages
+  * Serde serialization of **USP** records and messages
   * Unittests and documentation (including doctests/examples)
 * A **rusp** binary granting access to library functionality via command line. Included functionality at the moment are:
   * Decoding of **USP** Msg Protobuf bytestreams from standard input
@@ -66,7 +67,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.5.0"
+rusp = "0.6.0"
 quick-protobuf = "0.6.3"
 
 ...
