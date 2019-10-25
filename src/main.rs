@@ -1,5 +1,3 @@
-use quick_protobuf;
-use serde_json;
 use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
@@ -356,7 +354,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             args,
         } => {
             let args = args.join(" ");
-            let v = if args.len() > 0 {
+            let v = if !args.is_empty() {
                 serde_json::from_str::<Vec<(&str, &str)>>(&args).map_err(|e| {
                     format!(
                         "Please provide an appropriate JSON datastructure, got '{}': {}",
