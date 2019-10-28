@@ -31,13 +31,13 @@ mod tests {
   "mac_signature": [],
   "sender_cert": [],
   "payload": {
-    "header": {
+    "Header": {
       "msg_id": "test",
       "msg_type": "NOTIFY"
     },
-    "body": {
-      "request": {
-        "notify": {
+    "Body": {
+      "Request": {
+        "Notify": {
           "subscription_id": "subscription_id",
           "send_resp": false,
           "on_board_req": {
@@ -87,13 +87,13 @@ mod tests {
   "mac_signature": [],
   "sender_cert": [],
   "payload": {
-    "header": {
+    "Header": {
       "msg_id": "AXSS-1544114083.761508",
       "msg_type": "ADD"
     },
-    "body": {
-      "request": {
-        "add": {
+    "Body": {
+      "Request": {
+        "Add": {
           "allow_partial": true,
           "create_objs": [
             {
@@ -150,13 +150,13 @@ mod tests {
   "mac_signature": [],
   "sender_cert": [],
   "payload": {
-    "header": {
+    "Header": {
       "msg_id": "AXSS-1544114102.668439",
       "msg_type": "DELETE"
     },
-    "body": {
-      "request": {
-        "delete": {
+    "Body": {
+      "Request": {
+        "Delete": {
           "allow_partial": true,
           "obj_paths": [
             "Device.LocalAgent.MTP.1.WebSocket."
@@ -200,13 +200,13 @@ mod tests {
   "mac_signature": [],
   "sender_cert": [],
   "payload": {
-    "header": {
+    "Header": {
       "msg_id": "AXSS-1544114045.442596",
       "msg_type": "GET"
     },
-    "body": {
-      "request": {
-        "get": {
+    "Body": {
+      "Request": {
+        "Get": {
           "param_paths": [
             "Device.LocalAgent.MTP.1.WebSocket."
           ]
