@@ -99,8 +99,10 @@ enum Rusp {
 }
 
 #[derive(StructOpt, Debug)]
+#[structopt(rename_all = "verbatim")]
 enum MsgType {
     /// Generate an USP Add request message
+    #[structopt(name = "Add")]
     USPAdd {
         /// Do we allow partial execution?
         allow_partial: Bool,
@@ -111,6 +113,7 @@ enum MsgType {
         args: Vec<String>,
     },
     /// Generate an USP Delete request message
+    #[structopt(name = "Delete")]
     USPDelete {
         /// Do we allow partial execution?
         allow_partial: Bool,
@@ -121,6 +124,7 @@ enum MsgType {
         obj_paths: Vec<String>,
     },
     /// Generate an USP Error message
+    #[structopt(name = "Error")]
     USPError {
         /// The USP error code (MUST be between 7000 and 7999)
         code: u32,
@@ -129,18 +133,21 @@ enum MsgType {
         message: Option<String>,
     },
     /// Generate an USP Get request message
+    #[structopt(name = "Get")]
     USPGet {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[structopt(multiple = true)]
         paths: Vec<String>,
     },
     /// Generate an USP GetResp response message
+    #[structopt(name = "GetResp")]
     USPGetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
         #[structopt(multiple = true)]
         result: Vec<String>,
     },
     /// Generate an USP GetInstances request message
+    #[structopt(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
         first_level_only: Bool,
@@ -151,6 +158,7 @@ enum MsgType {
         obj_paths: Vec<String>,
     },
     /// Generate an USP GetSupportedDM request message
+    #[structopt(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
         first_level_only: Bool,
@@ -167,11 +175,13 @@ enum MsgType {
         paths: Vec<String>,
     },
     /// Generate an USP GetSupportedProtocol request message
+    #[structopt(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
         cspv: String,
     },
     /// Generate an USP Notify request message
+    #[structopt(name = "Notify")]
     USPNotify {
         /// Subscription ID
         sub_id: String,
@@ -182,11 +192,13 @@ enum MsgType {
         typ: NotifyType,
     },
     /// Generate an USP Notify response message
+    #[structopt(name = "NotifyResp")]
     USPNotifyResp {
         /// Subscription ID
         sub_id: String,
     },
     /// Generate an USP Operate request message
+    #[structopt(name = "Operate")]
     USPOperate {
         /// The full pathname of of the command to execute
         command: String,
@@ -199,6 +211,7 @@ enum MsgType {
         args: Vec<String>,
     },
     /// Generate an USP Set request message
+    #[structopt(name = "Set")]
     USPSet {
         /// Do we allow partial execution?
         allow_partial: Bool,
