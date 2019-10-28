@@ -110,6 +110,16 @@ enum MsgType {
         #[structopt(multiple = true)]
         args: Vec<String>,
     },
+    /// Generate an USP Delete request message
+    USPDelete {
+        /// Do we allow partial execution?
+        allow_partial: Bool,
+        /// A JSON structure resesembling the input for a Delete operation
+        ///
+        /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
+        #[structopt(multiple = true)]
+        obj_paths: Vec<String>,
+    },
     /// Generate an USP Error message
     USPError {
         /// The USP error code (MUST be between 7000 and 7999)
@@ -268,6 +278,23 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
                     .map(|(path, par)| (*path, par.as_slice()))
                     .collect::<Vec<_>>()
                     .as_slice(),
+            ))
+        }
+        MsgType::USPDelete {
+            allow_partial,
+            obj_paths,
+        } => {
+            let obj_paths = obj_paths.join(" ");
+            let obj_paths = serde_json::from_str::<Vec<&str>>(&obj_paths).map_err(|e| {
+                format!(
+                    "Please provide an appropriate JSON datastructure, got '{}': {}",
+                    obj_paths.trim(),
+                    e
+                )
+            })?;
+            serialize_into_vec(&usp_generator::usp_delete_request(
+                allow_partial,
+                &obj_paths,
             ))
         }
         MsgType::USPError { code, message } => {

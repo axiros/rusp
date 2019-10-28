@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::usp::{
-    Add, Body, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg, Notify,
-    Operate, Request, Response, Set,
+    Add, Body, Delete, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg,
+    Notify, Operate, Request, Response, Set,
 };
 use crate::usp_record::Record;
 use crate::usp_types::NotifyType;
@@ -221,6 +221,38 @@ pub fn usp_add_request<'a>(
         }),
     }
 }
+
+/// Generates a body of a USP Msg with a USP Delete request
+///
+/// # Arguments
+///
+/// * `allow_partial` - A boolean indicating whether partial execution of the Set command is permitted
+/// * `obj_paths` - An array of paths specifying the objects to delete
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_delete_request;
+/// let req = usp_delete_request(true, &["Device.XMPP.Connection.1."]);
+/// ```
+pub fn usp_delete_request<'a>(allow_partial: bool, obj_paths: &[&'a str]) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+
+    Body {
+        msg_body: request({
+            Request {
+                req_type: delete({
+                    Delete {
+                        allow_partial,
+                        obj_paths: obj_paths.iter().map(|e| Cow::Borrowed(*e)).collect(),
+                    }
+                }),
+            }
+        }),
+    }
+}
+
 /// Generates a body of a USP Msg with a USP Set request
 ///
 /// # Arguments

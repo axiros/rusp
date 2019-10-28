@@ -39,11 +39,14 @@ The toolkit includes:
 **rusp** includes a binary with the same name demonstrating some of the uses.
 
 At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode USP
+* **Add**
+* **Delete**
 * **Error**
 * **Get**
 * **GetInstances**
 * **GetResp**
 * **GetSupportedDM**
+* **GetSupportedProtocol**
 * **Notify**
 * **NotifyResp**
 * **Operate**
