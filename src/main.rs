@@ -10,8 +10,6 @@ use rusp::{
     usp_types::NotifyType,
 };
 
-type Bool = bool;
-
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
 enum Rusp {
@@ -105,7 +103,8 @@ enum MsgType {
     #[structopt(name = "Add")]
     USPAdd {
         /// Do we allow partial execution?
-        allow_partial: Bool,
+        #[structopt(parse(try_from_str))]
+        allow_partial: bool,
         /// A JSON structure resesembling the input for a Add operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
@@ -116,7 +115,8 @@ enum MsgType {
     #[structopt(name = "Delete")]
     USPDelete {
         /// Do we allow partial execution?
-        allow_partial: Bool,
+        #[structopt(parse(try_from_str))]
+        allow_partial: bool,
         /// A JSON structure resesembling the input for a Delete operation
         ///
         /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
@@ -150,7 +150,8 @@ enum MsgType {
     #[structopt(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
-        first_level_only: Bool,
+        #[structopt(parse(try_from_str))]
+        first_level_only: bool,
         /// A JSON array ressembling the object paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
@@ -161,13 +162,17 @@ enum MsgType {
     #[structopt(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
-        first_level_only: Bool,
+        #[structopt(parse(try_from_str))]
+        first_level_only: bool,
         /// Return commands?
-        return_commands: Bool,
+        #[structopt(parse(try_from_str))]
+        return_commands: bool,
         /// Return events?
-        return_events: Bool,
+        #[structopt(parse(try_from_str))]
+        return_events: bool,
         /// Return parameters?
-        return_params: Bool,
+        #[structopt(parse(try_from_str))]
+        return_params: bool,
         /// A JSON array ressembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
@@ -186,7 +191,8 @@ enum MsgType {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a response?
-        send_resp: Bool,
+        #[structopt(parse(try_from_str))]
+        send_resp: bool,
         /// Type of notification
         #[structopt(subcommand)]
         typ: NotifyType,
@@ -205,7 +211,8 @@ enum MsgType {
         /// * The command key to use in the request to allow later matching with a result
         command_key: String,
         /// A boolean indicating whether a response is expected in reply to this request
-        send_resp: Bool,
+        #[structopt(parse(try_from_str))]
+        send_resp: bool,
         /// A JSON array of arrays containing the command input arguments with path names and values
         #[structopt(multiple = true)]
         args: Vec<String>,
@@ -214,7 +221,8 @@ enum MsgType {
     #[structopt(name = "Set")]
     USPSet {
         /// Do we allow partial execution?
-        allow_partial: Bool,
+        #[structopt(parse(try_from_str))]
+        allow_partial: bool,
         /// A JSON structure resesembling the input for a Set operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
