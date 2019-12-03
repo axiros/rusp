@@ -75,12 +75,12 @@ impl<'a> MessageRead<'a> for Header<'a> {
 impl<'a> MessageWrite for Header<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.msg_id == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.msg_id).len()) }
+        + if self.msg_id == "" { 0 } else { 1 + sizeof_len((&self.msg_id).len()) }
         + if self.msg_type == usp::mod_Header::MsgType::ERROR { 0 } else { 1 + sizeof_varint(*(&self.msg_type) as u64) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.msg_id != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.msg_id))?; }
+        if self.msg_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.msg_id))?; }
         if self.msg_type != usp::mod_Header::MsgType::ERROR { w.write_with_tag(16, |w| w.write_enum(*&self.msg_type as i32))?; }
         Ok(())
     }
@@ -429,13 +429,13 @@ impl<'a> MessageWrite for Error<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.param_errs { w.write_with_tag(26, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -472,15 +472,15 @@ impl<'a> MessageRead<'a> for ParamError<'a> {
 impl<'a> MessageWrite for ParamError<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param_path).len()) }
+        + if self.param_path == "" { 0 } else { 1 + sizeof_len((&self.param_path).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
+        if self.param_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -583,16 +583,16 @@ impl<'a> MessageRead<'a> for RequestedPathResult<'a> {
 impl<'a> MessageWrite for RequestedPathResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.requested_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
         + self.resolved_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.requested_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.resolved_path_results { w.write_with_tag(34, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -625,12 +625,12 @@ impl<'a> MessageRead<'a> for ResolvedPathResult<'a> {
 impl<'a> MessageWrite for ResolvedPathResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.resolved_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.resolved_path).len()) }
+        + if self.resolved_path == "" { 0 } else { 1 + sizeof_len((&self.resolved_path).len()) }
         + self.result_params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.resolved_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.resolved_path))?; }
+        if self.resolved_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.resolved_path))?; }
         for (k, v) in self.result_params.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -751,18 +751,18 @@ impl<'a> MessageRead<'a> for RequestedObjectResult<'a> {
 impl<'a> MessageWrite for RequestedObjectResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.req_obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.req_obj_path).len()) }
+        + if self.req_obj_path == "" { 0 } else { 1 + sizeof_len((&self.req_obj_path).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
-        + if self.data_model_inst_uri == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.data_model_inst_uri).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.data_model_inst_uri == "" { 0 } else { 1 + sizeof_len((&self.data_model_inst_uri).len()) }
         + self.supported_objs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.req_obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.req_obj_path))?; }
+        if self.req_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.req_obj_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
-        if self.data_model_inst_uri != Cow::Borrowed("") { w.write_with_tag(34, |w| w.write_string(&**&self.data_model_inst_uri))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.data_model_inst_uri != "" { w.write_with_tag(34, |w| w.write_string(&**&self.data_model_inst_uri))?; }
         for s in &self.supported_objs { w.write_with_tag(42, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -800,7 +800,7 @@ impl<'a> MessageRead<'a> for SupportedObjectResult<'a> {
 impl<'a> MessageWrite for SupportedObjectResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.supported_obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.supported_obj_path).len()) }
+        + if self.supported_obj_path == "" { 0 } else { 1 + sizeof_len((&self.supported_obj_path).len()) }
         + if self.access == usp::mod_GetSupportedDMResp::ObjAccessType::OBJ_READ_ONLY { 0 } else { 1 + sizeof_varint(*(&self.access) as u64) }
         + if self.is_multi_instance == false { 0 } else { 1 + sizeof_varint(*(&self.is_multi_instance) as u64) }
         + self.supported_commands.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
@@ -809,7 +809,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.supported_obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.supported_obj_path))?; }
+        if self.supported_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.supported_obj_path))?; }
         if self.access != usp::mod_GetSupportedDMResp::ObjAccessType::OBJ_READ_ONLY { w.write_with_tag(16, |w| w.write_enum(*&self.access as i32))?; }
         if self.is_multi_instance != false { w.write_with_tag(24, |w| w.write_bool(*&self.is_multi_instance))?; }
         for s in &self.supported_commands { w.write_with_tag(34, |w| w.write_message(s))?; }
@@ -843,12 +843,12 @@ impl<'a> MessageRead<'a> for SupportedParamResult<'a> {
 impl<'a> MessageWrite for SupportedParamResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param_name == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param_name).len()) }
+        + if self.param_name == "" { 0 } else { 1 + sizeof_len((&self.param_name).len()) }
         + if self.access == usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { 0 } else { 1 + sizeof_varint(*(&self.access) as u64) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param_name != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param_name))?; }
+        if self.param_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_name))?; }
         if self.access != usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { w.write_with_tag(16, |w| w.write_enum(*&self.access as i32))?; }
         Ok(())
     }
@@ -880,13 +880,13 @@ impl<'a> MessageRead<'a> for SupportedCommandResult<'a> {
 impl<'a> MessageWrite for SupportedCommandResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.command_name == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.command_name).len()) }
+        + if self.command_name == "" { 0 } else { 1 + sizeof_len((&self.command_name).len()) }
         + self.input_arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
         + self.output_arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.command_name != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.command_name))?; }
+        if self.command_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.command_name))?; }
         for s in &self.input_arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         for s in &self.output_arg_names { w.write_with_tag(26, |w| w.write_string(&**s))?; }
         Ok(())
@@ -917,12 +917,12 @@ impl<'a> MessageRead<'a> for SupportedEventResult<'a> {
 impl<'a> MessageWrite for SupportedEventResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.event_name == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.event_name).len()) }
+        + if self.event_name == "" { 0 } else { 1 + sizeof_len((&self.event_name).len()) }
         + self.arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.event_name != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.event_name))?; }
+        if self.event_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.event_name))?; }
         for s in &self.arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         Ok(())
     }
@@ -1103,16 +1103,16 @@ impl<'a> MessageRead<'a> for RequestedPathResult<'a> {
 impl<'a> MessageWrite for RequestedPathResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.requested_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
         + self.curr_insts.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.requested_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.curr_insts { w.write_with_tag(34, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1145,12 +1145,12 @@ impl<'a> MessageRead<'a> for CurrInstance<'a> {
 impl<'a> MessageWrite for CurrInstance<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.instantiated_obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.instantiated_obj_path).len()) }
+        + if self.instantiated_obj_path == "" { 0 } else { 1 + sizeof_len((&self.instantiated_obj_path).len()) }
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.instantiated_obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_obj_path))?; }
+        if self.instantiated_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_obj_path))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -1180,11 +1180,11 @@ impl<'a> MessageRead<'a> for GetSupportedProtocol<'a> {
 impl<'a> MessageWrite for GetSupportedProtocol<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.controller_supported_protocol_versions == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.controller_supported_protocol_versions).len()) }
+        + if self.controller_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.controller_supported_protocol_versions).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.controller_supported_protocol_versions != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.controller_supported_protocol_versions))?; }
+        if self.controller_supported_protocol_versions != "" { w.write_with_tag(10, |w| w.write_string(&**&self.controller_supported_protocol_versions))?; }
         Ok(())
     }
 }
@@ -1211,11 +1211,11 @@ impl<'a> MessageRead<'a> for GetSupportedProtocolResp<'a> {
 impl<'a> MessageWrite for GetSupportedProtocolResp<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.agent_supported_protocol_versions == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
+        + if self.agent_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.agent_supported_protocol_versions != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.agent_supported_protocol_versions))?; }
+        if self.agent_supported_protocol_versions != "" { w.write_with_tag(10, |w| w.write_string(&**&self.agent_supported_protocol_versions))?; }
         Ok(())
     }
 }
@@ -1284,12 +1284,12 @@ impl<'a> MessageRead<'a> for CreateObject<'a> {
 impl<'a> MessageWrite for CreateObject<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
         + self.param_settings.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for s in &self.param_settings { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1321,14 +1321,14 @@ impl<'a> MessageRead<'a> for CreateParamSetting<'a> {
 impl<'a> MessageWrite for CreateParamSetting<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param).len()) }
-        + if self.value == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.value).len()) }
+        + if self.param == "" { 0 } else { 1 + sizeof_len((&self.param).len()) }
+        + if self.value == "" { 0 } else { 1 + sizeof_len((&self.value).len()) }
         + if self.required == false { 0 } else { 1 + sizeof_varint(*(&self.required) as u64) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
-        if self.value != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
+        if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
+        if self.value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
         if self.required != false { w.write_with_tag(24, |w| w.write_bool(*&self.required))?; }
         Ok(())
     }
@@ -1396,12 +1396,12 @@ impl<'a> MessageRead<'a> for CreatedObjectResult<'a> {
 impl<'a> MessageWrite for CreatedObjectResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.requested_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.requested_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1479,12 +1479,12 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -1518,13 +1518,13 @@ impl<'a> MessageRead<'a> for OperationSuccess<'a> {
 impl<'a> MessageWrite for OperationSuccess<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.instantiated_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.instantiated_path).len()) }
+        + if self.instantiated_path == "" { 0 } else { 1 + sizeof_len((&self.instantiated_path).len()) }
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.instantiated_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_path))?; }
+        if self.instantiated_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -1557,15 +1557,15 @@ impl<'a> MessageRead<'a> for ParameterError<'a> {
 impl<'a> MessageWrite for ParameterError<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param).len()) }
+        + if self.param == "" { 0 } else { 1 + sizeof_len((&self.param).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
+        if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -1684,12 +1684,12 @@ impl<'a> MessageRead<'a> for DeletedObjectResult<'a> {
 impl<'a> MessageWrite for DeletedObjectResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.requested_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.requested_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1766,12 +1766,12 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -1837,15 +1837,15 @@ impl<'a> MessageRead<'a> for UnaffectedPathError<'a> {
 impl<'a> MessageWrite for UnaffectedPathError<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.unaffected_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.unaffected_path).len()) }
+        + if self.unaffected_path == "" { 0 } else { 1 + sizeof_len((&self.unaffected_path).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.unaffected_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.unaffected_path))?; }
+        if self.unaffected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.unaffected_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -1933,12 +1933,12 @@ impl<'a> MessageRead<'a> for UpdateObject<'a> {
 impl<'a> MessageWrite for UpdateObject<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
         + self.param_settings.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for s in &self.param_settings { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1970,14 +1970,14 @@ impl<'a> MessageRead<'a> for UpdateParamSetting<'a> {
 impl<'a> MessageWrite for UpdateParamSetting<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param).len()) }
-        + if self.value == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.value).len()) }
+        + if self.param == "" { 0 } else { 1 + sizeof_len((&self.param).len()) }
+        + if self.value == "" { 0 } else { 1 + sizeof_len((&self.value).len()) }
         + if self.required == false { 0 } else { 1 + sizeof_varint(*(&self.required) as u64) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
-        if self.value != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
+        if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
+        if self.value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
         if self.required != false { w.write_with_tag(24, |w| w.write_bool(*&self.required))?; }
         Ok(())
     }
@@ -2045,12 +2045,12 @@ impl<'a> MessageRead<'a> for UpdatedObjectResult<'a> {
 impl<'a> MessageWrite for UpdatedObjectResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.requested_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.requested_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2130,13 +2130,13 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
         + self.updated_inst_failures.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.updated_inst_failures { w.write_with_tag(26, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2197,12 +2197,12 @@ impl<'a> MessageRead<'a> for UpdatedInstanceFailure<'a> {
 impl<'a> MessageWrite for UpdatedInstanceFailure<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.affected_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.affected_path).len()) }
+        + if self.affected_path == "" { 0 } else { 1 + sizeof_len((&self.affected_path).len()) }
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.affected_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
+        if self.affected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2237,13 +2237,13 @@ impl<'a> MessageRead<'a> for UpdatedInstanceResult<'a> {
 impl<'a> MessageWrite for UpdatedInstanceResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.affected_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.affected_path).len()) }
+        + if self.affected_path == "" { 0 } else { 1 + sizeof_len((&self.affected_path).len()) }
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.updated_params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.affected_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
+        if self.affected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         for (k, v) in self.updated_params.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -2276,15 +2276,15 @@ impl<'a> MessageRead<'a> for ParameterError<'a> {
 impl<'a> MessageWrite for ParameterError<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param).len()) }
+        + if self.param == "" { 0 } else { 1 + sizeof_len((&self.param).len()) }
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
+        if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -2339,15 +2339,15 @@ impl<'a> MessageRead<'a> for Operate<'a> {
 impl<'a> MessageWrite for Operate<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.command == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.command).len()) }
-        + if self.command_key == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.command_key).len()) }
+        + if self.command == "" { 0 } else { 1 + sizeof_len((&self.command).len()) }
+        + if self.command_key == "" { 0 } else { 1 + sizeof_len((&self.command_key).len()) }
         + if self.send_resp == false { 0 } else { 1 + sizeof_varint(*(&self.send_resp) as u64) }
         + self.input_args.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.command != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.command))?; }
-        if self.command_key != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.command_key))?; }
+        if self.command != "" { w.write_with_tag(10, |w| w.write_string(&**&self.command))?; }
+        if self.command_key != "" { w.write_with_tag(18, |w| w.write_string(&**&self.command_key))?; }
         if self.send_resp != false { w.write_with_tag(24, |w| w.write_bool(*&self.send_resp))?; }
         for (k, v) in self.input_args.iter() { w.write_with_tag(34, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -2416,7 +2416,7 @@ impl<'a> MessageRead<'a> for OperationResult<'a> {
 impl<'a> MessageWrite for OperationResult<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.executed_command == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.executed_command).len()) }
+        + if self.executed_command == "" { 0 } else { 1 + sizeof_len((&self.executed_command).len()) }
         + match self.operation_resp {
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_obj_path(ref m) => 1 + sizeof_len((m).len()),
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_output_args(ref m) => 1 + sizeof_len((m).get_size()),
@@ -2425,7 +2425,7 @@ impl<'a> MessageWrite for OperationResult<'a> {
     }    }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.executed_command != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.executed_command))?; }
+        if self.executed_command != "" { w.write_with_tag(10, |w| w.write_string(&**&self.executed_command))?; }
         match self.operation_resp {            usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_obj_path(ref m) => { w.write_with_tag(18, |w| w.write_string(&**m))? },
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_output_args(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::cmd_failure(ref m) => { w.write_with_tag(34, |w| w.write_message(m))? },
@@ -2499,12 +2499,12 @@ impl<'a> MessageWrite for CommandFailure<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -2558,7 +2558,7 @@ impl<'a> MessageRead<'a> for Notify<'a> {
 impl<'a> MessageWrite for Notify<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.subscription_id == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.subscription_id).len()) }
+        + if self.subscription_id == "" { 0 } else { 1 + sizeof_len((&self.subscription_id).len()) }
         + if self.send_resp == false { 0 } else { 1 + sizeof_varint(*(&self.send_resp) as u64) }
         + match self.notification {
             usp::mod_Notify::OneOfnotification::event(ref m) => 1 + sizeof_len((m).get_size()),
@@ -2571,7 +2571,7 @@ impl<'a> MessageWrite for Notify<'a> {
     }    }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.subscription_id != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
+        if self.subscription_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
         if self.send_resp != false { w.write_with_tag(16, |w| w.write_bool(*&self.send_resp))?; }
         match self.notification {            usp::mod_Notify::OneOfnotification::event(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
             usp::mod_Notify::OneOfnotification::value_change(ref m) => { w.write_with_tag(34, |w| w.write_message(m))? },
@@ -2619,14 +2619,14 @@ impl<'a> MessageRead<'a> for Event<'a> {
 impl<'a> MessageWrite for Event<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
-        + if self.event_name == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.event_name).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.event_name == "" { 0 } else { 1 + sizeof_len((&self.event_name).len()) }
         + self.params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
-        if self.event_name != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.event_name))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.event_name != "" { w.write_with_tag(18, |w| w.write_string(&**&self.event_name))?; }
         for (k, v) in self.params.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -2656,13 +2656,13 @@ impl<'a> MessageRead<'a> for ValueChange<'a> {
 impl<'a> MessageWrite for ValueChange<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.param_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param_path).len()) }
-        + if self.param_value == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.param_value).len()) }
+        + if self.param_path == "" { 0 } else { 1 + sizeof_len((&self.param_path).len()) }
+        + if self.param_value == "" { 0 } else { 1 + sizeof_len((&self.param_value).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.param_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
-        if self.param_value != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.param_value))?; }
+        if self.param_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
+        if self.param_value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.param_value))?; }
         Ok(())
     }
 }
@@ -2694,12 +2694,12 @@ impl<'a> MessageRead<'a> for ObjectCreation<'a> {
 impl<'a> MessageWrite for ObjectCreation<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -2727,11 +2727,11 @@ impl<'a> MessageRead<'a> for ObjectDeletion<'a> {
 impl<'a> MessageWrite for ObjectDeletion<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         Ok(())
     }
 }
@@ -2765,9 +2765,9 @@ impl<'a> MessageRead<'a> for OperationComplete<'a> {
 impl<'a> MessageWrite for OperationComplete<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.obj_path == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
-        + if self.command_name == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.command_name).len()) }
-        + if self.command_key == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.command_key).len()) }
+        + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
+        + if self.command_name == "" { 0 } else { 1 + sizeof_len((&self.command_name).len()) }
+        + if self.command_key == "" { 0 } else { 1 + sizeof_len((&self.command_key).len()) }
         + match self.operation_resp {
             usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::req_output_args(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::cmd_failure(ref m) => 1 + sizeof_len((m).get_size()),
@@ -2775,9 +2775,9 @@ impl<'a> MessageWrite for OperationComplete<'a> {
     }    }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.obj_path != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
-        if self.command_name != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.command_name))?; }
-        if self.command_key != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.command_key))?; }
+        if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
+        if self.command_name != "" { w.write_with_tag(18, |w| w.write_string(&**&self.command_name))?; }
+        if self.command_key != "" { w.write_with_tag(26, |w| w.write_string(&**&self.command_key))?; }
         match self.operation_resp {            usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::req_output_args(ref m) => { w.write_with_tag(34, |w| w.write_message(m))? },
             usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::cmd_failure(ref m) => { w.write_with_tag(42, |w| w.write_message(m))? },
             usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::None => {},
@@ -2850,12 +2850,12 @@ impl<'a> MessageWrite for CommandFailure<'a> {
     fn get_size(&self) -> usize {
         0
         + if self.err_code == 0u32 { 0 } else { 1 + 4 }
-        + if self.err_msg == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
-        if self.err_msg != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
     }
 }
@@ -2903,17 +2903,17 @@ impl<'a> MessageRead<'a> for OnBoardRequest<'a> {
 impl<'a> MessageWrite for OnBoardRequest<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.oui == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.oui).len()) }
-        + if self.product_class == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.product_class).len()) }
-        + if self.serial_number == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.serial_number).len()) }
-        + if self.agent_supported_protocol_versions == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
+        + if self.oui == "" { 0 } else { 1 + sizeof_len((&self.oui).len()) }
+        + if self.product_class == "" { 0 } else { 1 + sizeof_len((&self.product_class).len()) }
+        + if self.serial_number == "" { 0 } else { 1 + sizeof_len((&self.serial_number).len()) }
+        + if self.agent_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.oui != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.oui))?; }
-        if self.product_class != Cow::Borrowed("") { w.write_with_tag(18, |w| w.write_string(&**&self.product_class))?; }
-        if self.serial_number != Cow::Borrowed("") { w.write_with_tag(26, |w| w.write_string(&**&self.serial_number))?; }
-        if self.agent_supported_protocol_versions != Cow::Borrowed("") { w.write_with_tag(34, |w| w.write_string(&**&self.agent_supported_protocol_versions))?; }
+        if self.oui != "" { w.write_with_tag(10, |w| w.write_string(&**&self.oui))?; }
+        if self.product_class != "" { w.write_with_tag(18, |w| w.write_string(&**&self.product_class))?; }
+        if self.serial_number != "" { w.write_with_tag(26, |w| w.write_string(&**&self.serial_number))?; }
+        if self.agent_supported_protocol_versions != "" { w.write_with_tag(34, |w| w.write_string(&**&self.agent_supported_protocol_versions))?; }
         Ok(())
     }
 }
@@ -2959,11 +2959,11 @@ impl<'a> MessageRead<'a> for NotifyResp<'a> {
 impl<'a> MessageWrite for NotifyResp<'a> {
     fn get_size(&self) -> usize {
         0
-        + if self.subscription_id == Cow::Borrowed("") { 0 } else { 1 + sizeof_len((&self.subscription_id).len()) }
+        + if self.subscription_id == "" { 0 } else { 1 + sizeof_len((&self.subscription_id).len()) }
     }
 
     fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
-        if self.subscription_id != Cow::Borrowed("") { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
+        if self.subscription_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
         Ok(())
     }
 }
