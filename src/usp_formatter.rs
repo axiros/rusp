@@ -1,12 +1,12 @@
 use crate::usp::*;
 use crate::usp_record::*;
 
-use std::fmt;
+use std::fmt::{Display, Formatter, Result};
 
 const INDENT: usize = 2;
 
-impl fmt::Display for Record<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Record<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use crate::usp_decoder::*;
         use mod_Record::OneOfrecord_type::{no_session_context, session_context};
 
@@ -54,8 +54,8 @@ impl fmt::Display for Record<'_> {
     }
 }
 
-impl fmt::Display for SessionContextRecord<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for SessionContextRecord<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use crate::usp_decoder::*;
 
         let aby = f.width().unwrap_or(0);
@@ -120,8 +120,8 @@ impl fmt::Display for SessionContextRecord<'_> {
     }
 }
 
-impl fmt::Display for mod_Record::PayloadSecurity {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Record::PayloadSecurity {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -130,8 +130,8 @@ impl fmt::Display for mod_Record::PayloadSecurity {
     }
 }
 
-impl fmt::Display for Msg<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Msg<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         writeln!(f, "{:aby$}Msg {{", "", aby = aby)?;
@@ -145,8 +145,8 @@ impl fmt::Display for Msg<'_> {
     }
 }
 
-impl fmt::Display for Header<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Header<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -157,8 +157,8 @@ impl fmt::Display for Header<'_> {
     }
 }
 
-impl fmt::Display for mod_Header::MsgType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Header::MsgType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use mod_Header::MsgType::*;
 
         let aby = f.width().unwrap_or(0);
@@ -193,8 +193,8 @@ impl fmt::Display for mod_Header::MsgType {
     }
 }
 
-impl fmt::Display for Body<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Body<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use mod_Body::OneOfmsg_body::*;
 
         let aby = f.width().unwrap_or(0);
@@ -211,8 +211,8 @@ impl fmt::Display for Body<'_> {
     }
 }
 
-impl fmt::Display for Request<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Request<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use mod_Request::OneOfreq_type::*;
 
         let aby = f.width().unwrap_or(0);
@@ -235,8 +235,8 @@ impl fmt::Display for Request<'_> {
     }
 }
 
-impl fmt::Display for Response<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Response<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use mod_Response::OneOfresp_type::*;
 
         let aby = f.width().unwrap_or(0);
@@ -259,8 +259,8 @@ impl fmt::Display for Response<'_> {
     }
 }
 
-impl fmt::Display for Error<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Error<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -277,8 +277,8 @@ impl fmt::Display for Error<'_> {
     }
 }
 
-impl fmt::Display for mod_Error::ParamError<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Error::ParamError<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -287,8 +287,8 @@ impl fmt::Display for mod_Error::ParamError<'_> {
     }
 }
 
-impl fmt::Display for DeleteResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for DeleteResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -303,8 +303,8 @@ impl fmt::Display for DeleteResp<'_> {
     }
 }
 
-impl fmt::Display for Get<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Get<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
 
         writeln!(
@@ -322,8 +322,8 @@ impl fmt::Display for Get<'_> {
     }
 }
 
-impl fmt::Display for GetSupportedDM<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetSupportedDM<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -372,8 +372,8 @@ impl fmt::Display for GetSupportedDM<'_> {
     }
 }
 
-impl fmt::Display for GetSupportedProtocol<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetSupportedProtocol<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -389,8 +389,8 @@ impl fmt::Display for GetSupportedProtocol<'_> {
     }
 }
 
-impl fmt::Display for Operate<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Operate<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -414,8 +414,8 @@ impl fmt::Display for Operate<'_> {
     }
 }
 
-impl fmt::Display for Notify<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Notify<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         use mod_Notify::OneOfnotification::*;
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -442,8 +442,8 @@ impl fmt::Display for Notify<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::Event<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::Event<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -466,8 +466,8 @@ impl fmt::Display for mod_Notify::Event<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::ValueChange<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::ValueChange<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -490,8 +490,8 @@ impl fmt::Display for mod_Notify::ValueChange<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::ObjectCreation<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::ObjectCreation<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -507,8 +507,8 @@ impl fmt::Display for mod_Notify::ObjectCreation<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::ObjectDeletion<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::ObjectDeletion<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -518,8 +518,8 @@ impl fmt::Display for mod_Notify::ObjectDeletion<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::OperationComplete<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::OperationComplete<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -551,8 +551,8 @@ impl fmt::Display for mod_Notify::OperationComplete<'_> {
     }
 }
 
-impl fmt::Display for mod_Notify::OnBoardRequest<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Notify::OnBoardRequest<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -583,8 +583,8 @@ impl fmt::Display for mod_Notify::OnBoardRequest<'_> {
     }
 }
 
-impl fmt::Display for Set<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Set<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -603,8 +603,8 @@ impl fmt::Display for Set<'_> {
     }
 }
 
-impl fmt::Display for mod_Set::UpdateObject<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Set::UpdateObject<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -617,8 +617,8 @@ impl fmt::Display for mod_Set::UpdateObject<'_> {
     }
 }
 
-impl fmt::Display for mod_Set::UpdateParamSetting<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Set::UpdateParamSetting<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -630,8 +630,8 @@ impl fmt::Display for mod_Set::UpdateParamSetting<'_> {
     }
 }
 
-impl fmt::Display for Add<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Add<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -650,8 +650,8 @@ impl fmt::Display for Add<'_> {
     }
 }
 
-impl fmt::Display for mod_Add::CreateObject<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Add::CreateObject<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -664,8 +664,8 @@ impl fmt::Display for mod_Add::CreateObject<'_> {
     }
 }
 
-impl fmt::Display for mod_Add::CreateParamSetting<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_Add::CreateParamSetting<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -677,8 +677,8 @@ impl fmt::Display for mod_Add::CreateParamSetting<'_> {
     }
 }
 
-impl fmt::Display for Delete<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for Delete<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -706,8 +706,8 @@ impl fmt::Display for Delete<'_> {
     }
 }
 
-impl fmt::Display for GetInstances<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetInstances<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -735,8 +735,8 @@ impl fmt::Display for GetInstances<'_> {
     }
 }
 
-impl fmt::Display for GetResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -749,8 +749,8 @@ impl fmt::Display for GetResp<'_> {
     }
 }
 
-impl fmt::Display for GetSupportedDMResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetSupportedDMResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -763,8 +763,8 @@ impl fmt::Display for GetSupportedDMResp<'_> {
     }
 }
 
-impl fmt::Display for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -795,8 +795,8 @@ impl fmt::Display for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -829,8 +829,8 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -857,8 +857,8 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetSupportedDMResp::SupportedEventResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetSupportedDMResp::SupportedEventResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -880,8 +880,8 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedEventResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -898,8 +898,8 @@ impl fmt::Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
     }
 }
 
-impl fmt::Display for GetInstancesResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetInstancesResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -912,8 +912,8 @@ impl fmt::Display for GetInstancesResp<'_> {
     }
 }
 
-impl fmt::Display for mod_GetInstancesResp::RequestedPathResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetInstancesResp::RequestedPathResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -934,8 +934,8 @@ impl fmt::Display for mod_GetInstancesResp::RequestedPathResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetInstancesResp::CurrInstance<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetInstancesResp::CurrInstance<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -957,8 +957,8 @@ impl fmt::Display for mod_GetInstancesResp::CurrInstance<'_> {
     }
 }
 
-impl fmt::Display for SetResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for SetResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -970,8 +970,8 @@ impl fmt::Display for SetResp<'_> {
     }
 }
 
-impl fmt::Display for mod_SetResp::UpdatedObjectResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_SetResp::UpdatedObjectResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -994,27 +994,23 @@ impl fmt::Display for mod_SetResp::UpdatedObjectResult<'_> {
     }
 }
 
-impl fmt::Display for mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
         use mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::*;
 
         match &self.oper_status {
-            status => match status {
-                oper_success(ref m) => write!(f, "{:#aby$}", m, aby = aby),
-                oper_failure(ref m) => write!(f, "{:#aby$}", m, aby = aby),
-                None => writeln!(f, "{:aby$}None", "", aby = aby2),
-            },
+            oper_success(ref m) => write!(f, "{:#aby$}", m, aby = aby),
+            oper_failure(ref m) => write!(f, "{:#aby$}", m, aby = aby),
+            None => writeln!(f, "{:aby$}None", "", aby = aby2),
         }
     }
 }
 
-impl fmt::Display
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1029,10 +1025,10 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
+impl Display
     for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult<'_>
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1057,10 +1053,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1077,10 +1071,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1092,8 +1084,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display for OperateResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for OperateResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1105,8 +1097,8 @@ impl fmt::Display for OperateResp<'_> {
     }
 }
 
-impl fmt::Display for mod_OperateResp::OperationResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_OperateResp::OperationResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1131,8 +1123,8 @@ impl fmt::Display for mod_OperateResp::OperationResult<'_> {
     }
 }
 
-impl fmt::Display for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1144,8 +1136,8 @@ impl fmt::Display for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
     }
 }
 
-impl fmt::Display for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1156,8 +1148,8 @@ impl fmt::Display for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
     }
 }
 
-impl fmt::Display for NotifyResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for NotifyResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1173,8 +1165,8 @@ impl fmt::Display for NotifyResp<'_> {
     }
 }
 
-impl fmt::Display for GetSupportedProtocolResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for GetSupportedProtocolResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1189,8 +1181,8 @@ impl fmt::Display for GetSupportedProtocolResp<'_> {
     }
 }
 
-impl fmt::Display for mod_DeleteResp::DeletedObjectResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_DeleteResp::DeletedObjectResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1213,27 +1205,25 @@ impl fmt::Display for mod_DeleteResp::DeletedObjectResult<'_> {
     }
 }
 
-impl fmt::Display for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
         use mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status::*;
 
         match &self.oper_status {
-            status => match status {
-                oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
-                oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
-                None => writeln!(f, "{:aby$}None", "", aby = aby2),
-            },
+            oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            None => writeln!(f, "{:aby$}None", "", aby = aby2),
         }
     }
 }
 
-impl fmt::Display
+impl Display
     for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationSuccess<'_>
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1260,10 +1250,10 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
+impl Display
     for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationFailure<'_>
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1275,10 +1265,10 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
+impl Display
     for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::UnaffectedPathError<'_>
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1296,8 +1286,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display for mod_GetResp::RequestedPathResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetResp::RequestedPathResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1318,8 +1308,8 @@ impl fmt::Display for mod_GetResp::RequestedPathResult<'_> {
     }
 }
 
-impl fmt::Display for mod_GetResp::ResolvedPathResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_GetResp::ResolvedPathResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1341,8 +1331,8 @@ impl fmt::Display for mod_GetResp::ResolvedPathResult<'_> {
     }
 }
 
-impl fmt::Display for AddResp<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for AddResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1354,8 +1344,8 @@ impl fmt::Display for AddResp<'_> {
     }
 }
 
-impl fmt::Display for mod_AddResp::CreatedObjectResult<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_AddResp::CreatedObjectResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1378,27 +1368,23 @@ impl fmt::Display for mod_AddResp::CreatedObjectResult<'_> {
     }
 }
 
-impl fmt::Display for mod_AddResp::mod_CreatedObjectResult::OperationStatus<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_AddResp::mod_CreatedObjectResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
         use mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status::*;
 
         match &self.oper_status {
-            status => match status {
-                oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
-                oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
-                None => writeln!(f, "{:aby$}None", "", aby = aby2),
-            },
+            oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            None => writeln!(f, "{:aby$}None", "", aby = aby2),
         }
     }
 }
 
-impl fmt::Display
-    for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
@@ -1409,10 +1395,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
-    for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         let aby3 = aby2 + INDENT;
@@ -1440,10 +1424,8 @@ impl fmt::Display
     }
 }
 
-impl fmt::Display
-    for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'_>
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
