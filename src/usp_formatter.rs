@@ -63,8 +63,12 @@ impl fmt::Display for Msg<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
         writeln!(f, "{:aby$}Msg {{", "", aby = aby)?;
-        write!(f, "{:aby$}", self.header.clone().unwrap(), aby = aby2)?;
-        write!(f, "{:aby$}", self.body.clone().unwrap(), aby = aby2)?;
+        if let Some(header) = self.header.clone() {
+            write!(f, "{:aby$}", header, aby = aby2)?;
+        }
+        if let Some(body) = self.body.clone() {
+            write!(f, "{:aby$}", body, aby = aby2)?;
+        }
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
