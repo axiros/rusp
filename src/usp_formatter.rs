@@ -8,7 +8,7 @@ const INDENT: usize = 2;
 impl fmt::Display for Record<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use crate::usp_decoder::*;
-        use mod_Record::OneOfrecord_type::no_session_context;
+        use mod_Record::OneOfrecord_type::{no_session_context, session_context};
 
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -38,12 +38,84 @@ impl fmt::Display for Record<'_> {
             self.sender_cert,
             aby = aby2
         )?;
-        if let no_session_context(context) = &self.record_type {
-            write!(f, "{:aby$}", decode_msg(&context.payload), aby = aby2)?;
-        } else {
-            writeln!(f, "{:aby$}can't handle session_context!", "", aby = aby2)?;
-        };
+        match &self.record_type {
+            no_session_context(context) => {
+                write!(f, "{:aby$}", decode_msg(&context.payload), aby = aby2)?;
+            }
+            session_context(context) => {
+                write!(f, "{:aby$}", context, aby = aby2)?;
+            }
+            _ => {
+                writeln!(f, "{:aby$}unknown/unsupported record type!", "", aby = aby2)?;
+            }
+        }
 
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl fmt::Display for SessionContextRecord<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use crate::usp_decoder::*;
+
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}SessionContextRecord {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}session_id: \"{}\"",
+            "",
+            self.session_id,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}sequence_id: \"{}\"",
+            "",
+            self.sequence_id,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}expected_id: \"{}\"",
+            "",
+            self.expected_id,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}retransmit_id: \"{}\"",
+            "",
+            self.retransmit_id,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}payload_sar_state: \"{:?}\"",
+            "",
+            self.payload_sar_state,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}payloadrec_sar_state: \"{:?}\"",
+            "",
+            self.payloadrec_sar_state,
+            aby = aby2
+        )?;
+        write!(
+            f,
+            "{:aby$}",
+            decode_msg(
+                &self
+                    .payload
+                    .iter()
+                    .flat_map(|e| e.clone().into_owned())
+                    .collect::<Vec<u8>>()
+            ),
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
