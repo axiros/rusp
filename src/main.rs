@@ -560,9 +560,9 @@ fn wrap_msg_raw(
     let mut writer = Writer::new(&mut buf);
 
     usp_generator::usp_no_session_context_record(
-        version.as_ref().map(String::as_str).unwrap(),
-        from.as_ref().map(String::as_str).unwrap(),
-        to.as_ref().map(String::as_str).unwrap(),
+        version.as_deref().unwrap(),
+        from.as_deref().unwrap(),
+        to.as_deref().unwrap(),
         &msg,
     )
     .write_message(&mut writer)
