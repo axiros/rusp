@@ -491,7 +491,7 @@ pub fn usp_get_supported_dm_request<'a>(
 /// use rusp::usp_generator::usp_get_supported_prototol_request;
 /// let req = usp_get_supported_prototol_request("1.1");
 /// ```
-pub fn usp_get_supported_prototol_request<'a>(cspv: &'a str) -> Body<'a> {
+pub fn usp_get_supported_prototol_request(cspv: &str) -> Body {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
