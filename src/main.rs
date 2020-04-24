@@ -16,7 +16,7 @@ enum Rusp {
     /// Decode a single raw USP message from standard input and print to standard output
     #[structopt(name = "decode_msg")]
     DecodeMsg {},
-    /// Decode a multiple USP messages from specified filenames and print to standard output
+    /// Decode ore or more USP messages from specified filenames and print to standard output
     #[structopt(name = "decode_msg_files")]
     DecodeMsgFiles {
         #[structopt(parse(from_os_str), required = true)]
@@ -26,7 +26,7 @@ enum Rusp {
     /// Decode a single raw USP record from standard input and print to standard output
     #[structopt(name = "decode_record")]
     DecodeRecord {},
-    /// Decode a multiple USP records from specified filenames and print to standard output
+    /// Decode one or more USP records from specified filenames and print to standard output
     #[structopt(name = "decode_record_files")]
     DecodeRecordFiles {
         #[structopt(parse(from_os_str), required = true)]
