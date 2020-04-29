@@ -156,7 +156,7 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
 /// use rusp::usp_generator::usp_get_request;
 /// let req = usp_get_request(&["Device.", "Device.DeviceInfo."]);
 /// ```
-pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
+pub fn usp_get_request<'a, S: AsRef<str>>(params: &'a [S]) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -166,7 +166,7 @@ pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
                 req_type: get({
                     let mut getr = Get::default();
                     for path in params {
-                        getr.param_paths.push(Cow::Borrowed(path));
+                        getr.param_paths.push(Cow::Borrowed(path.as_ref()));
                     }
                     getr
                 }),
@@ -188,9 +188,9 @@ pub fn usp_get_request<'a>(params: &[&'a str]) -> Body<'a> {
 /// use rusp::usp_generator::usp_add_request;
 /// let req = usp_add_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
 /// ```
-pub fn usp_add_request<'a>(
+pub fn usp_add_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
-    args: &[(&'a str, &[(&'a str, &'a str, bool)])],
+    args: &'a [(S, V)],
 ) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
@@ -204,12 +204,12 @@ pub fn usp_add_request<'a>(
                     for (dir, pars) in args {
                         let mut obj: crate::usp::mod_Add::CreateObject =
                             crate::usp::mod_Add::CreateObject::default();
-                        obj.obj_path = std::borrow::Cow::Borrowed(dir);
-                        for par in *pars {
+                        obj.obj_path = std::borrow::Cow::Borrowed(dir.as_ref());
+                        for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Add::CreateParamSetting {
-                                    param: std::borrow::Cow::Borrowed(par.0),
-                                    value: std::borrow::Cow::Borrowed(par.1),
+                                    param: std::borrow::Cow::Borrowed(par.0.as_ref()),
+                                    value: std::borrow::Cow::Borrowed(par.1.as_ref()),
                                     required: par.2,
                                 });
                         }
@@ -235,7 +235,7 @@ pub fn usp_add_request<'a>(
 /// use rusp::usp_generator::usp_delete_request;
 /// let req = usp_delete_request(true, &["Device.XMPP.Connection.1."]);
 /// ```
-pub fn usp_delete_request<'a>(allow_partial: bool, obj_paths: &[&'a str]) -> Body<'a> {
+pub fn usp_delete_request<'a, S: AsRef<str>>(allow_partial: bool, obj_paths: &'a [S]) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -245,7 +245,10 @@ pub fn usp_delete_request<'a>(allow_partial: bool, obj_paths: &[&'a str]) -> Bod
                 req_type: delete({
                     Delete {
                         allow_partial,
-                        obj_paths: obj_paths.iter().map(|e| Cow::Borrowed(*e)).collect(),
+                        obj_paths: obj_paths
+                            .iter()
+                            .map(|e| Cow::Borrowed(e.as_ref()))
+                            .collect(),
                     }
                 }),
             }
@@ -266,9 +269,9 @@ pub fn usp_delete_request<'a>(allow_partial: bool, obj_paths: &[&'a str]) -> Bod
 /// use rusp::usp_generator::usp_set_request;
 /// let req = usp_set_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
 /// ```
-pub fn usp_set_request<'a>(
+pub fn usp_set_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
-    args: &[(&'a str, &[(&'a str, &'a str, bool)])],
+    args: &'a [(S, V)],
 ) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
@@ -282,12 +285,12 @@ pub fn usp_set_request<'a>(
                     for (dir, pars) in args {
                         let mut obj: crate::usp::mod_Set::UpdateObject =
                             crate::usp::mod_Set::UpdateObject::default();
-                        obj.obj_path = std::borrow::Cow::Borrowed(dir);
-                        for par in *pars {
+                        obj.obj_path = std::borrow::Cow::Borrowed(dir.as_ref());
+                        for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Set::UpdateParamSetting {
-                                    param: std::borrow::Cow::Borrowed(par.0),
-                                    value: std::borrow::Cow::Borrowed(par.1),
+                                    param: std::borrow::Cow::Borrowed(par.0.as_ref()),
+                                    value: std::borrow::Cow::Borrowed(par.1.as_ref()),
                                     required: par.2,
                                 });
                         }
@@ -410,7 +413,10 @@ pub fn usp_operate_request<'a>(
 /// use rusp::usp_generator::usp_get_instances_request;
 /// let req = usp_get_instances_request(&["Device.", "Device.DeviceInfo."], true);
 /// ```
-pub fn usp_get_instances_request<'a>(obj_paths: &[&'a str], first_level_only: bool) -> Body<'a> {
+pub fn usp_get_instances_request<'a, S: AsRef<str>>(
+    obj_paths: &'a [S],
+    first_level_only: bool,
+) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -423,7 +429,7 @@ pub fn usp_get_instances_request<'a>(obj_paths: &[&'a str], first_level_only: bo
                         ..Default::default()
                     };
                     for path in obj_paths {
-                        getinr.obj_paths.push(Cow::Borrowed(path));
+                        getinr.obj_paths.push(Cow::Borrowed(path.as_ref()));
                     }
                     getinr
                 }),
@@ -448,8 +454,8 @@ pub fn usp_get_instances_request<'a>(obj_paths: &[&'a str], first_level_only: bo
 /// use rusp::usp_generator::usp_get_supported_dm_request;
 /// let req = usp_get_supported_dm_request(&["Device.", "Device.DeviceInfo."], false, true, true, true);
 /// ```
-pub fn usp_get_supported_dm_request<'a>(
-    paths: &[&'a str],
+pub fn usp_get_supported_dm_request<'a, S: AsRef<str>>(
+    paths: &'a [S],
     first_level_only: bool,
     return_commands: bool,
     return_events: bool,
@@ -470,7 +476,7 @@ pub fn usp_get_supported_dm_request<'a>(
                         ..Default::default()
                     };
                     for path in paths {
-                        getsdmr.obj_paths.push(Cow::Borrowed(path));
+                        getsdmr.obj_paths.push(Cow::Borrowed(path.as_ref()));
                     }
                     getsdmr
                 }),
