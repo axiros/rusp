@@ -63,7 +63,7 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 
     Msg {
         header: Some(Header {
-            msg_id: std::borrow::Cow::from(msg_id),
+            msg_id: Cow::from(msg_id),
             msg_type,
         }),
         body: Some(body),
@@ -204,12 +204,12 @@ pub fn usp_add_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
                     for (dir, pars) in args {
                         let mut obj: crate::usp::mod_Add::CreateObject =
                             crate::usp::mod_Add::CreateObject::default();
-                        obj.obj_path = std::borrow::Cow::Borrowed(dir.as_ref());
+                        obj.obj_path = Cow::Borrowed(dir.as_ref());
                         for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Add::CreateParamSetting {
-                                    param: std::borrow::Cow::Borrowed(par.0.as_ref()),
-                                    value: std::borrow::Cow::Borrowed(par.1.as_ref()),
+                                    param: Cow::Borrowed(par.0.as_ref()),
+                                    value: Cow::Borrowed(par.1.as_ref()),
                                     required: par.2,
                                 });
                         }
@@ -285,12 +285,12 @@ pub fn usp_set_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
                     for (dir, pars) in args {
                         let mut obj: crate::usp::mod_Set::UpdateObject =
                             crate::usp::mod_Set::UpdateObject::default();
-                        obj.obj_path = std::borrow::Cow::Borrowed(dir.as_ref());
+                        obj.obj_path = Cow::Borrowed(dir.as_ref());
                         for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Set::UpdateParamSetting {
-                                    param: std::borrow::Cow::Borrowed(par.0.as_ref()),
-                                    value: std::borrow::Cow::Borrowed(par.1.as_ref()),
+                                    param: Cow::Borrowed(par.0.as_ref()),
+                                    value: Cow::Borrowed(par.1.as_ref()),
                                     required: par.2,
                                 });
                         }
@@ -372,11 +372,11 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
 /// use rusp::usp_generator::usp_operate_request;
 /// let req = usp_operate_request("Device.Reboot()", "acommandkey", true, &[]);
 /// ```
-pub fn usp_operate_request<'a>(
+pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
     command: &'a str,
     command_key: &'a str,
     send_resp: bool,
-    args: &[(&'a str, &'a str)],
+    args: V,
 ) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
@@ -386,10 +386,10 @@ pub fn usp_operate_request<'a>(
             Request {
                 req_type: operate({
                     let mut operater = Operate::default();
-                    operater.command = command.into();
-                    operater.command_key = command_key.into();
+                    operater.command = Cow::Borrowed(command);
+                    operater.command_key = Cow::Borrowed(command_key);
                     operater.send_resp = send_resp;
-                    operater.input_args = args
+                    operater.input_args = args.as_ref()
                         .iter()
                         .map(|(k, v)| (Cow::Borrowed(*k), Cow::Borrowed(*v)))
                         .collect::<HashMap<_, _>>();
