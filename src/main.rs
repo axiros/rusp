@@ -391,7 +391,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             sub_id,
             send_resp,
             typ,
-        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, typ)),
+        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, &typ)),
         MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
         }

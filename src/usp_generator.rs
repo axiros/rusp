@@ -156,7 +156,7 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
 /// use rusp::usp_generator::usp_get_request;
 /// let req = usp_get_request(&["Device.", "Device.DeviceInfo."]);
 /// ```
-pub fn usp_get_request<'a, S: AsRef<str>>(params: &'a [S]) -> Body<'a> {
+pub fn usp_get_request<S: AsRef<str>>(params: &'_ [S]) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -188,10 +188,10 @@ pub fn usp_get_request<'a, S: AsRef<str>>(params: &'a [S]) -> Body<'a> {
 /// use rusp::usp_generator::usp_add_request;
 /// let req = usp_add_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
 /// ```
-pub fn usp_add_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
+pub fn usp_add_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
-    args: &'a [(S, V)],
-) -> Body<'a> {
+    args: &'_ [(S, V)],
+) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -235,7 +235,7 @@ pub fn usp_add_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 /// use rusp::usp_generator::usp_delete_request;
 /// let req = usp_delete_request(true, &["Device.XMPP.Connection.1."]);
 /// ```
-pub fn usp_delete_request<'a, S: AsRef<str>>(allow_partial: bool, obj_paths: &'a [S]) -> Body<'a> {
+pub fn usp_delete_request<S: AsRef<str>>(allow_partial: bool, obj_paths: &'_ [S]) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -269,10 +269,10 @@ pub fn usp_delete_request<'a, S: AsRef<str>>(allow_partial: bool, obj_paths: &'a
 /// use rusp::usp_generator::usp_set_request;
 /// let req = usp_set_request(true, &[("Device.DeviceInfo.", &[("ProvisioningCode", "configured", true)])]);
 /// ```
-pub fn usp_set_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
+pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
-    args: &'a [(S, V)],
-) -> Body<'a> {
+    args: &'_ [(S, V)],
+) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -323,11 +323,15 @@ pub fn usp_set_request<'a, S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 ///     agent_supported_protocol_versions: "1.0".to_string()
 /// });
 /// ```
-pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> Body<'_> {
+pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyType) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Notify::OnBoardRequest;
+    use crate::usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp;
     use crate::usp::mod_Notify::OneOfnotification::*;
+    use crate::usp::mod_Notify::{
+        Event, ObjectCreation, ObjectDeletion, OnBoardRequest, OperationComplete, ValueChange,
+    };
     use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp_types::OperateResponse;
 
     Body {
         msg_body: request({
@@ -348,6 +352,75 @@ pub fn usp_notify_request(sub_id: &'_ str, send_resp: bool, typ: NotifyType) -> 
                             oui: oui.into(),
                             product_class: product_class.into(),
                             serial_number: serial_number.into(),
+                        }),
+                        NotifyType::ValueChange {
+                            param_path,
+                            param_value,
+                        } => value_change(ValueChange {
+                            param_path: param_path.into(),
+                            param_value: param_value.into(),
+                        }),
+                        NotifyType::Event {
+                            obj_path,
+                            event_name,
+                            params,
+                        } => event(Event {
+                            obj_path: obj_path.into(),
+                            event_name: event_name.into(),
+                            params: params
+                                .iter()
+                                .map(|(k, v)| {
+                                    (Cow::Borrowed(k.as_ref()), Cow::Borrowed(v.as_ref()))
+                                })
+                                .collect::<HashMap<_, _>>(),
+                        }),
+                        NotifyType::ObjectCreation {
+                            obj_path,
+                            unique_keys,
+                        } => obj_creation(ObjectCreation {
+                            obj_path: obj_path.into(),
+                            unique_keys: unique_keys
+                                .iter()
+                                .map(|(k, v)| {
+                                    (Cow::Borrowed(k.as_ref()), Cow::Borrowed(v.as_ref()))
+                                })
+                                .collect::<HashMap<_, _>>(),
+                        }),
+                        NotifyType::ObjectDeletion { obj_path } => obj_deletion(ObjectDeletion {
+                            obj_path: obj_path.into(),
+                        }),
+                        NotifyType::OperationComplete {
+                            obj_path,
+                            command_name,
+                            command_key,
+                            operation_resp,
+                        } => oper_complete(OperationComplete {
+                            obj_path: obj_path.into(),
+                            command_name: command_name.into(),
+                            command_key: command_key.into(),
+                            operation_resp: match operation_resp {
+                                OperateResponse::OutputArgs(h) => {
+                                    OneOfoperation_resp::req_output_args(
+                                        crate::usp::mod_Notify::mod_OperationComplete::OutputArgs {
+                                            output_args: h
+                                                .iter()
+                                                .map(|(k, v)| {
+                                                    (
+                                                        Cow::Borrowed(k.as_ref()),
+                                                        Cow::Borrowed(v.as_ref()),
+                                                    )
+                                                })
+                                                .collect::<HashMap<_, _>>(),
+                                        },
+                                    )
+                                }
+                                OperateResponse::CommandFailure(code, msg) => {
+                                    OneOfoperation_resp::cmd_failure(
+                                        crate::usp::mod_Notify::mod_OperationComplete::CommandFailure
+                                        {err_code: *code, err_msg: Cow::Borrowed(msg)}
+                                        )
+                                }
+                            },
                         }),
                     };
                     notr
@@ -389,7 +462,8 @@ pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
                     operater.command = Cow::Borrowed(command);
                     operater.command_key = Cow::Borrowed(command_key);
                     operater.send_resp = send_resp;
-                    operater.input_args = args.as_ref()
+                    operater.input_args = args
+                        .as_ref()
                         .iter()
                         .map(|(k, v)| (Cow::Borrowed(*k), Cow::Borrowed(*v)))
                         .collect::<HashMap<_, _>>();
@@ -413,10 +487,10 @@ pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
 /// use rusp::usp_generator::usp_get_instances_request;
 /// let req = usp_get_instances_request(&["Device.", "Device.DeviceInfo."], true);
 /// ```
-pub fn usp_get_instances_request<'a, S: AsRef<str>>(
-    obj_paths: &'a [S],
+pub fn usp_get_instances_request<S: AsRef<str>>(
+    obj_paths: &'_ [S],
     first_level_only: bool,
-) -> Body<'a> {
+) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -454,13 +528,13 @@ pub fn usp_get_instances_request<'a, S: AsRef<str>>(
 /// use rusp::usp_generator::usp_get_supported_dm_request;
 /// let req = usp_get_supported_dm_request(&["Device.", "Device.DeviceInfo."], false, true, true, true);
 /// ```
-pub fn usp_get_supported_dm_request<'a, S: AsRef<str>>(
-    paths: &'a [S],
+pub fn usp_get_supported_dm_request<S: AsRef<str>>(
+    paths: &'_ [S],
     first_level_only: bool,
     return_commands: bool,
     return_events: bool,
     return_params: bool,
-) -> Body<'a> {
+) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
