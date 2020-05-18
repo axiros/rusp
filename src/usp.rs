@@ -5,14 +5,14 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 #![allow(unknown_lints)]
-#![allow(clippy)]
+#![allow(clippy::all)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 
-use std::io::Write;
 use std::borrow::Cow;
 use std::collections::HashMap;
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, Result};
+type KVMap<K, V> = HashMap<K, V>;
+use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
@@ -44,7 +44,7 @@ impl<'a> MessageWrite for Msg<'a> {
         + self.body.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if let Some(ref s) = self.header { w.write_with_tag(10, |w| w.write_message(s))?; }
         if let Some(ref s) = self.body { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -79,7 +79,7 @@ impl<'a> MessageWrite for Header<'a> {
         + if self.msg_type == usp::mod_Header::MsgType::ERROR { 0 } else { 1 + sizeof_varint(*(&self.msg_type) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.msg_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.msg_id))?; }
         if self.msg_type != usp::mod_Header::MsgType::ERROR { w.write_with_tag(16, |w| w.write_enum(*&self.msg_type as i32))?; }
         Ok(())
@@ -205,7 +205,7 @@ impl<'a> MessageWrite for Body<'a> {
             usp::mod_Body::OneOfmsg_body::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.msg_body {            usp::mod_Body::OneOfmsg_body::request(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_Body::OneOfmsg_body::response(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_Body::OneOfmsg_body::error(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
@@ -277,7 +277,7 @@ impl<'a> MessageWrite for Request<'a> {
             usp::mod_Request::OneOfreq_type::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.req_type {            usp::mod_Request::OneOfreq_type::get(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_Request::OneOfreq_type::get_supported_dm(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_Request::OneOfreq_type::get_instances(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
@@ -361,7 +361,7 @@ impl<'a> MessageWrite for Response<'a> {
             usp::mod_Response::OneOfresp_type::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.resp_type {            usp::mod_Response::OneOfresp_type::get_resp(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_Response::OneOfresp_type::get_supported_dm_resp(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_Response::OneOfresp_type::get_instances_resp(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
@@ -433,7 +433,7 @@ impl<'a> MessageWrite for Error<'a> {
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.param_errs { w.write_with_tag(26, |w| w.write_message(s))?; }
@@ -477,7 +477,7 @@ impl<'a> MessageWrite for ParamError<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -512,7 +512,7 @@ impl<'a> MessageWrite for Get<'a> {
         + self.param_paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.param_paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
         Ok(())
     }
@@ -543,7 +543,7 @@ impl<'a> MessageWrite for GetResp<'a> {
         + self.req_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.req_path_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -553,6 +553,7 @@ pub mod mod_GetResp {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -589,7 +590,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
         + self.resolved_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -601,7 +602,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ResolvedPathResult<'a> {
     pub resolved_path: Cow<'a, str>,
-    pub result_params: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub result_params: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for ResolvedPathResult<'a> {
@@ -629,7 +630,7 @@ impl<'a> MessageWrite for ResolvedPathResult<'a> {
         + self.result_params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.resolved_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.resolved_path))?; }
         for (k, v) in self.result_params.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -675,7 +676,7 @@ impl<'a> MessageWrite for GetSupportedDM<'a> {
         + if self.return_params == false { 0 } else { 1 + sizeof_varint(*(&self.return_params) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.obj_paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
         if self.first_level_only != false { w.write_with_tag(16, |w| w.write_bool(*&self.first_level_only))?; }
         if self.return_commands != false { w.write_with_tag(24, |w| w.write_bool(*&self.return_commands))?; }
@@ -710,7 +711,7 @@ impl<'a> MessageWrite for GetSupportedDMResp<'a> {
         + self.req_obj_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.req_obj_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -758,7 +759,7 @@ impl<'a> MessageWrite for RequestedObjectResult<'a> {
         + self.supported_objs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.req_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.req_obj_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -808,7 +809,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
         + self.supported_params.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.supported_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.supported_obj_path))?; }
         if self.access != usp::mod_GetSupportedDMResp::ObjAccessType::OBJ_READ_ONLY { w.write_with_tag(16, |w| w.write_enum(*&self.access as i32))?; }
         if self.is_multi_instance != false { w.write_with_tag(24, |w| w.write_bool(*&self.is_multi_instance))?; }
@@ -847,7 +848,7 @@ impl<'a> MessageWrite for SupportedParamResult<'a> {
         + if self.access == usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { 0 } else { 1 + sizeof_varint(*(&self.access) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_name))?; }
         if self.access != usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { w.write_with_tag(16, |w| w.write_enum(*&self.access as i32))?; }
         Ok(())
@@ -885,7 +886,7 @@ impl<'a> MessageWrite for SupportedCommandResult<'a> {
         + self.output_arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.command_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.command_name))?; }
         for s in &self.input_arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         for s in &self.output_arg_names { w.write_with_tag(26, |w| w.write_string(&**s))?; }
@@ -921,7 +922,7 @@ impl<'a> MessageWrite for SupportedEventResult<'a> {
         + self.arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.event_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.event_name))?; }
         for s in &self.arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         Ok(())
@@ -1031,7 +1032,7 @@ impl<'a> MessageWrite for GetInstances<'a> {
         + if self.first_level_only == false { 0 } else { 1 + sizeof_varint(*(&self.first_level_only) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.obj_paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
         if self.first_level_only != false { w.write_with_tag(16, |w| w.write_bool(*&self.first_level_only))?; }
         Ok(())
@@ -1063,7 +1064,7 @@ impl<'a> MessageWrite for GetInstancesResp<'a> {
         + self.req_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.req_path_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1073,6 +1074,7 @@ pub mod mod_GetInstancesResp {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -1109,7 +1111,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
         + self.curr_insts.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -1121,7 +1123,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CurrInstance<'a> {
     pub instantiated_obj_path: Cow<'a, str>,
-    pub unique_keys: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub unique_keys: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for CurrInstance<'a> {
@@ -1149,7 +1151,7 @@ impl<'a> MessageWrite for CurrInstance<'a> {
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.instantiated_obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_obj_path))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -1183,7 +1185,7 @@ impl<'a> MessageWrite for GetSupportedProtocol<'a> {
         + if self.controller_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.controller_supported_protocol_versions).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.controller_supported_protocol_versions != "" { w.write_with_tag(10, |w| w.write_string(&**&self.controller_supported_protocol_versions))?; }
         Ok(())
     }
@@ -1214,7 +1216,7 @@ impl<'a> MessageWrite for GetSupportedProtocolResp<'a> {
         + if self.agent_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.agent_supported_protocol_versions != "" { w.write_with_tag(10, |w| w.write_string(&**&self.agent_supported_protocol_versions))?; }
         Ok(())
     }
@@ -1248,7 +1250,7 @@ impl<'a> MessageWrite for Add<'a> {
         + self.create_objs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.allow_partial != false { w.write_with_tag(8, |w| w.write_bool(*&self.allow_partial))?; }
         for s in &self.create_objs { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1288,7 +1290,7 @@ impl<'a> MessageWrite for CreateObject<'a> {
         + self.param_settings.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for s in &self.param_settings { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1326,7 +1328,7 @@ impl<'a> MessageWrite for CreateParamSetting<'a> {
         + if self.required == false { 0 } else { 1 + sizeof_varint(*(&self.required) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
         if self.required != false { w.write_with_tag(24, |w| w.write_bool(*&self.required))?; }
@@ -1361,7 +1363,7 @@ impl<'a> MessageWrite for AddResp<'a> {
         + self.created_obj_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.created_obj_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1400,7 +1402,7 @@ impl<'a> MessageWrite for CreatedObjectResult<'a> {
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1440,7 +1442,7 @@ impl<'a> MessageWrite for OperationStatus<'a> {
             usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.oper_status {            usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status::None => {},
@@ -1452,6 +1454,7 @@ pub mod mod_OperationStatus {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -1482,7 +1485,7 @@ impl<'a> MessageWrite for OperationFailure<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
@@ -1493,7 +1496,7 @@ impl<'a> MessageWrite for OperationFailure<'a> {
 pub struct OperationSuccess<'a> {
     pub instantiated_path: Cow<'a, str>,
     pub param_errs: Vec<usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'a>>,
-    pub unique_keys: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub unique_keys: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for OperationSuccess<'a> {
@@ -1523,7 +1526,7 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.instantiated_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.instantiated_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
@@ -1562,7 +1565,7 @@ impl<'a> MessageWrite for ParameterError<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -1617,7 +1620,7 @@ impl<'a> MessageWrite for Delete<'a> {
         + self.obj_paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.allow_partial != false { w.write_with_tag(8, |w| w.write_bool(*&self.allow_partial))?; }
         for s in &self.obj_paths { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         Ok(())
@@ -1649,7 +1652,7 @@ impl<'a> MessageWrite for DeleteResp<'a> {
         + self.deleted_obj_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.deleted_obj_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -1688,7 +1691,7 @@ impl<'a> MessageWrite for DeletedObjectResult<'a> {
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1728,7 +1731,7 @@ impl<'a> MessageWrite for OperationStatus<'a> {
             usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.oper_status {            usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status::None => {},
@@ -1769,7 +1772,7 @@ impl<'a> MessageWrite for OperationFailure<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
@@ -1804,7 +1807,7 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
         + self.unaffected_path_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.affected_paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
         for s in &self.unaffected_path_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1842,7 +1845,7 @@ impl<'a> MessageWrite for UnaffectedPathError<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.unaffected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.unaffected_path))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -1897,7 +1900,7 @@ impl<'a> MessageWrite for Set<'a> {
         + self.update_objs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.allow_partial != false { w.write_with_tag(8, |w| w.write_bool(*&self.allow_partial))?; }
         for s in &self.update_objs { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1937,7 +1940,7 @@ impl<'a> MessageWrite for UpdateObject<'a> {
         + self.param_settings.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for s in &self.param_settings { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -1975,7 +1978,7 @@ impl<'a> MessageWrite for UpdateParamSetting<'a> {
         + if self.required == false { 0 } else { 1 + sizeof_varint(*(&self.required) as u64) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.value))?; }
         if self.required != false { w.write_with_tag(24, |w| w.write_bool(*&self.required))?; }
@@ -2010,7 +2013,7 @@ impl<'a> MessageWrite for SetResp<'a> {
         + self.updated_obj_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.updated_obj_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2049,7 +2052,7 @@ impl<'a> MessageWrite for UpdatedObjectResult<'a> {
         + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
         if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -2089,7 +2092,7 @@ impl<'a> MessageWrite for OperationStatus<'a> {
             usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         match self.oper_status {            usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
             usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
             usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status::None => {},
@@ -2101,6 +2104,7 @@ pub mod mod_OperationStatus {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -2134,7 +2138,7 @@ impl<'a> MessageWrite for OperationFailure<'a> {
         + self.updated_inst_failures.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         for s in &self.updated_inst_failures { w.write_with_tag(26, |w| w.write_message(s))?; }
@@ -2167,7 +2171,7 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
         + self.updated_inst_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.updated_inst_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2201,7 +2205,7 @@ impl<'a> MessageWrite for UpdatedInstanceFailure<'a> {
         + self.param_errs.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.affected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         Ok(())
@@ -2212,7 +2216,7 @@ impl<'a> MessageWrite for UpdatedInstanceFailure<'a> {
 pub struct UpdatedInstanceResult<'a> {
     pub affected_path: Cow<'a, str>,
     pub param_errs: Vec<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'a>>,
-    pub updated_params: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub updated_params: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for UpdatedInstanceResult<'a> {
@@ -2242,7 +2246,7 @@ impl<'a> MessageWrite for UpdatedInstanceResult<'a> {
         + self.updated_params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.affected_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.affected_path))?; }
         for s in &self.param_errs { w.write_with_tag(18, |w| w.write_message(s))?; }
         for (k, v) in self.updated_params.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
@@ -2281,7 +2285,7 @@ impl<'a> MessageWrite for ParameterError<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param))?; }
         if self.err_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(26, |w| w.write_string(&**&self.err_msg))?; }
@@ -2313,7 +2317,7 @@ pub struct Operate<'a> {
     pub command: Cow<'a, str>,
     pub command_key: Cow<'a, str>,
     pub send_resp: bool,
-    pub input_args: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub input_args: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for Operate<'a> {
@@ -2345,7 +2349,7 @@ impl<'a> MessageWrite for Operate<'a> {
         + self.input_args.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.command != "" { w.write_with_tag(10, |w| w.write_string(&**&self.command))?; }
         if self.command_key != "" { w.write_with_tag(18, |w| w.write_string(&**&self.command_key))?; }
         if self.send_resp != false { w.write_with_tag(24, |w| w.write_bool(*&self.send_resp))?; }
@@ -2379,7 +2383,7 @@ impl<'a> MessageWrite for OperateResp<'a> {
         + self.operation_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.operation_results { w.write_with_tag(10, |w| w.write_message(s))?; }
         Ok(())
     }
@@ -2424,7 +2428,7 @@ impl<'a> MessageWrite for OperationResult<'a> {
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.executed_command != "" { w.write_with_tag(10, |w| w.write_string(&**&self.executed_command))?; }
         match self.operation_resp {            usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_obj_path(ref m) => { w.write_with_tag(18, |w| w.write_string(&**m))? },
             usp::mod_OperateResp::mod_OperationResult::OneOfoperation_resp::req_output_args(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
@@ -2438,11 +2442,12 @@ pub mod mod_OperationResult {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OutputArgs<'a> {
-    pub output_args: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub output_args: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for OutputArgs<'a> {
@@ -2468,7 +2473,7 @@ impl<'a> MessageWrite for OutputArgs<'a> {
         + self.output_args.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for (k, v) in self.output_args.iter() { w.write_with_tag(10, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -2502,7 +2507,7 @@ impl<'a> MessageWrite for CommandFailure<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
@@ -2570,7 +2575,7 @@ impl<'a> MessageWrite for Notify<'a> {
             usp::mod_Notify::OneOfnotification::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.subscription_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
         if self.send_resp != false { w.write_with_tag(16, |w| w.write_bool(*&self.send_resp))?; }
         match self.notification {            usp::mod_Notify::OneOfnotification::event(ref m) => { w.write_with_tag(26, |w| w.write_message(m))? },
@@ -2588,13 +2593,14 @@ pub mod mod_Notify {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Event<'a> {
     pub obj_path: Cow<'a, str>,
     pub event_name: Cow<'a, str>,
-    pub params: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub params: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for Event<'a> {
@@ -2624,7 +2630,7 @@ impl<'a> MessageWrite for Event<'a> {
         + self.params.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         if self.event_name != "" { w.write_with_tag(18, |w| w.write_string(&**&self.event_name))?; }
         for (k, v) in self.params.iter() { w.write_with_tag(26, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
@@ -2660,7 +2666,7 @@ impl<'a> MessageWrite for ValueChange<'a> {
         + if self.param_value == "" { 0 } else { 1 + sizeof_len((&self.param_value).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_path))?; }
         if self.param_value != "" { w.write_with_tag(18, |w| w.write_string(&**&self.param_value))?; }
         Ok(())
@@ -2670,7 +2676,7 @@ impl<'a> MessageWrite for ValueChange<'a> {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ObjectCreation<'a> {
     pub obj_path: Cow<'a, str>,
-    pub unique_keys: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub unique_keys: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for ObjectCreation<'a> {
@@ -2698,7 +2704,7 @@ impl<'a> MessageWrite for ObjectCreation<'a> {
         + self.unique_keys.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         for (k, v) in self.unique_keys.iter() { w.write_with_tag(18, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
@@ -2730,7 +2736,7 @@ impl<'a> MessageWrite for ObjectDeletion<'a> {
         + if self.obj_path == "" { 0 } else { 1 + sizeof_len((&self.obj_path).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         Ok(())
     }
@@ -2774,7 +2780,7 @@ impl<'a> MessageWrite for OperationComplete<'a> {
             usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.obj_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.obj_path))?; }
         if self.command_name != "" { w.write_with_tag(18, |w| w.write_string(&**&self.command_name))?; }
         if self.command_key != "" { w.write_with_tag(26, |w| w.write_string(&**&self.command_key))?; }
@@ -2789,11 +2795,12 @@ pub mod mod_OperationComplete {
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OutputArgs<'a> {
-    pub output_args: HashMap<Cow<'a, str>, Cow<'a, str>>,
+    pub output_args: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for OutputArgs<'a> {
@@ -2819,7 +2826,7 @@ impl<'a> MessageWrite for OutputArgs<'a> {
         + self.output_args.iter().map(|(k, v)| 1 + sizeof_len(2 + sizeof_len((k).len()) + sizeof_len((v).len()))).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for (k, v) in self.output_args.iter() { w.write_with_tag(10, |w| w.write_map(2 + sizeof_len((k).len()) + sizeof_len((v).len()), 10, |w| w.write_string(&**k), 18, |w| w.write_string(&**v)))?; }
         Ok(())
     }
@@ -2853,7 +2860,7 @@ impl<'a> MessageWrite for CommandFailure<'a> {
         + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
         if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
         Ok(())
@@ -2909,7 +2916,7 @@ impl<'a> MessageWrite for OnBoardRequest<'a> {
         + if self.agent_supported_protocol_versions == "" { 0 } else { 1 + sizeof_len((&self.agent_supported_protocol_versions).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.oui != "" { w.write_with_tag(10, |w| w.write_string(&**&self.oui))?; }
         if self.product_class != "" { w.write_with_tag(18, |w| w.write_string(&**&self.product_class))?; }
         if self.serial_number != "" { w.write_with_tag(26, |w| w.write_string(&**&self.serial_number))?; }
@@ -2962,7 +2969,7 @@ impl<'a> MessageWrite for NotifyResp<'a> {
         + if self.subscription_id == "" { 0 } else { 1 + sizeof_len((&self.subscription_id).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.subscription_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
         Ok(())
     }

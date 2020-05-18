@@ -316,7 +316,7 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 /// ```
 /// use rusp::usp_types::NotifyType;
 /// use rusp::usp_generator::usp_notify_request;
-/// let req = usp_notify_request("", true, NotifyType::OnBoardRequest {
+/// let req = usp_notify_request("", true, &NotifyType::OnBoardRequest {
 ///     oui: "ABCABC".to_string(),
 ///     product_class: "PC".to_string(),
 ///     serial_number: "000000".to_string(),

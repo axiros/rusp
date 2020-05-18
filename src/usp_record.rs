@@ -5,13 +5,12 @@
 #![allow(non_camel_case_types)]
 #![allow(unused_imports)]
 #![allow(unknown_lints)]
-#![allow(clippy)]
+#![allow(clippy::all)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 
-use std::io::Write;
 use std::borrow::Cow;
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, Result};
+use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
@@ -62,7 +61,7 @@ impl<'a> MessageWrite for Record<'a> {
             usp_record::mod_Record::OneOfrecord_type::None => 0,
     }    }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.version != "" { w.write_with_tag(10, |w| w.write_string(&**&self.version))?; }
         if self.to_id != "" { w.write_with_tag(18, |w| w.write_string(&**&self.to_id))?; }
         if self.from_id != "" { w.write_with_tag(26, |w| w.write_string(&**&self.from_id))?; }
@@ -152,7 +151,7 @@ impl<'a> MessageWrite for NoSessionContextRecord<'a> {
         + if self.payload == Cow::Borrowed(b"") { 0 } else { 1 + sizeof_len((&self.payload).len()) }
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.payload != Cow::Borrowed(b"") { w.write_with_tag(18, |w| w.write_bytes(&**&self.payload))?; }
         Ok(())
     }
@@ -201,7 +200,7 @@ impl<'a> MessageWrite for SessionContextRecord<'a> {
         + self.payload.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
-    fn write_message<W: Write>(&self, w: &mut Writer<W>) -> Result<()> {
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.session_id != 0u64 { w.write_with_tag(8, |w| w.write_uint64(*&self.session_id))?; }
         if self.sequence_id != 0u64 { w.write_with_tag(16, |w| w.write_uint64(*&self.sequence_id))?; }
         if self.expected_id != 0u64 { w.write_with_tag(24, |w| w.write_uint64(*&self.expected_id))?; }
