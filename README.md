@@ -22,7 +22,7 @@ The toolkit includes:
   * Higher level access to serialisation/deserialisation functionality
   * Convenience functions to generate messages
   * Pretty printing of **USP** records and messages
-  * Serde serialization of **USP** records and messages
+  * Serde de-/serialization of **USP** records and messages
   * Unittests and documentation (including doctests/examples)
 * A **rusp** binary granting access to library functionality via command line. Included functionality at the moment are:
   * Decoding of **USP** Msg Protobuf bytestreams from standard input
@@ -54,6 +54,8 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 
 messages via commandline tool.
 
+**NEWSFLASH**: As of version 0.8.1 the tool supports a `--json` option for the output of decoded USP Records and Messages in true JSON, e.g. for further automated processing.
+
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
 ```
@@ -70,8 +72,8 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.6.0"
-quick-protobuf = "0.6.3"
+rusp = "0.8"
+quick-protobuf = "0.7"
 
 ...
 ```
