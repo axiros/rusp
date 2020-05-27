@@ -12,7 +12,16 @@ use rusp::{
 
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
-enum Rusp {
+struct Rusp {
+    #[structopt(long = "json")]
+    /// Output as JSON
+    json: bool,
+    #[structopt(flatten)]
+    action: RuspAction,
+}
+
+#[derive(StructOpt)]
+enum RuspAction {
     /// Decode a single raw USP message from standard input and print to standard output
     #[structopt(name = "decode_msg")]
     DecodeMsg {},
@@ -231,46 +240,74 @@ enum MsgType {
     },
 }
 
-fn decode_msg_files(files: Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
+fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error>> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
         let mut contents = Vec::new();
         buf_reader.read_to_end(&mut contents)?;
 
-        println!("{}", decode_msg(&contents));
+        if json {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&decode_msg(&contents)).unwrap()
+            );
+        } else {
+            println!("{}", decode_record(&contents));
+        }
     }
 
     Ok(())
 }
 
-fn decode_msg_stdin() -> Result<(), Box<dyn Error>> {
+fn decode_msg_stdin(json: bool) -> Result<(), Box<dyn Error>> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    println!("{}", decode_msg(&contents));
-
-    Ok(())
-}
-
-fn decode_record_files(files: Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
-    for file in files {
-        let fp = File::open(&file)?;
-        let mut buf_reader = BufReader::new(fp);
-        let mut contents = Vec::new();
-        buf_reader.read_to_end(&mut contents)?;
-
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&decode_msg(&contents)).unwrap()
+        );
+    } else {
         println!("{}", decode_record(&contents));
     }
 
     Ok(())
 }
 
-fn decode_record_stdin() -> Result<(), Box<dyn Error>> {
+fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error>> {
+    for file in files {
+        let fp = File::open(&file)?;
+        let mut buf_reader = BufReader::new(fp);
+        let mut contents = Vec::new();
+        buf_reader.read_to_end(&mut contents)?;
+
+        if json {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&decode_record(&contents)).unwrap()
+            );
+        } else {
+            println!("{}", decode_record(&contents));
+        }
+    }
+
+    Ok(())
+}
+
+fn decode_record_stdin(json: bool) -> Result<(), Box<dyn Error>> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    println!("{}", decode_record(&contents));
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&decode_record(&contents)).unwrap()
+        );
+    } else {
+        println!("{}", decode_record(&contents));
+    }
 
     Ok(())
 }
@@ -579,20 +616,21 @@ fn wrap_msg_raw(
 
 #[paw::main]
 fn main(opt: Rusp) -> Result<(), Box<dyn Error>> {
-    match opt {
-        Rusp::DecodeRecordFiles { files } => decode_record_files(files),
-        Rusp::DecodeRecord {} => decode_record_stdin(),
-        Rusp::DecodeMsgFiles { files } => decode_msg_files(files),
-        Rusp::DecodeMsg {} => decode_msg_stdin(),
-        Rusp::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ),
-        Rusp::EncodeMsg {
+    let Rusp { json, action } = opt;
+    match action {
+        RuspAction::DecodeRecordFiles { files } => decode_record_files(files, json),
+        RuspAction::DecodeRecord {} => decode_record_stdin(json),
+        RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, json),
+        RuspAction::DecodeMsg {} => decode_msg_stdin(json),
+        RuspAction::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ),
+        RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
         } => encode_msg(msgid, filename, typ),
-        Rusp::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
-        Rusp::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
-        Rusp::WrapMsgRaw {
+        RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
+        RuspAction::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
+        RuspAction::WrapMsgRaw {
             version,
             from,
             to,
