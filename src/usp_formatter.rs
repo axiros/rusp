@@ -282,8 +282,17 @@ impl Display for mod_Error::ParamError<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        // TODO: Implement
-        writeln!(f, "{:aby$}{:#?}", "", self.param_path, aby = aby2)
+        writeln!(f, "{:aby$}ParamError: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}param_path: \"{}\"",
+            "",
+            self.param_path,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
