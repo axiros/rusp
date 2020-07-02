@@ -1,8 +1,9 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::PathBuf;
 use structopt::*;
+
+use anyhow::{Context, Result};
 
 use rusp::{
     usp_decoder::{decode_msg, decode_record},
@@ -240,7 +241,7 @@ enum MsgType {
     },
 }
 
-fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error>> {
+fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
@@ -250,7 +251,8 @@ fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error
         if json {
             println!(
                 "{}",
-                serde_json::to_string_pretty(&decode_msg(&contents)).unwrap()
+                serde_json::to_string_pretty(&decode_msg(&contents))
+                    .with_context(|| "Failed to serialize JSON")?
             );
         } else {
             println!("{}", decode_record(&contents));
@@ -260,14 +262,15 @@ fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-fn decode_msg_stdin(json: bool) -> Result<(), Box<dyn Error>> {
+fn decode_msg_stdin(json: bool) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&decode_msg(&contents)).unwrap()
+            serde_json::to_string_pretty(&decode_msg(&contents))
+                .with_context(|| "Failed to serialize JSON")?
         );
     } else {
         println!("{}", decode_record(&contents));
@@ -276,7 +279,7 @@ fn decode_msg_stdin(json: bool) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Error>> {
+fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
@@ -286,7 +289,8 @@ fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Er
         if json {
             println!(
                 "{}",
-                serde_json::to_string_pretty(&decode_record(&contents)).unwrap()
+                serde_json::to_string_pretty(&decode_record(&contents))
+                    .with_context(|| "Failed to serialize JSON")?
             );
         } else {
             println!("{}", decode_record(&contents));
@@ -296,14 +300,15 @@ fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<(), Box<dyn Er
     Ok(())
 }
 
-fn decode_record_stdin(json: bool) -> Result<(), Box<dyn Error>> {
+fn decode_record_stdin(json: bool) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&decode_record(&contents)).unwrap()
+            serde_json::to_string_pretty(&decode_record(&contents)).with_context(|| "Failed to
+                serialize JSON")?
         );
     } else {
         println!("{}", decode_record(&contents));
@@ -312,7 +317,7 @@ fn decode_record_stdin(json: bool) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
+fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
     use quick_protobuf::serialize_into_vec;
 
     match typ {
@@ -321,15 +326,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             args,
         } => {
             let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).map_err(
-                |e| {
-                    format!(
-                        "Please provide an appropriate JSON datastructure, got '{}': {}",
-                        args.trim(),
-                        e
-                    )
-                },
-            )?;
+            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got '{}'", args))?;
             serialize_into_vec(&usp_generator::usp_add_request(
                 allow_partial,
                 v.iter()
@@ -343,13 +341,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             obj_paths,
         } => {
             let obj_paths = obj_paths.join(" ");
-            let obj_paths = serde_json::from_str::<Vec<&str>>(&obj_paths).map_err(|e| {
-                format!(
-                    "Please provide an appropriate JSON datastructure, got '{}': {}",
-                    obj_paths.trim(),
-                    e
-                )
-            })?;
+            let obj_paths = serde_json::from_str::<Vec<&str>>(&obj_paths)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object instance path>], ...]\", got '{}'", obj_paths))?;
             serialize_into_vec(&usp_generator::usp_delete_request(
                 allow_partial,
                 &obj_paths,
@@ -360,13 +353,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
         }
         MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths).map_err(|e| {
-                format!(
-                    "Please provide a JSON array with datamodel paths, got '{}': {}",
-                    paths.trim(),
-                    e
-                )
-            })?;
+            let v = serde_json::from_str::<Vec<&str>>(&paths)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Path name>], ...]\",  got '{}'", paths))?;
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
         MsgType::USPGetInstances {
@@ -374,13 +362,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             obj_paths,
         } => {
             let obj_paths = obj_paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&obj_paths).map_err(|e| {
-                format!(
-                    "Please provide a JSON array with datamodel paths, got '{}': {}",
-                    obj_paths.trim(),
-                    e
-                )
-            })?;
+            let v = serde_json::from_str::<Vec<&str>>(&obj_paths)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>], ...]\",  got '{}'", obj_paths))?;
             serialize_into_vec(&usp_generator::usp_get_instances_request(
                 v.as_slice(),
                 first_level_only,
@@ -394,13 +377,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             paths,
         } => {
             let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths).map_err(|e| {
-                format!(
-                    "Please provide a JSON array with datamodel paths, got '{}': {}",
-                    paths.trim(),
-                    e
-                )
-            })?;
+            let v = serde_json::from_str::<Vec<&str>>(&paths)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>], ...]\",  got '{}'", paths))?;
             serialize_into_vec(&usp_generator::usp_get_supported_dm_request(
                 v.as_slice(),
                 first_level_only,
@@ -414,14 +392,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
-            let getresp_json: usp_generator::GetResp =
-                serde_json::from_str(&result).map_err(|e| {
-                    format!(
-                        "Please provide an appropriate JSON datastructure, got '{}': {}",
-                        result.trim(),
-                        e
-                    )
-                })?;
+            let getresp_json: usp_generator::GetResp = serde_json::from_str(&result)?;
             serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
         }
         MsgType::USPNotify {
@@ -440,13 +411,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
         } => {
             let args = args.join(" ");
             let v = if !args.is_empty() {
-                serde_json::from_str::<Vec<(&str, &str)>>(&args).map_err(|e| {
-                    format!(
-                        "Please provide an appropriate JSON datastructure, got '{}': {}",
-                        args.trim(),
-                        e
-                    )
-                })?
+                serde_json::from_str::<Vec<(&str, &str)>>(&args)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\",  got '{}'", args))?
             } else {
                 Vec::new()
             };
@@ -462,15 +428,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
             args,
         } => {
             let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args).map_err(
-                |e| {
-                    format!(
-                        "Please provide an appropriate JSON datastructure, got '{}': {}",
-                        args.trim(),
-                        e
-                    )
-                },
-            )?;
+            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\",  got '{}'", args))?;
             serialize_into_vec(&usp_generator::usp_set_request(
                 allow_partial,
                 v.iter()
@@ -479,11 +438,10 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>, Box<dyn Error>> {
                     .as_slice(),
             ))
         }
-    }
-    .map_err(|_| "Cannot encode message".into())
+    }.with_context(|| "While trying to encode message to ProtoBuf")
 }
 
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<(), Box<dyn Error>> {
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -491,12 +449,14 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<(), Box<dy
 
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
-        .map_err(|e| format!("Could not deserialise Msg body: {}", e))?;
+        .with_context(|| "Failed trying to deserialise Msg body")?;
+
     body.write_message(&mut writer)
-        .expect("Failed encoding USP Msg");
+        .with_context(|| "Failed encoding USP Msg")?;
 
     if let Some(filename) = filename {
-        std::fs::write(filename, buf)?;
+        std::fs::write(&filename, buf)
+            .with_context(|| format!("Failed writing to file {:?}", &filename))?;
     } else {
         stdout().write_all(&buf)?;
     }
@@ -504,11 +464,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<(), Box<dy
     Ok(())
 }
 
-fn encode_msg(
-    msgid: String,
-    filename: Option<PathBuf>,
-    typ: MsgType,
-) -> Result<(), Box<dyn Error>> {
+fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -516,13 +472,14 @@ fn encode_msg(
 
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
-        .map_err(|e| format!("Could not deserialise Msg body: {}", e))?;
+        .with_context(|| "Failed trying to deserialise Msg body")?;
     usp_generator::usp_msg(msgid, body)
         .write_message(&mut writer)
-        .expect("Failed encoding USP Msg");
+        .with_context(|| "Failed encoding USP Msg")?;
 
     if let Some(filename) = filename {
-        std::fs::write(filename, buf)?;
+        std::fs::write(&filename, buf)
+            .with_context(|| format!("Failed writing to file {:?}", &filename))?;
     } else {
         stdout().write_all(&buf)?;
     }
@@ -530,7 +487,7 @@ fn encode_msg(
     Ok(())
 }
 
-fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type::*;
 
     let fp = File::open(&in_file)?;
@@ -552,7 +509,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn Erro
     Ok(())
 }
 
-fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
     use rusp::usp_record::mod_Record::OneOfrecord_type::*;
 
@@ -570,9 +527,9 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<(), Box<dyn
 
             let payload = context.payload;
             let msg = decode_msg(&payload);
-            let body = msg.body.unwrap();
+            let body = msg.body.with_context(|| "Failed extracting USP Msg body")?;
             body.write_message(&mut writer)
-                .expect("Cannot encode message");
+                .with_context(|| "Failed encoding USP Msg body")?;
             std::fs::write(&out_file, buf)?;
         }
         session_context(_) => unreachable!(),
@@ -587,7 +544,7 @@ fn wrap_msg_raw(
     from: Option<String>,
     to: Option<String>,
     filename: Option<PathBuf>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
 
     let mut msg = Vec::new();
@@ -603,7 +560,7 @@ fn wrap_msg_raw(
         &msg,
     )
     .write_message(&mut writer)
-    .expect("Failed encoding USP Record");
+    .with_context(|| "Failed encoding USP Record")?;
 
     if let Some(filename) = filename {
         std::fs::write(filename, buf)?;
@@ -615,7 +572,7 @@ fn wrap_msg_raw(
 }
 
 #[paw::main]
-fn main(opt: Rusp) -> Result<(), Box<dyn Error>> {
+fn main(opt: Rusp) -> Result<()> {
     let Rusp { json, action } = opt;
     match action {
         RuspAction::DecodeRecordFiles { files } => decode_record_files(files, json),
@@ -636,11 +593,7 @@ fn main(opt: Rusp) -> Result<(), Box<dyn Error>> {
             to,
             filename,
         } => wrap_msg_raw(version, from, to, filename),
-    }
-    .map_err(|e| {
-        eprintln!("Whoopsiedoodles! Something went wrong, this is what we've got:");
-        e
-    })?;
+    }?;
 
     Ok(())
 }
