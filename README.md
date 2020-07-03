@@ -30,7 +30,7 @@ The toolkit includes:
   * Decoding of **USP** Record Protobuf bytestreams from standard input
   * Decoding of **USP** Record Protobuf bytestreams from file(s)
   * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
-  * Generation of **USP** Msg Protobuf bytestreams for selected messages and Error
+  * Generation of **USP** Msg Protobuf bytestreams and C char arrays for selected messages and Error
 
 ## How to use it?
 
@@ -54,7 +54,7 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 
 messages via commandline tool.
 
-**NEWSFLASH**: As of version 0.8.1 the tool supports a `--json` option for the output of decoded USP Records and Messages in true JSON, e.g. for further automated processing.
+**NEWSFLASH**: As of version 0.9.0 the tool supports a `-c` to output generated USP Messages as C char arrays
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -72,7 +72,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.8"
+rusp = "0.9"
 quick-protobuf = "0.7"
 
 ...
