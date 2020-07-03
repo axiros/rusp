@@ -46,6 +46,9 @@ enum RuspAction {
     /// Encode command line input into a single raw USP message
     #[structopt(name = "encode_msg")]
     EncodeMsg {
+        /// Output the serialised protobuf as C char array
+        #[structopt(short = "c")]
+        as_c_array: bool,
         /// The message ID to use in the USP Msg header
         msgid: String,
         /// Filename (will output to standard output if omitted)
@@ -59,6 +62,9 @@ enum RuspAction {
     /// Encode command line input into a single raw USP message body
     #[structopt(name = "encode_msg_body")]
     EncodeMsgBody {
+        /// Output the serialised protobuf as C char array
+        #[structopt(short = "c")]
+        as_c_array: bool,
         /// Filename (will output to standard output if omitted)
         #[structopt(parse(from_os_str), short = "f", long = "file")]
         /// Output filename of file to encode USP protobuf message to
@@ -90,6 +96,9 @@ enum RuspAction {
     /// Wrap msg from stdin into a single raw USP record
     #[structopt(name = "wrap_msg_raw")]
     WrapMsgRaw {
+        /// Output the serialised protobuf as C char array
+        #[structopt(short = "c")]
+        as_c_array: bool,
         #[structopt(long = "version")]
         /// USP specification version
         version: Option<String>,
@@ -441,7 +450,36 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
     }.with_context(|| "While trying to encode message to ProtoBuf")
 }
 
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<()> {
+fn write_buffer(filename: Option<PathBuf>, buf: &[u8], as_c_array: bool) -> Result<()> {
+    let mut out: Box<dyn Write> = if let Some(filename) = filename {
+        Box::new(File::create(filename)?)
+    } else {
+        Box::new(stdout())
+    };
+
+    if as_c_array {
+        writeln!(out, "unsigned int pb_len = {};", buf.len())?;
+        writeln!(out, "const char pb[] = {{")?;
+        for chunk in buf.chunks(5) {
+            write!(out, "  ")?;
+            for i in chunk {
+                if i.is_ascii_alphanumeric() {
+                    write!(out, "0x{:02x} /* {} */, ", i, char::from(*i))?;
+                } else {
+                    write!(out, "0x{:02x},         ", i)?;
+                }
+            }
+            writeln!(out)?;
+        }
+        writeln!(out, "}};")?;
+    } else {
+        out.write_all(&buf)?;
+    }
+
+    Ok(())
+}
+
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -454,17 +492,15 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType) -> Result<()> {
     body.write_message(&mut writer)
         .with_context(|| "Failed encoding USP Msg")?;
 
-    if let Some(filename) = filename {
-        std::fs::write(&filename, buf)
-            .with_context(|| format!("Failed writing to file {:?}", &filename))?;
-    } else {
-        stdout().write_all(&buf)?;
-    }
-
-    Ok(())
+    write_buffer(filename, &buf, as_c_array)
 }
 
-fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) -> Result<()> {
+fn encode_msg(
+    msgid: String,
+    filename: Option<PathBuf>,
+    typ: MsgType,
+    as_c_array: bool,
+) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -477,14 +513,7 @@ fn encode_msg(msgid: String, filename: Option<PathBuf>, typ: MsgType) -> Result<
         .write_message(&mut writer)
         .with_context(|| "Failed encoding USP Msg")?;
 
-    if let Some(filename) = filename {
-        std::fs::write(&filename, buf)
-            .with_context(|| format!("Failed writing to file {:?}", &filename))?;
-    } else {
-        stdout().write_all(&buf)?;
-    }
-
-    Ok(())
+    write_buffer(filename, &buf, as_c_array)
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
@@ -544,6 +573,7 @@ fn wrap_msg_raw(
     from: Option<String>,
     to: Option<String>,
     filename: Option<PathBuf>,
+    as_c_array: bool,
 ) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
 
@@ -562,13 +592,7 @@ fn wrap_msg_raw(
     .write_message(&mut writer)
     .with_context(|| "Failed encoding USP Record")?;
 
-    if let Some(filename) = filename {
-        std::fs::write(filename, buf)?;
-    } else {
-        stdout().write_all(&buf)?;
-    }
-
-    Ok(())
+    write_buffer(filename, &buf, as_c_array)
 }
 
 #[paw::main]
@@ -579,12 +603,17 @@ fn main(opt: Rusp) -> Result<()> {
         RuspAction::DecodeRecord {} => decode_record_stdin(json),
         RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, json),
         RuspAction::DecodeMsg {} => decode_msg_stdin(json),
-        RuspAction::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ),
+        RuspAction::EncodeMsgBody {
+            filename,
+            typ,
+            as_c_array,
+        } => encode_msg_body(filename, typ, as_c_array),
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
-        } => encode_msg(msgid, filename, typ),
+            as_c_array,
+        } => encode_msg(msgid, filename, typ, as_c_array),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
         RuspAction::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
         RuspAction::WrapMsgRaw {
@@ -592,7 +621,8 @@ fn main(opt: Rusp) -> Result<()> {
             from,
             to,
             filename,
-        } => wrap_msg_raw(version, from, to, filename),
+            as_c_array,
+        } => wrap_msg_raw(version, from, to, filename, as_c_array),
     }?;
 
     Ok(())
