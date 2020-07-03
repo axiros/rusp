@@ -457,18 +457,39 @@ fn write_buffer(filename: Option<PathBuf>, buf: &[u8], as_c_array: bool) -> Resu
         Box::new(stdout())
     };
 
+    fn check_printable(c: u8) -> bool {
+        match c as char {
+            ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
+            | '-' | '_' => true,
+            _ if c.is_ascii_alphanumeric() => true,
+            _ => false,
+        }
+    }
+
     if as_c_array {
+        const CHUNK_LEN: usize = 8;
         writeln!(out, "unsigned int pb_len = {};", buf.len())?;
         writeln!(out, "const char pb[] = {{")?;
-        for chunk in buf.chunks(5) {
+        for chunk in buf.chunks(CHUNK_LEN) {
             write!(out, "  ")?;
             for i in chunk {
-                if i.is_ascii_alphanumeric() {
-                    write!(out, "0x{:02x} /* {} */, ", i, char::from(*i))?;
+                write!(out, "0x{:02x}, ", i)?;
+            }
+
+            for _ in chunk.len()..CHUNK_LEN {
+                write!(out, "      ")?;
+            }
+
+            write!(out, "/* ")?;
+            for i in chunk {
+                if check_printable(*i) {
+                    write!(out, "{}", char::from(*i))?;
                 } else {
-                    write!(out, "0x{:02x},         ", i)?;
+                    write!(out, "_")?;
                 }
             }
+            write!(out, " */")?;
+
             writeln!(out)?;
         }
         writeln!(out, "}};")?;
