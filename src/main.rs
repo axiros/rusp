@@ -351,7 +351,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let obj_paths = serde_json::from_str::<Vec<&str>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object instance path>], ...]\", got '{}'", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got '{}'", obj_paths))?;
             serialize_into_vec(&usp_generator::usp_delete_request(
                 allow_partial,
                 &obj_paths,
@@ -363,7 +363,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Path name>], ...]\",  got '{}'", paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\",  got '{}'", paths))?;
             serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
         }
         MsgType::USPGetInstances {
@@ -372,7 +372,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>], ...]\",  got '{}'", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\",  got '{}'", obj_paths))?;
             serialize_into_vec(&usp_generator::usp_get_instances_request(
                 v.as_slice(),
                 first_level_only,
@@ -387,7 +387,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>], ...]\",  got '{}'", paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\",  got '{}'", paths))?;
             serialize_into_vec(&usp_generator::usp_get_supported_dm_request(
                 v.as_slice(),
                 first_level_only,
