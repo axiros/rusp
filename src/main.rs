@@ -264,7 +264,7 @@ fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<()> {
                     .with_context(|| "Failed to serialize JSON")?
             );
         } else {
-            println!("{}", decode_record(&contents));
+            println!("{}", decode_msg(&contents));
         }
     }
 
@@ -282,7 +282,7 @@ fn decode_msg_stdin(json: bool) -> Result<()> {
                 .with_context(|| "Failed to serialize JSON")?
         );
     } else {
-        println!("{}", decode_record(&contents));
+        println!("{}", decode_msg(&contents));
     }
 
     Ok(())
