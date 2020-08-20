@@ -294,10 +294,10 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
                 writeln!(out, "{}", &decoded)?;
             }
             OutputFormat::CStr => {
-                write_buffer_c_str(out, contents.as_slice())?;
+                write_c_str(out, contents.as_slice())?;
             }
             OutputFormat::CArray => {
-                write_buffer(out, contents.as_slice(), true)?;
+                write_c_array(out, contents.as_slice())?;
             }
         }
     }
@@ -327,10 +327,10 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
             writeln!(out, "{}", &decoded)?;
         }
         OutputFormat::CStr => {
-            write_buffer_c_str(out, contents.as_slice())?;
+            write_c_str(out, contents.as_slice())?;
         }
         OutputFormat::CArray => {
-            write_buffer(out, contents.as_slice(), true)?;
+            write_c_array(out, contents.as_slice())?;
         }
     }
 
@@ -362,10 +362,10 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
                 writeln!(out, "{}", &decoded)?;
             }
             OutputFormat::CStr => {
-                write_buffer_c_str(out, contents.as_slice())?;
+                write_c_str(out, contents.as_slice())?;
             }
             OutputFormat::CArray => {
-                write_buffer(out, contents.as_slice(), true)?;
+                write_c_array(out, contents.as_slice())?;
             }
         }
     }
@@ -395,10 +395,10 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
             writeln!(out, "{}", &decoded)?;
         }
         OutputFormat::CStr => {
-            write_buffer_c_str(out, contents.as_slice())?;
+            write_c_str(out, contents.as_slice())?;
         }
         OutputFormat::CArray => {
-            write_buffer(out, contents.as_slice(), true)?;
+            write_c_array(out, contents.as_slice())?;
         }
     }
 
@@ -529,7 +529,55 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
     }.context("While trying to encode message to ProtoBuf")
 }
 
-fn write_buffer_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
+fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
+    Ok(if let Some(filename) = filename {
+        Box::new(File::create(filename)?)
+    } else {
+        Box::new(stdout())
+    })
+}
+
+fn write_c_array(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
+    fn check_printable(c: u8) -> bool {
+        match c as char {
+            ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
+            | '-' | '_' => true,
+            _ if c.is_ascii_alphanumeric() => true,
+            _ => false,
+        }
+    }
+
+    const CHUNK_LEN: usize = 8;
+    writeln!(out, "unsigned int pb_len = {};", buf.len())?;
+    writeln!(out, "const char pb[] = {{")?;
+    for chunk in buf.chunks(CHUNK_LEN) {
+        write!(out, "  ")?;
+        for i in chunk {
+            write!(out, "0x{:02x}, ", i)?;
+        }
+
+        for _ in chunk.len()..CHUNK_LEN {
+            write!(out, "      ")?;
+        }
+
+        write!(out, "/* ")?;
+        for i in chunk {
+            if check_printable(*i) {
+                write!(out, "{}", char::from(*i))?;
+            } else {
+                write!(out, "_")?;
+            }
+        }
+        write!(out, " */")?;
+
+        writeln!(out)?;
+    }
+    writeln!(out, "}};")?;
+
+    Ok(())
+}
+
+fn write_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
@@ -553,57 +601,6 @@ fn write_buffer_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
-    Ok(if let Some(filename) = filename {
-        Box::new(File::create(filename)?)
-    } else {
-        Box::new(stdout())
-    })
-}
-
-fn write_buffer(mut out: Box<dyn Write>, buf: &[u8], as_c_array: bool) -> Result<()> {
-    fn check_printable(c: u8) -> bool {
-        match c as char {
-            ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
-            | '-' | '_' => true,
-            _ if c.is_ascii_alphanumeric() => true,
-            _ => false,
-        }
-    }
-
-    if as_c_array {
-        const CHUNK_LEN: usize = 8;
-        writeln!(out, "unsigned int pb_len = {};", buf.len())?;
-        writeln!(out, "const char pb[] = {{")?;
-        for chunk in buf.chunks(CHUNK_LEN) {
-            write!(out, "  ")?;
-            for i in chunk {
-                write!(out, "0x{:02x}, ", i)?;
-            }
-
-            for _ in chunk.len()..CHUNK_LEN {
-                write!(out, "      ")?;
-            }
-
-            write!(out, "/* ")?;
-            for i in chunk {
-                if check_printable(*i) {
-                    write!(out, "{}", char::from(*i))?;
-                } else {
-                    write!(out, "_")?;
-                }
-            }
-            write!(out, " */")?;
-
-            writeln!(out)?;
-        }
-        writeln!(out, "}};")?;
-    } else {
-        out.write_all(&buf)?;
-    }
-
-    Ok(())
-}
 
 fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
@@ -619,9 +616,13 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) ->
         .context("Failed encoding USP Msg")?;
 
     // Open output stream
-    let out = get_out_stream(filename)?;
+    let mut out = get_out_stream(filename)?;
 
-    write_buffer(out, &buf, as_c_array)
+    if as_c_array {
+        write_c_array(out, &buf)
+    } else {
+        Ok(out.write_all(&buf)?)
+    }
 }
 
 fn encode_msg(
@@ -643,9 +644,13 @@ fn encode_msg(
         .context("Failed encoding USP Msg")?;
 
     // Open output stream
-    let out = get_out_stream(filename)?;
+    let mut out = get_out_stream(filename)?;
 
-    write_buffer(out, &buf, as_c_array)
+    if as_c_array {
+        write_c_array(out, &buf)
+    } else {
+        Ok(out.write_all(&buf)?)
+    }
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
@@ -725,9 +730,13 @@ fn wrap_msg_raw(
     .context("Failed encoding USP Record")?;
 
     // Open output stream
-    let out = get_out_stream(filename)?;
+    let mut out = get_out_stream(filename)?;
 
-    write_buffer(out, &buf, as_c_array)
+    if as_c_array {
+        write_c_array(out, &buf)
+    } else {
+        Ok(out.write_all(&buf)?)
+    }
 }
 
 fn main() -> Result<()> {
