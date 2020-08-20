@@ -279,22 +279,25 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
         // Try to parse bytes as a protobuf encoded USP Message
         let decoded = try_decode_msg(&contents)?;
 
+        // Open output stream
+        let mut out = get_out_stream(None)?;
+
         match format {
             OutputFormat::JSON => {
-                println!(
+                writeln!(
+                    out,
                     "{}",
-                    serde_json::to_string_pretty(&decoded)
-                        .with_context(|| "Failed to serialize JSON")?
-                );
+                    serde_json::to_string_pretty(&decoded).context("Failed to serialize JSON")?
+                )?;
             }
             OutputFormat::Native => {
-                println!("{}", &decoded);
+                writeln!(out, "{}", &decoded)?;
             }
             OutputFormat::CStr => {
-                write_buffer_c_str(None, contents.as_slice())?;
+                write_buffer_c_str(out, contents.as_slice())?;
             }
             OutputFormat::CArray => {
-                write_buffer(None, contents.as_slice(), true)?;
+                write_buffer(out, contents.as_slice(), true)?;
             }
         }
     }
@@ -309,22 +312,25 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
     // Try to parse bytes as a protobuf encoded USP Message
     let decoded = try_decode_msg(&contents)?;
 
+    // Open output stream
+    let mut out = get_out_stream(None)?;
+
     match format {
         OutputFormat::JSON => {
-            println!(
+            writeln!(
+                out,
                 "{}",
-                serde_json::to_string_pretty(&decoded)
-                    .with_context(|| "Failed to serialize JSON")?
-            );
+                serde_json::to_string_pretty(&decoded).context("Failed to serialize JSON")?
+            )?;
         }
         OutputFormat::Native => {
-            println!("{}", &decoded);
+            writeln!(out, "{}", &decoded)?;
         }
         OutputFormat::CStr => {
-            write_buffer_c_str(None, contents.as_slice())?;
+            write_buffer_c_str(out, contents.as_slice())?;
         }
         OutputFormat::CArray => {
-            write_buffer(None, contents.as_slice(), true)?;
+            write_buffer(out, contents.as_slice(), true)?;
         }
     }
 
@@ -341,22 +347,25 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
         // Try to parse bytes as a protobuf encoded USP Record
         let decoded = try_decode_record(&contents)?;
 
+        // Open output stream
+        let mut out = get_out_stream(None)?;
+
         match format {
             OutputFormat::JSON => {
-                println!(
+                writeln!(
+                    &mut out,
                     "{}",
-                    serde_json::to_string_pretty(&decoded)
-                        .with_context(|| "Failed to serialize JSON")?
-                );
+                    serde_json::to_string_pretty(&decoded).context("Failed to serialize JSON")?
+                )?;
             }
             OutputFormat::Native => {
-                println!("{}", &decoded);
+                writeln!(out, "{}", &decoded)?;
             }
             OutputFormat::CStr => {
-                write_buffer_c_str(None, contents.as_slice())?;
+                write_buffer_c_str(out, contents.as_slice())?;
             }
             OutputFormat::CArray => {
-                write_buffer(None, contents.as_slice(), true)?;
+                write_buffer(out, contents.as_slice(), true)?;
             }
         }
     }
@@ -371,22 +380,25 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
     // Try to parse bytes as a protobuf encoded USP Record
     let decoded = try_decode_record(&contents)?;
 
+    // Open output stream
+    let mut out = get_out_stream(None)?;
+
     match format {
         OutputFormat::JSON => {
-            println!(
+            writeln!(
+                out,
                 "{}",
-                serde_json::to_string_pretty(&decoded)
-                    .with_context(|| "Failed to serialize JSON")?
-            );
+                serde_json::to_string_pretty(&decoded).context("Failed to serialize JSON")?
+            )?;
         }
         OutputFormat::Native => {
-            println!("{}", &decoded);
+            writeln!(out, "{}", &decoded)?;
         }
         OutputFormat::CStr => {
-            write_buffer_c_str(None, contents.as_slice())?;
+            write_buffer_c_str(out, contents.as_slice())?;
         }
         OutputFormat::CArray => {
-            write_buffer(None, contents.as_slice(), true)?;
+            write_buffer(out, contents.as_slice(), true)?;
         }
     }
 
@@ -514,16 +526,10 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
                     .as_slice(),
             ))
         }
-    }.with_context(|| "While trying to encode message to ProtoBuf")
+    }.context("While trying to encode message to ProtoBuf")
 }
 
-fn write_buffer_c_str(filename: Option<PathBuf>, buf: &[u8]) -> Result<()> {
-    let mut out: Box<dyn Write> = if let Some(filename) = filename {
-        Box::new(File::create(filename)?)
-    } else {
-        Box::new(stdout())
-    };
-
+fn write_buffer_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
@@ -547,13 +553,15 @@ fn write_buffer_c_str(filename: Option<PathBuf>, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-fn write_buffer(filename: Option<PathBuf>, buf: &[u8], as_c_array: bool) -> Result<()> {
-    let mut out: Box<dyn Write> = if let Some(filename) = filename {
+fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
+    Ok(if let Some(filename) = filename {
         Box::new(File::create(filename)?)
     } else {
         Box::new(stdout())
-    };
+    })
+}
 
+fn write_buffer(mut out: Box<dyn Write>, buf: &[u8], as_c_array: bool) -> Result<()> {
     fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
@@ -604,13 +612,16 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) ->
     let mut writer = Writer::new(&mut buf);
 
     let encoded_body = encode_msg_body_buf(typ)?;
-    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
-        .with_context(|| "Failed trying to deserialise Msg body")?;
+    let body: rusp::usp::Body =
+        deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
 
     body.write_message(&mut writer)
-        .with_context(|| "Failed encoding USP Msg")?;
+        .context("Failed encoding USP Msg")?;
 
-    write_buffer(filename, &buf, as_c_array)
+    // Open output stream
+    let out = get_out_stream(filename)?;
+
+    write_buffer(out, &buf, as_c_array)
 }
 
 fn encode_msg(
@@ -625,13 +636,16 @@ fn encode_msg(
     let mut writer = Writer::new(&mut buf);
 
     let encoded_body = encode_msg_body_buf(typ)?;
-    let body: rusp::usp::Body = deserialize_from_slice(&encoded_body)
-        .with_context(|| "Failed trying to deserialise Msg body")?;
+    let body: rusp::usp::Body =
+        deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
     usp_generator::usp_msg(msgid, body)
         .write_message(&mut writer)
-        .with_context(|| "Failed encoding USP Msg")?;
+        .context("Failed encoding USP Msg")?;
 
-    write_buffer(filename, &buf, as_c_array)
+    // Open output stream
+    let out = get_out_stream(filename)?;
+
+    write_buffer(out, &buf, as_c_array)
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
@@ -674,9 +688,9 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
 
             let payload = context.payload;
             let msg = try_decode_msg(&payload)?;
-            let body = msg.body.with_context(|| "Failed extracting USP Msg body")?;
+            let body = msg.body.context("Failed extracting USP Msg body")?;
             body.write_message(&mut writer)
-                .with_context(|| "Failed encoding USP Msg body")?;
+                .context("Failed encoding USP Msg body")?;
             std::fs::write(&out_file, buf)?;
         }
         session_context(_) => unreachable!(),
@@ -708,9 +722,12 @@ fn wrap_msg_raw(
         &msg,
     )
     .write_message(&mut writer)
-    .with_context(|| "Failed encoding USP Record")?;
+    .context("Failed encoding USP Record")?;
 
-    write_buffer(filename, &buf, as_c_array)
+    // Open output stream
+    let out = get_out_stream(filename)?;
+
+    write_buffer(out, &buf, as_c_array)
 }
 
 fn main() -> Result<()> {
