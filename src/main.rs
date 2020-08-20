@@ -638,7 +638,7 @@ fn write_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) -> Result<()> {
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -654,18 +654,34 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) ->
     // Open output stream
     let mut out = get_out_stream(filename)?;
 
-    if as_c_array {
-        write_c_array(out, &buf)
-    } else {
-        Ok(out.write_all(&buf)?)
-    }
+    Ok(match format {
+        OutputFormat::JSON => {
+            writeln!(
+                out,
+                "{}",
+                serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
+            )?;
+        }
+        OutputFormat::Native => {
+            writeln!(out, "{}", &body)?;
+        }
+        OutputFormat::CStr => {
+            write_c_str(out, buf.as_slice())?;
+        }
+        OutputFormat::CArray => {
+            write_c_array(out, buf.as_slice())?;
+        }
+        OutputFormat::Protobuf => {
+            out.write_all(&buf.as_slice())?;
+        }
+    })
 }
 
 fn encode_msg(
     msgid: String,
     filename: Option<PathBuf>,
     typ: MsgType,
-    as_c_array: bool,
+    format: OutputFormat,
 ) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
@@ -675,18 +691,35 @@ fn encode_msg(
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body =
         deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-    usp_generator::usp_msg(msgid, body)
-        .write_message(&mut writer)
+    let msg = usp_generator::usp_msg(msgid, body);
+
+    msg.write_message(&mut writer)
         .context("Failed encoding USP Msg")?;
 
     // Open output stream
     let mut out = get_out_stream(filename)?;
 
-    if as_c_array {
-        write_c_array(out, &buf)
-    } else {
-        Ok(out.write_all(&buf)?)
-    }
+    Ok(match format {
+        OutputFormat::JSON => {
+            writeln!(
+                out,
+                "{}",
+                serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
+            )?;
+        }
+        OutputFormat::Native => {
+            writeln!(out, "{}", &msg)?;
+        }
+        OutputFormat::CStr => {
+            write_c_str(out, buf.as_slice())?;
+        }
+        OutputFormat::CArray => {
+            write_c_array(out, buf.as_slice())?;
+        }
+        OutputFormat::Protobuf => {
+            out.write_all(&buf.as_slice())?;
+        }
+    })
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
@@ -808,13 +841,30 @@ fn main() -> Result<()> {
             filename,
             typ,
             as_c_array,
-        } => encode_msg_body(filename, typ, as_c_array),
+        } => {
+            let format = if as_c_array {
+                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
+                OutputFormat::CArray
+            } else {
+                format
+            };
+            encode_msg_body(filename, typ, format)
+        }
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
             as_c_array,
-        } => encode_msg(msgid, filename, typ, as_c_array),
+        } => {
+            let format = if as_c_array {
+                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
+                OutputFormat::CArray
+            } else {
+                format
+            };
+
+            encode_msg(msgid, filename, typ, format)
+        }
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file),
         RuspAction::ExtractMsgBody { in_file, out_file } => extract_msg_body(&in_file, &out_file),
         RuspAction::WrapMsgRaw {
