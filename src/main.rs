@@ -6,17 +6,31 @@ use structopt::*;
 use anyhow::{Context, Result};
 
 use rusp::{
-    usp_decoder::{decode_msg, decode_record},
+    usp_decoder::{try_decode_msg, try_decode_record},
     usp_generator,
     usp_types::NotifyType,
 };
 
+/// The supported output formats
+enum OutputFormat {
+    /// Our custom text representation
+    Native,
+    /// Valid JSON format
+    JSON,
+    /// Protobuf output as C strings or Rust byarrays where non-ascii characters are replaced with
+    /// backslashed escaped hex codes
+    CStr,
+}
+
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
 struct Rusp {
-    #[structopt(long = "json")]
+    #[structopt(long = "json", conflicts_with = "cstr")]
     /// Output as JSON
     json: bool,
+    #[structopt(long = "cstr", conflicts_with = "json")]
+    /// Output binary as Protobuf in a C string / Rust bytearray representation
+    cstr: bool,
     #[structopt(flatten)]
     action: RuspAction,
 }
@@ -250,77 +264,113 @@ enum MsgType {
     },
 }
 
-fn decode_msg_files(files: Vec<PathBuf>, json: bool) -> Result<()> {
+fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
         let mut contents = Vec::new();
         buf_reader.read_to_end(&mut contents)?;
 
-        if json {
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&decode_msg(&contents))
-                    .with_context(|| "Failed to serialize JSON")?
-            );
-        } else {
-            println!("{}", decode_msg(&contents));
+        // Try to parse bytes as a protobuf encoded USP Message
+        let decoded = try_decode_msg(&contents)?;
+
+        match format {
+            OutputFormat::JSON => {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&decoded)
+                        .with_context(|| "Failed to serialize JSON")?
+                );
+            }
+            OutputFormat::Native => {
+                println!("{}", &decoded);
+            }
+            OutputFormat::CStr => {
+                write_buffer_c_str(None, contents.as_slice())?;
+            }
         }
     }
 
     Ok(())
 }
 
-fn decode_msg_stdin(json: bool) -> Result<()> {
+fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    if json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&decode_msg(&contents))
-                .with_context(|| "Failed to serialize JSON")?
-        );
-    } else {
-        println!("{}", decode_msg(&contents));
+    // Try to parse bytes as a protobuf encoded USP Message
+    let decoded = try_decode_msg(&contents)?;
+
+    match format {
+        OutputFormat::JSON => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&decoded)
+                    .with_context(|| "Failed to serialize JSON")?
+            );
+        }
+        OutputFormat::Native => {
+            println!("{}", &decoded);
+        }
+        OutputFormat::CStr => {
+            write_buffer_c_str(None, contents.as_slice())?;
+        }
     }
 
     Ok(())
 }
 
-fn decode_record_files(files: Vec<PathBuf>, json: bool) -> Result<()> {
+fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
         let mut contents = Vec::new();
         buf_reader.read_to_end(&mut contents)?;
 
-        if json {
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&decode_record(&contents))
-                    .with_context(|| "Failed to serialize JSON")?
-            );
-        } else {
-            println!("{}", decode_record(&contents));
+        // Try to parse bytes as a protobuf encoded USP Record
+        let decoded = try_decode_record(&contents)?;
+
+        match format {
+            OutputFormat::JSON => {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&decoded)
+                        .with_context(|| "Failed to serialize JSON")?
+                );
+            }
+            OutputFormat::Native => {
+                println!("{}", &decoded);
+            }
+            OutputFormat::CStr => {
+                write_buffer_c_str(None, contents.as_slice())?;
+            }
         }
     }
 
     Ok(())
 }
 
-fn decode_record_stdin(json: bool) -> Result<()> {
+fn decode_record_stdin(format: OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    if json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&decode_record(&contents)).with_context(|| "Failed to
-                serialize JSON")?
-        );
-    } else {
-        println!("{}", decode_record(&contents));
+    // Try to parse bytes as a protobuf encoded USP Record
+    let decoded = try_decode_record(&contents)?;
+
+    match format {
+        OutputFormat::JSON => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&decoded)
+                    .with_context(|| "Failed to serialize JSON")?
+            );
+        }
+        OutputFormat::Native => {
+            println!("{}", &decoded);
+        }
+        OutputFormat::CStr => {
+            write_buffer_c_str(None, contents.as_slice())?;
+        }
     }
 
     Ok(())
@@ -450,6 +500,36 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
     }.with_context(|| "While trying to encode message to ProtoBuf")
 }
 
+fn write_buffer_c_str(filename: Option<PathBuf>, buf: &[u8]) -> Result<()> {
+    let mut out: Box<dyn Write> = if let Some(filename) = filename {
+        Box::new(File::create(filename)?)
+    } else {
+        Box::new(stdout())
+    };
+
+    fn check_printable(c: u8) -> bool {
+        match c as char {
+            ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
+            | '_' => true,
+            _ if c.is_ascii_alphanumeric() => true,
+            _ => false,
+        }
+    }
+
+    write!(out, "\"")?;
+    for i in buf {
+        if check_printable(*i) {
+            write!(out, "{}", char::from(*i))?;
+        } else {
+            write!(out, "\\x{:02x}", i)?;
+        }
+    }
+
+    writeln!(out, "\"")?;
+
+    Ok(())
+}
+
 fn write_buffer(filename: Option<PathBuf>, buf: &[u8], as_c_array: bool) -> Result<()> {
     let mut out: Box<dyn Write> = if let Some(filename) = filename {
         Box::new(File::create(filename)?)
@@ -545,7 +625,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     let mut contents = Vec::new();
     buf_reader.read_to_end(&mut contents)?;
 
-    let record = decode_record(&contents);
+    let record = try_decode_record(&contents)?;
 
     match record.record_type {
         no_session_context(context) => {
@@ -568,7 +648,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     let mut contents = Vec::new();
     buf_reader.read_to_end(&mut contents)?;
 
-    let record = decode_record(&contents);
+    let record = try_decode_record(&contents)?;
 
     match record.record_type {
         no_session_context(context) => {
@@ -576,7 +656,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
             let mut writer = Writer::new(&mut buf);
 
             let payload = context.payload;
-            let msg = decode_msg(&payload);
+            let msg = try_decode_msg(&payload)?;
             let body = msg.body.with_context(|| "Failed extracting USP Msg body")?;
             body.write_message(&mut writer)
                 .with_context(|| "Failed encoding USP Msg body")?;
@@ -618,12 +698,24 @@ fn wrap_msg_raw(
 
 #[paw::main]
 fn main(opt: Rusp) -> Result<()> {
-    let Rusp { json, action } = opt;
+    let Rusp { json, cstr, action } = opt;
+
+    // Pass on the user chosen format to use for the output
+    let format = {
+        if json == true {
+            OutputFormat::JSON
+        } else if cstr == true {
+            OutputFormat::CStr
+        } else {
+            OutputFormat::Native
+        }
+    };
+
     match action {
-        RuspAction::DecodeRecordFiles { files } => decode_record_files(files, json),
-        RuspAction::DecodeRecord {} => decode_record_stdin(json),
-        RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, json),
-        RuspAction::DecodeMsg {} => decode_msg_stdin(json),
+        RuspAction::DecodeRecordFiles { files } => decode_record_files(files, format),
+        RuspAction::DecodeRecord {} => decode_record_stdin(format),
+        RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, format),
+        RuspAction::DecodeMsg {} => decode_msg_stdin(format),
         RuspAction::EncodeMsgBody {
             filename,
             typ,
