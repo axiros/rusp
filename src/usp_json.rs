@@ -1,6 +1,7 @@
 use crate::usp::*;
 use crate::usp_record::*;
 
+use anyhow::Context;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 impl Serialize for Record<'_> {
@@ -20,7 +21,15 @@ impl Serialize for Record<'_> {
         state.serialize_field("sender_cert", &self.sender_cert)?;
 
         if let no_session_context(context) = &self.record_type {
-            state.serialize_field("payload", &decode_msg(&context.payload))?;
+            let msg = try_decode_msg(&context.payload);
+            if let Ok(msg) = msg {
+                state.serialize_field("payload", &msg)?;
+            } else {
+                return Err(serde::ser::Error::custom(
+                    msg.context("parsing of the protobuf USP Message failed")
+                        .unwrap_err(),
+                ));
+            }
         } else {
             return Err(serde::ser::Error::custom("Can't handle session_context!"));
         }

@@ -1,6 +1,7 @@
 use crate::usp::*;
 use crate::usp_record::*;
 
+use anyhow::Context;
 use std::fmt::{Display, Formatter, Result};
 
 const INDENT: usize = 2;
@@ -40,7 +41,18 @@ impl Display for Record<'_> {
         )?;
         match &self.record_type {
             no_session_context(context) => {
-                write!(f, "{:aby$}", decode_msg(&context.payload), aby = aby2)?;
+                let msg = try_decode_msg(&context.payload);
+                if let Ok(msg) = msg {
+                    write!(f, "{:aby$}", msg, aby = aby2)?;
+                } else {
+                    return write!(
+                        f,
+                        "{:aby$}",
+                        msg.context("parsing of the protobuf USP Message failed")
+                            .unwrap_err(),
+                        aby = aby2
+                    );
+                }
             }
             session_context(context) => {
                 write!(f, "{:aby$}", context, aby = aby2)?;
@@ -60,6 +72,23 @@ impl Display for SessionContextRecord<'_> {
 
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
+
+        let data = &self
+            .payload
+            .iter()
+            .flat_map(|e| e.clone().into_owned())
+            .collect::<Vec<u8>>();
+
+        let msg = try_decode_msg(&data);
+        if msg.is_err() {
+            return write!(
+                f,
+                "{:aby$}{}",
+                msg.context("parsing of the protobuf USP Message failed")
+                    .unwrap_err(),
+                aby = aby2
+            );
+        }
 
         writeln!(f, "{:aby$}SessionContextRecord {{", "", aby = aby)?;
         writeln!(
@@ -104,18 +133,7 @@ impl Display for SessionContextRecord<'_> {
             self.payloadrec_sar_state,
             aby = aby2
         )?;
-        write!(
-            f,
-            "{:aby$}",
-            decode_msg(
-                &self
-                    .payload
-                    .iter()
-                    .flat_map(|e| e.clone().into_owned())
-                    .collect::<Vec<u8>>()
-            ),
-            aby = aby2
-        )?;
+        write!(f, "{:aby$}", msg.unwrap(), aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
