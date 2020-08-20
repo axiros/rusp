@@ -20,15 +20,20 @@ enum OutputFormat {
     /// Protobuf output as C strings or Rust byarrays where non-ascii characters are replaced with
     /// backslashed escaped hex codes
     CStr,
+    /// Protobuf output as C array with preview comments for inclusion in source code
+    CArray,
 }
 
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
 struct Rusp {
-    #[structopt(long = "json", conflicts_with = "cstr")]
+    #[structopt(long = "carray", conflicts_with = "cstr", conflicts_with = "json")]
+    /// Output as C array (and length) for inclusion in source code
+    carray: bool,
+    #[structopt(long = "json", conflicts_with = "cstr", conflicts_with = "carray")]
     /// Output as JSON
     json: bool,
-    #[structopt(long = "cstr", conflicts_with = "json")]
+    #[structopt(long = "cstr", conflicts_with = "json", conflicts_with = "carray")]
     /// Output binary as Protobuf in a C string / Rust bytearray representation
     cstr: bool,
     #[structopt(flatten)]
@@ -288,6 +293,9 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
             OutputFormat::CStr => {
                 write_buffer_c_str(None, contents.as_slice())?;
             }
+            OutputFormat::CArray => {
+                write_buffer(None, contents.as_slice(), true)?;
+            }
         }
     }
 
@@ -314,6 +322,9 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
         }
         OutputFormat::CStr => {
             write_buffer_c_str(None, contents.as_slice())?;
+        }
+        OutputFormat::CArray => {
+            write_buffer(None, contents.as_slice(), true)?;
         }
     }
 
@@ -344,6 +355,9 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
             OutputFormat::CStr => {
                 write_buffer_c_str(None, contents.as_slice())?;
             }
+            OutputFormat::CArray => {
+                write_buffer(None, contents.as_slice(), true)?;
+            }
         }
     }
 
@@ -370,6 +384,9 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
         }
         OutputFormat::CStr => {
             write_buffer_c_str(None, contents.as_slice())?;
+        }
+        OutputFormat::CArray => {
+            write_buffer(None, contents.as_slice(), true)?;
         }
     }
 
@@ -698,7 +715,12 @@ fn wrap_msg_raw(
 
 #[paw::main]
 fn main(opt: Rusp) -> Result<()> {
-    let Rusp { json, cstr, action } = opt;
+    let Rusp {
+        action,
+        json,
+        cstr,
+        carray,
+    } = opt;
 
     // Pass on the user chosen format to use for the output
     let format = {
@@ -706,6 +728,8 @@ fn main(opt: Rusp) -> Result<()> {
             OutputFormat::JSON
         } else if cstr == true {
             OutputFormat::CStr
+        } else if carray == true {
+            OutputFormat::CArray
         } else {
             OutputFormat::Native
         }
