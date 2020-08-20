@@ -713,14 +713,13 @@ fn wrap_msg_raw(
     write_buffer(filename, &buf, as_c_array)
 }
 
-#[paw::main]
-fn main(opt: Rusp) -> Result<()> {
+fn main() -> Result<()> {
     let Rusp {
         action,
         json,
         cstr,
         carray,
-    } = opt;
+    } = Rusp::from_args();
 
     // Pass on the user chosen format to use for the output
     let format = {
