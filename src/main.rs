@@ -22,20 +22,45 @@ enum OutputFormat {
     CStr,
     /// Protobuf output as C array with preview comments for inclusion in source code
     CArray,
+    /// Naktive Protobuf binary output
+    Protobuf,
 }
 
 #[derive(StructOpt)]
 #[structopt(name = "rusp", about = "the Rust USP toolkit")]
 struct Rusp {
-    #[structopt(long = "carray", conflicts_with = "cstr", conflicts_with = "json")]
+    #[structopt(
+        long = "carray",
+        conflicts_with = "cstr",
+        conflicts_with = "json",
+        conflicts_with = "protobuf"
+    )]
     /// Output as C array (and length) for inclusion in source code
     carray: bool,
-    #[structopt(long = "json", conflicts_with = "cstr", conflicts_with = "carray")]
+    #[structopt(
+        long = "json",
+        conflicts_with = "cstr",
+        conflicts_with = "carray",
+        conflicts_with = "protobuf"
+    )]
     /// Output as JSON
     json: bool,
-    #[structopt(long = "cstr", conflicts_with = "json", conflicts_with = "carray")]
+    #[structopt(
+        long = "cstr",
+        conflicts_with = "json",
+        conflicts_with = "carray",
+        conflicts_with = "protobuf"
+    )]
     /// Output binary as Protobuf in a C string / Rust bytearray representation
     cstr: bool,
+    #[structopt(
+        long = "protobuf",
+        conflicts_with = "json",
+        conflicts_with = "carray",
+        conflicts_with = "cstr"
+    )]
+    /// Output binary as native Protobuf binary
+    protobuf: bool,
     #[structopt(flatten)]
     action: RuspAction,
 }
@@ -299,6 +324,9 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
             OutputFormat::CArray => {
                 write_c_array(out, contents.as_slice())?;
             }
+            OutputFormat::Protobuf => {
+                out.write_all(&contents.as_slice())?;
+            }
         }
     }
 
@@ -331,6 +359,9 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
         }
         OutputFormat::CArray => {
             write_c_array(out, contents.as_slice())?;
+        }
+        OutputFormat::Protobuf => {
+            out.write_all(&contents.as_slice())?;
         }
     }
 
@@ -367,6 +398,9 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
             OutputFormat::CArray => {
                 write_c_array(out, contents.as_slice())?;
             }
+            OutputFormat::Protobuf => {
+                out.write_all(&contents.as_slice())?;
+            }
         }
     }
 
@@ -399,6 +433,9 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
         }
         OutputFormat::CArray => {
             write_c_array(out, contents.as_slice())?;
+        }
+        OutputFormat::Protobuf => {
+            out.write_all(&contents.as_slice())?;
         }
     }
 
@@ -601,7 +638,6 @@ fn write_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-
 fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, as_c_array: bool) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
@@ -745,16 +781,19 @@ fn main() -> Result<()> {
         json,
         cstr,
         carray,
+        protobuf,
     } = Rusp::from_args();
 
     // Pass on the user chosen format to use for the output
     let format = {
         if json == true {
             OutputFormat::JSON
-        } else if cstr == true {
-            OutputFormat::CStr
         } else if carray == true {
             OutputFormat::CArray
+        } else if cstr == true {
+            OutputFormat::CStr
+        } else if protobuf == true {
+            OutputFormat::Protobuf
         } else {
             OutputFormat::Native
         }
