@@ -54,7 +54,14 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 
 messages via commandline tool.
 
-**NEWSFLASH**: As of version 0.9.0 the tool supports a `-c` to output generated USP Messages as C char arrays
+**NEWSFLASH**: As of version 0.10.0 the tool supports a variety of different output formats via a universal parameter for all `encode` and `decode` commands:`
+```
+        --carray      Output as C array (and length) for inclusion in source code
+        --cstr        Output binary as Protobuf in a C string / Rust bytearray representation
+        --json        Output as JSON
+        --protobuf    Output binary as native Protobuf binary
+```
+The previous `-c` parameter is now deprecated. Also new fallible functions `try_decode_msg` and `try_decode_record` are now available and the infallible ones (which can panic) are now deprecated.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -72,7 +79,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.9"
+rusp = "0.10"
 quick-protobuf = "0.7"
 
 ...
