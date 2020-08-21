@@ -54,7 +54,7 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 
 messages via commandline tool.
 
-**NEWSFLASH**: As of version 0.10.0 the tool supports a variety of different output formats via a universal parameter for all `encode` and `decode` commands:`
+**NEWSFLASH**: As of version 0.10.0 the tool supports a variety of different output formats via a universal parameter for all `encode` and `decode` commands:
 ```
         --carray      Output as C array (and length) for inclusion in source code
         --cstr        Output binary as Protobuf in a C string / Rust bytearray representation
