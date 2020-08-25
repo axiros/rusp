@@ -123,7 +123,7 @@ enum RuspAction {
         #[structopt(parse(from_os_str))]
         /// Input filename of USP protobuf record to decode
         in_file: PathBuf,
-        /// Output filename of USP protobuf message to write into
+        /// Output filename of USP protobuf message to write into, use `-` for stdout
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
@@ -133,7 +133,7 @@ enum RuspAction {
         #[structopt(parse(from_os_str))]
         /// Input filename of USP protobuf record to decode
         in_file: PathBuf,
-        /// Output filename of USP protobuf message body to write into
+        /// Output filename of USP protobuf message body to write into, use `-` for stdout
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
@@ -723,7 +723,7 @@ fn encode_msg(
 }
 
 fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
-    use rusp::usp_record::mod_Record::OneOfrecord_type::*;
+    use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(&in_file)?;
     let mut buf_reader = BufReader::new(fp);
@@ -733,12 +733,18 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     let record = try_decode_record(&contents)?;
 
     match record.record_type {
-        no_session_context(context) => {
-            let msg = context.payload;
-            std::fs::write(&out_file, &msg)?;
+        OneOfrecord_type::no_session_context(context) => {
+            let mut msg = context.payload;
+
+            let mut out = if let Some("-") = out_file.to_str() {
+                get_out_stream(None)?
+            } else {
+                get_out_stream(Some(out_file.clone()))?
+            };
+            out.write_all(&mut msg)?;
         }
-        session_context(_) => unreachable!(),
-        None => unreachable!(),
+        OneOfrecord_type::session_context(_) => unreachable!(),
+        OneOfrecord_type::None => unreachable!(),
     }
 
     Ok(())
@@ -746,7 +752,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
 
 fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
-    use rusp::usp_record::mod_Record::OneOfrecord_type::*;
+    use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(&in_file)?;
     let mut buf_reader = BufReader::new(fp);
@@ -756,7 +762,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
     let record = try_decode_record(&contents)?;
 
     match record.record_type {
-        no_session_context(context) => {
+        OneOfrecord_type::no_session_context(context) => {
             let mut buf = Vec::new();
             let mut writer = Writer::new(&mut buf);
 
@@ -765,10 +771,15 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf) -> Result<()> {
             let body = msg.body.context("Failed extracting USP Msg body")?;
             body.write_message(&mut writer)
                 .context("Failed encoding USP Msg body")?;
-            std::fs::write(&out_file, buf)?;
+            let mut out = if let Some("-") = out_file.to_str() {
+                get_out_stream(None)?
+            } else {
+                get_out_stream(Some(out_file.clone()))?
+            };
+            out.write_all(&mut buf)?;
         }
-        session_context(_) => unreachable!(),
-        None => unreachable!(),
+        OneOfrecord_type::session_context(_) => unreachable!(),
+        OneOfrecord_type::None => unreachable!(),
     }
 
     Ok(())
