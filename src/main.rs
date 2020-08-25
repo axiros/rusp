@@ -144,15 +144,15 @@ enum RuspAction {
         /// Output the serialised protobuf as C char array
         #[structopt(short = "c")]
         as_c_array: bool,
-        #[structopt(long = "version")]
+        #[structopt(long = "version", default_value = "1.1")]
         /// USP specification version
-        version: Option<String>,
-        #[structopt(long = "from")]
+        version: String,
+        #[structopt(long = "from", default_value = "doc::from")]
         /// Sender Id
-        from: Option<String>,
-        #[structopt(long = "to")]
+        from: String,
+        #[structopt(long = "to", default_value = "doc::to")]
         /// Recipient Id
-        to: Option<String>,
+        to: String,
         /// Filename (will output to standard output if omitted)
         #[structopt(parse(from_os_str), short = "f", long = "file")]
         /// Output filename of file to encode USP protobuf record to
@@ -781,37 +781,27 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat)
 }
 
 fn wrap_msg_raw(
-    version: Option<String>,
-    from: Option<String>,
-    to: Option<String>,
+    version: String,
+    from: String,
+    to: String,
     filename: Option<PathBuf>,
-    as_c_array: bool,
+    format: OutputFormat,
 ) -> Result<()> {
-    use quick_protobuf::{message::MessageWrite, Writer};
-
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
 
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
-
-    usp_generator::usp_no_session_context_record(
-        version.as_deref().unwrap(),
-        from.as_deref().unwrap(),
-        to.as_deref().unwrap(),
-        &msg,
-    )
-    .write_message(&mut writer)
-    .context("Failed encoding USP Record")?;
+    let record = usp_generator::usp_no_session_context_record(&version, &from, &to, &msg);
 
     // Open output stream
-    let mut out = get_out_stream(filename)?;
+    let out = get_out_stream(filename)?;
 
-    if as_c_array {
-        write_c_array(out, &buf)
+    let format = if format == OutputFormat::Native {
+        OutputFormat::Protobuf
     } else {
-        Ok(out.write_all(&buf)?)
-    }
+        format
+    };
+
+    write_record(record, out, &format)
 }
 
 fn main() -> Result<()> {
@@ -881,7 +871,16 @@ fn main() -> Result<()> {
             to,
             filename,
             as_c_array,
-        } => wrap_msg_raw(version, from, to, filename, as_c_array),
+        } => {
+            let format = if as_c_array {
+                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
+                OutputFormat::CArray
+            } else {
+                format
+            };
+
+            wrap_msg_raw(version, from, to, filename, format)
+        }
     }?;
 
     Ok(())
