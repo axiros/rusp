@@ -835,7 +835,7 @@ impl Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
             self.supported_obj_path,
             aby = aby2
         )?;
-        writeln!(f, "{:aby$}access: {:#?}", "", self.access, aby = aby2)?;
+        writeln!(f, "{:aby$}access: {}", "", self.access, aby = aby2)?;
         writeln!(
             f,
             "{:aby$}is_multi_instance: {}",
@@ -853,6 +853,26 @@ impl Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
             write!(f, "{:aby$}", result, aby = aby2)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_GetSupportedDMResp::ObjAccessType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_GetSupportedDMResp::ObjAccessType::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                OBJ_READ_ONLY => "OBJ_READ_ONLY",
+                OBJ_ADD_DELETE => "OBJ_ADD_DELETE",
+                OBJ_ADD_ONLY => "OBJ_ADD_ONLY",
+                OBJ_DELETE_ONLY => "OBJ_DELETE_ONLY",
+            },
+            aby = aby
+        )
     }
 }
 
@@ -920,8 +940,27 @@ impl Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
             self.param_name,
             aby = aby2
         )?;
-        writeln!(f, "{:aby$}access: {:#?}", "", self.access, aby = aby2)?;
+        writeln!(f, "{:aby$}access: {}", "", self.access, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_GetSupportedDMResp::ParamAccessType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_GetSupportedDMResp::ParamAccessType::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                PARAM_READ_ONLY => "PARAM_READ_ONLY",
+                PARAM_READ_WRITE => "PARAM_READ_WRITE",
+                PARAM_WRITE_ONLY => "PARAM_WRITE_ONLY",
+            },
+            aby = aby
+        )
     }
 }
 
