@@ -1157,7 +1157,7 @@ impl Display for OperateResp<'_> {
 
         writeln!(f, "{:aby$}OperateResp: {{", "", aby = aby)?;
         for res in self.operation_results.iter() {
-            write!(f, "{:aby$}", res, aby = aby2)?;
+            write!(f, "{:#aby$}", res, aby = aby2)?;
         }
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
@@ -1194,7 +1194,7 @@ impl Display for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        writeln!(f, "OutputArgs: {{")?;
+        writeln!(f, "{:aby$}OutputArgs: {{", "", aby = aby)?;
         for (k, v) in self.output_args.iter() {
             writeln!(f, "{:aby$}\"{}\" : \"{}\"", "", k, v, aby = aby2)?;
         }
