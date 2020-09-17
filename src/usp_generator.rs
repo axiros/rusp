@@ -721,15 +721,17 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 ///
 /// # Arguments
 ///
-/// * `msg_id` - The message ID to put into the USP Msg
-/// * `body` - The message body USP Msg
+/// * `version` - The USP version of the record
+/// * `to_id` - The USP Endpoint ID of the receiver
+/// * `from_id` - The USP Endpoint ID of the sender
+/// * `msg` - The ProtoBuf encoded USP Msg
 ///
 /// # Example
 ///
 /// ```
 /// use rusp::usp_generator::{usp_no_session_context_record};
 /// let newrecord = usp_no_session_context_record(
-///     "",
+///     "1.1",
 ///     "proto::myfancyrecipient",
 ///     "proto::anonymous",
 ///     &[],
@@ -756,6 +758,7 @@ pub fn usp_no_session_context_record<'a>(
         }),
     }
 }
+
 
 /// Creates a body for a USP Msg with a USP NotifyResp response
 ///
