@@ -138,12 +138,30 @@ enum RuspAction {
         #[structopt(parse(from_os_str))]
         out_file: PathBuf,
     },
-    /// Wrap msg from stdin into a single raw USP record
+    /// Wrap msg from stdin into a single no-session context USP record (this option is deprecated
+    /// and will be removed in a future version, use `encode_no_session_record` instead)
     #[structopt(name = "wrap_msg_raw")]
     WrapMsgRaw {
         /// Output the serialised protobuf as C char array
         #[structopt(short = "c")]
         as_c_array: bool,
+        #[structopt(long = "version", default_value = "1.1")]
+        /// USP specification version
+        version: String,
+        #[structopt(long = "from", default_value = "doc::from")]
+        /// Sender Id
+        from: String,
+        #[structopt(long = "to", default_value = "doc::to")]
+        /// Recipient Id
+        to: String,
+        /// Filename (will output to standard output if omitted)
+        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        /// Output filename of file to encode USP protobuf record to
+        filename: Option<PathBuf>,
+    },
+    /// Encode Msg payload provided via stdin into a single no-session context USP Record
+    #[structopt(name = "encode_no_session_record")]
+    EncodeNoSessionRecord {
         #[structopt(long = "version", default_value = "1.1")]
         /// USP specification version
         version: String,
@@ -780,7 +798,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat)
     Ok(())
 }
 
-fn wrap_msg_raw(
+fn encode_no_session_record(
     version: String,
     from: String,
     to: String,
@@ -879,7 +897,15 @@ fn main() -> Result<()> {
                 format
             };
 
-            wrap_msg_raw(version, from, to, filename, format)
+            encode_no_session_record(version, from, to, filename, format)
+        },
+        RuspAction::EncodeNoSessionRecord {
+            version,
+            from,
+            to,
+            filename,
+        } => {
+            encode_no_session_record(version, from, to, filename, format)
         }
     }?;
 
