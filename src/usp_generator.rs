@@ -8,7 +8,7 @@ use crate::usp::{
     Notify, Operate, Request, Response, Set,
 };
 use crate::usp_record::Record;
-use crate::usp_types::NotifyType;
+pub use crate::usp_types::{NotifyType, PayloadSARState};
 
 /// Wraps the body of a USP Msg into a USP Msg with the specified message ID
 ///
@@ -729,7 +729,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 /// # Example
 ///
 /// ```
-/// use rusp::usp_generator::{usp_no_session_context_record};
+/// use rusp::usp_generator::usp_no_session_context_record;
 /// let newrecord = usp_no_session_context_record(
 ///     "1.1",
 ///     "proto::myfancyrecipient",
@@ -759,6 +759,69 @@ pub fn usp_no_session_context_record<'a>(
     }
 }
 
+/// Wraps a Usp Msg into an "session_context" USP Record with the specified record information
+///
+/// # Arguments
+///
+/// * `version` - The USP version of the record
+/// * `to_id` - The USP Endpoint ID of the receiver
+/// * `from_id` - The USP Endpoint ID of the sender
+/// * `session_id` - The ID of the context session
+/// * `sequence_id` - The sequence number within the context session
+/// * `expected_id` - The expected next sequence number within the context session
+/// * `retransmit_id` - The sequence number of the part which is being retransmitted
+/// * `msg` - The ProtoBuf encoded USP Msg
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::{usp_session_context_record, PayloadSARState};
+/// let newrecord = usp_session_context_record(
+///     "1.1",
+///     "proto::myfancyrecipient",
+///     "proto::anonymous",
+///     1234,
+///     1,
+///     2,
+///     0,
+///     PayloadSARState::NONE,
+///     PayloadSARState::NONE,
+///     &[],
+/// );
+/// ```
+pub fn usp_session_context_record<'a>(
+    version: &'a str,
+    to_id: &'a str,
+    from_id: &'a str,
+    session_id: u64,
+    sequence_id: u64,
+    expected_id: u64,
+    retransmit_id: u64,
+    payload_sar_state: PayloadSARState,
+    payloadrec_sar_state: PayloadSARState,
+    msg: &'a [u8],
+) -> Record<'a> {
+    use crate::usp_record::mod_Record::OneOfrecord_type::session_context;
+    use crate::usp_record::SessionContextRecord;
+
+    Record {
+        version: version.into(),
+        to_id: to_id.into(),
+        from_id: from_id.into(),
+        sender_cert: Cow::Borrowed(b""),
+        mac_signature: Cow::Borrowed(b""),
+        payload_security: "".into(),
+        record_type: session_context(SessionContextRecord {
+            session_id,
+            sequence_id,
+            expected_id,
+            retransmit_id,
+            payload_sar_state: payload_sar_state.into(),
+            payloadrec_sar_state: payloadrec_sar_state.into(),
+            payload: vec![msg.into()],
+        }),
+    }
+}
 
 /// Creates a body for a USP Msg with a USP NotifyResp response
 ///

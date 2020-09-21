@@ -73,3 +73,27 @@ pub enum NotifyType {
         operation_resp: OperateResponse,
     },
 }
+
+#[derive(StructOpt, Clone, Debug, PartialEq)]
+pub enum PayloadSARState {
+    /// No segmentation
+    NONE = 0,
+    /// Begin segmentation
+    BEGIN = 1,
+    /// Segmentation in process
+    INPROCESS = 2,
+    /// Segmentation is complete
+    COMPLETE = 3,
+}
+
+impl From<PayloadSARState> for crate::usp_record::mod_SessionContextRecord::PayloadSARState {
+    fn from(s: PayloadSARState) -> Self {
+        use crate::usp_record::mod_SessionContextRecord::PayloadSARState as PBPayloadSARState;
+        match s {
+            PayloadSARState::NONE => PBPayloadSARState::NONE,
+            PayloadSARState::BEGIN => PBPayloadSARState::BEGIN,
+            PayloadSARState::INPROCESS => PBPayloadSARState::INPROCESS,
+            PayloadSARState::COMPLETE => PBPayloadSARState::COMPLETE,
+        }
+    }
+}

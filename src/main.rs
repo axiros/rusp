@@ -176,6 +176,35 @@ enum RuspAction {
         /// Output filename of file to encode USP protobuf record to
         filename: Option<PathBuf>,
     },
+    /// Encode Msg payload provided via stdin into a single session context USP Record
+    #[structopt(name = "encode_session_record")]
+    EncodeSessionRecord {
+        #[structopt(long = "version", default_value = "1.1")]
+        /// USP specification version
+        version: String,
+        #[structopt(long = "from", default_value = "doc::from")]
+        /// Sender Id
+        from: String,
+        #[structopt(long = "to", default_value = "doc::to")]
+        /// Recipient Id
+        to: String,
+        #[structopt(long = "session_id", default_value = "1234")]
+        /// The ID of the context session
+        session_id: u64,
+        #[structopt(long = "sequence_id", default_value = "1")]
+        /// The sequence number within the context session
+        sequence_id: u64,
+        #[structopt(long = "expected_id", default_value = "2")]
+        /// The expected next sequence number within the context session
+        expected_id: u64,
+        #[structopt(long = "retransmit_id", default_value = "0")]
+        /// The sequence number of the part which is being retransmitted
+        retransmit_id: u64,
+        /// Filename (will output to standard output if omitted)
+        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        /// Output filename of file to encode USP protobuf record to
+        filename: Option<PathBuf>,
+    },
 }
 
 #[derive(StructOpt, Debug)]
@@ -822,6 +851,45 @@ fn encode_no_session_record(
     write_record(record, out, &format)
 }
 
+fn encode_session_record(
+    version: String,
+    from: String,
+    to: String,
+    session_id: u64,
+    sequence_id: u64,
+    expected_id: u64,
+    retransmit_id: u64,
+    filename: Option<PathBuf>,
+    format: OutputFormat,
+) -> Result<()> {
+    let mut msg = Vec::new();
+    stdin().read_to_end(&mut msg)?;
+
+    let record = usp_generator::usp_session_context_record(
+        &version,
+        &from,
+        &to,
+        session_id,
+        sequence_id,
+        expected_id,
+        retransmit_id,
+        usp_generator::PayloadSARState::NONE,
+        usp_generator::PayloadSARState::NONE,
+        &msg,
+    );
+
+    // Open output stream
+    let out = get_out_stream(filename)?;
+
+    let format = if format == OutputFormat::Native {
+        OutputFormat::Protobuf
+    } else {
+        format
+    };
+
+    write_record(record, out, &format)
+}
+
 fn main() -> Result<()> {
     let Rusp {
         action,
@@ -898,15 +966,33 @@ fn main() -> Result<()> {
             };
 
             encode_no_session_record(version, from, to, filename, format)
-        },
+        }
         RuspAction::EncodeNoSessionRecord {
             version,
             from,
             to,
             filename,
-        } => {
-            encode_no_session_record(version, from, to, filename, format)
-        }
+        } => encode_no_session_record(version, from, to, filename, format),
+        RuspAction::EncodeSessionRecord {
+            version,
+            from,
+            to,
+            filename,
+            session_id,
+            sequence_id,
+            expected_id,
+            retransmit_id,
+        } => encode_session_record(
+            version,
+            from,
+            to,
+            session_id,
+            sequence_id,
+            expected_id,
+            retransmit_id,
+            filename,
+            format,
+        ),
     }?;
 
     Ok(())
