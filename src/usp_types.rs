@@ -74,7 +74,7 @@ pub enum NotifyType {
     },
 }
 
-#[derive(StructOpt, Clone, Debug, PartialEq)]
+#[derive(StructOpt, Copy, Clone, Debug, PartialEq)]
 pub enum PayloadSARState {
     /// No segmentation
     NONE = 0,
