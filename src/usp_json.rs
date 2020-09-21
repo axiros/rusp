@@ -10,7 +10,7 @@ impl Serialize for Record<'_> {
         S: Serializer,
     {
         use crate::usp_decoder::*;
-        use mod_Record::OneOfrecord_type::no_session_context;
+        use mod_Record::OneOfrecord_type::{no_session_context, session_context};
 
         let mut state = serializer.serialize_struct("Record", 7)?;
         state.serialize_field("version", &self.version)?;
@@ -20,18 +20,24 @@ impl Serialize for Record<'_> {
         state.serialize_field("mac_signature", &self.mac_signature)?;
         state.serialize_field("sender_cert", &self.sender_cert)?;
 
-        if let no_session_context(context) = &self.record_type {
-            let msg = try_decode_msg(&context.payload);
-            if let Ok(msg) = msg {
-                state.serialize_field("payload", &msg)?;
-            } else {
-                return Err(serde::ser::Error::custom(
-                    msg.context("parsing of the protobuf USP Message failed")
-                        .unwrap_err(),
-                ));
+        match &self.record_type {
+            no_session_context(context) => {
+                let msg = try_decode_msg(&context.payload);
+                if let Ok(msg) = msg {
+                    state.serialize_field("payload", &msg)?;
+                } else {
+                    return Err(serde::ser::Error::custom(
+                        msg.context("parsing of the protobuf USP Message failed")
+                            .unwrap_err(),
+                    ));
+                }
             }
-        } else {
-            return Err(serde::ser::Error::custom("Can't handle session_context!"));
+            session_context(context) => {
+                state.serialize_field("payload", context)?;
+            }
+            _ => {
+                return Err(serde::ser::Error::custom("Can't handle session_context!"));
+            }
         }
 
         state.end()
@@ -43,10 +49,42 @@ impl Serialize for mod_Record::PayloadSecurity {
     where
         S: Serializer,
     {
-        use crate::usp_record::mod_Record::PayloadSecurity::*;
+        use mod_Record::PayloadSecurity::*;
         match *self {
             PLAINTEXT => serializer.serialize_unit_variant("PayloadSecurity", 0, "PLAINTEXT"),
             TLS12 => serializer.serialize_unit_variant("PayloadSecurity", 1, "TLS12"),
+        }
+    }
+}
+
+impl Serialize for SessionContextRecord<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SessionContextRecord", 7)?;
+        state.serialize_field("session_id", &self.session_id)?;
+        state.serialize_field("sequence_id", &self.sequence_id)?;
+        state.serialize_field("expected_id", &self.expected_id)?;
+        state.serialize_field("retransmit_id", &self.retransmit_id)?;
+        state.serialize_field("payload_sar_state", &self.payload_sar_state)?;
+        state.serialize_field("payloadrec_sar_state", &self.payloadrec_sar_state)?;
+        state.serialize_field("payload", &self.payload)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_SessionContextRecord::PayloadSARState {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_SessionContextRecord::PayloadSARState::*;
+        match *self {
+            NONE => serializer.serialize_unit_variant("PayloadSARState", 0, "NONE"),
+            BEGIN => serializer.serialize_unit_variant("PayloadSARState", 1, "BEGIN"),
+            INPROCESS => serializer.serialize_unit_variant("PayloadSARState", 2, "INPROCESS"),
+            COMPLETE => serializer.serialize_unit_variant("PayloadSARState", 3, "COMPLETE"),
         }
     }
 }
