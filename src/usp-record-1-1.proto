@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 //**************************************************************************
-// WT-369 USP Record Protocol Buffer Schema
+// TR-369 USP Record Protocol Buffer Schema
 //
 //  Copyright (c) 2017-2018, Broadband Forum
 //
@@ -48,10 +48,11 @@ syntax = "proto3";
 //   license grant are also deemed granted under this license.
 //
 //
-// | Version           | Name                   | Date          |
-// | TR-369 1.0.0      | User Services Platform | APR 17, 2018  |
-// | TR-369 1.0.1      | User Services Platform | JUN 14, 2018  |
-// | TR-369 1.0.2      | User Services Platform | TBD           |
+// | Version           | Name                   | Date       |
+// | TR-369 1.0.0      | User Services Platform | APR, 2018  |
+// | TR-369 1.0.1      | User Services Platform | JUN, 2018  |
+// | TR-369 1.0.2      | User Services Platform | OCT, 2018  |
+// | TR-369 1.1        | User Services Platform | SEP, 2019  |
 //
 // BBF software release registry: http://www.broadband-forum.org/software
 //**************************************************************************
@@ -97,4 +98,3 @@ message SessionContextRecord {
     COMPLETE = 3;   //Segmentation is complete
   }
 }
-
