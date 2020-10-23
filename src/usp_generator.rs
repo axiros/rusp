@@ -852,3 +852,99 @@ pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
         }),
     }
 }
+
+/// Creates a body for a USP Msg with a USP AddResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the AddResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_add_response;
+/// let resp = usp_add_response(vec![
+///         ("Device.", Ok(("Device.", vec![("", 0, "")] , vec![("Foo", "Bar")]))),
+///         ("Dev.", Err((7000, "Message failed"))),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_add_response<'a>(
+    result: Vec<(
+        &'a str,
+        Result<
+            (
+                &'a str,
+                Vec<(&'a str, u32, &'a str)>,
+                Vec<(&'a str, &'a str)>,
+            ),
+            (u32, &'a str),
+        >,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
+        OneOfoper_status, ParameterError,
+    };
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
+        OperationFailure, OperationSuccess,
+    };
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::OperationStatus;
+    use crate::usp::mod_AddResp::CreatedObjectResult;
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::AddResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: add_resp({
+                    let mut addrsp = AddResp::default();
+                    for (path, state) in result {
+                        addrsp.created_obj_results.push(match state {
+                            Ok((instantiated_path, param_errs, unique_keys)) => {
+                                let param_errs = param_errs
+                                    .into_iter()
+                                    .map(|(param, err_code, err_msg)| ParameterError {
+                                        param: Cow::Borrowed(param),
+                                        err_code,
+                                        err_msg: Cow::Borrowed(err_msg),
+                                    })
+                                    .collect();
+
+                                let unique_keys = unique_keys
+                                    .into_iter()
+                                    .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                    .collect();
+
+                                let op = OperationSuccess {
+                                    instantiated_path: Cow::Borrowed(instantiated_path),
+                                    param_errs,
+                                    unique_keys,
+                                };
+                                CreatedObjectResult {
+                                    requested_path: Cow::Borrowed(&path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_success(op),
+                                    }),
+                                }
+                            }
+                            Err((err_code, err_msg)) => {
+                                let op = OperationFailure {
+                                    err_code,
+                                    err_msg: Cow::Borrowed(err_msg),
+                                };
+                                CreatedObjectResult {
+                                    requested_path: Cow::Borrowed(&path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_failure(op),
+                                    }),
+                                }
+                            }
+                        })
+                    }
+                    addrsp
+                }),
+            }
+        }),
+    }
+}
