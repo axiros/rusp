@@ -852,3 +852,637 @@ pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
         }),
     }
 }
+
+/// Creates a body for a USP Msg with a USP AddResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the AddResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_add_response;
+/// let resp = usp_add_response(vec![
+///         ("Device.", Ok(("Device.", vec![("", 0, "")] , vec![("Foo", "Bar")]))),
+///         ("Dev.", Err((7000, "Message failed"))),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_add_response<'a>(
+    result: Vec<(
+        &'a str,
+        Result<
+            (
+                &'a str,
+                Vec<(&'a str, u32, &'a str)>,
+                Vec<(&'a str, &'a str)>,
+            ),
+            (u32, &'a str),
+        >,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
+        OneOfoper_status, ParameterError,
+    };
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
+        OperationFailure, OperationSuccess,
+    };
+    use crate::usp::mod_AddResp::mod_CreatedObjectResult::OperationStatus;
+    use crate::usp::mod_AddResp::CreatedObjectResult;
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::AddResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: add_resp({
+                    let mut addrsp = AddResp::default();
+                    for (path, state) in result {
+                        addrsp.created_obj_results.push(match state {
+                            Ok((instantiated_path, param_errs, unique_keys)) => {
+                                let param_errs = param_errs
+                                    .into_iter()
+                                    .map(|(param, err_code, err_msg)| ParameterError {
+                                        param: Cow::Borrowed(param),
+                                        err_code,
+                                        err_msg: Cow::Borrowed(err_msg),
+                                    })
+                                    .collect();
+
+                                let unique_keys = unique_keys
+                                    .into_iter()
+                                    .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                    .collect();
+
+                                let op = OperationSuccess {
+                                    instantiated_path: Cow::Borrowed(instantiated_path),
+                                    param_errs,
+                                    unique_keys,
+                                };
+                                CreatedObjectResult {
+                                    requested_path: Cow::Borrowed(&path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_success(op),
+                                    }),
+                                }
+                            }
+                            Err((err_code, err_msg)) => {
+                                let op = OperationFailure {
+                                    err_code,
+                                    err_msg: Cow::Borrowed(err_msg),
+                                };
+                                CreatedObjectResult {
+                                    requested_path: Cow::Borrowed(&path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_failure(op),
+                                    }),
+                                }
+                            }
+                        })
+                    }
+                    addrsp
+                }),
+            }
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP DeleteResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the DeleteResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_delete_response;
+/// let resp = usp_delete_response(vec![
+///         ("Device.", Ok((vec!["Device."], vec![("", 0, "")]))),
+///         ("Dev.", Err((7000, "Message failed"))),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_delete_response<'a>(
+    result: Vec<(
+        &'a str,
+        Result<(Vec<&'a str>, Vec<(&'a str, u32, &'a str)>), (u32, &'a str)>,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::{
+        OneOfoper_status, OperationFailure, OperationSuccess, UnaffectedPathError,
+    };
+    use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::OperationStatus;
+    use crate::usp::mod_DeleteResp::DeletedObjectResult;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::DeleteResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: delete_resp({
+                    let mut del_rsp = DeleteResp::default();
+                    for (path, state) in result {
+                        del_rsp.deleted_obj_results.push(match state {
+                            Ok((affected_paths, unaffected_path_errs)) => {
+                                let affected_paths = affected_paths
+                                    .into_iter()
+                                    .map(|aff_path| Cow::Borrowed(aff_path))
+                                    .collect();
+
+                                let unaffected_path_errs = unaffected_path_errs
+                                    .into_iter()
+                                    .map(|(unaffected_path, err_code, err_msg)| {
+                                        UnaffectedPathError {
+                                            unaffected_path: Cow::Borrowed(unaffected_path),
+                                            err_code,
+                                            err_msg: Cow::Borrowed(err_msg),
+                                        }
+                                    })
+                                    .collect();
+
+                                let op = OperationSuccess {
+                                    affected_paths,
+                                    unaffected_path_errs,
+                                };
+                                DeletedObjectResult {
+                                    requested_path: Cow::Borrowed(path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_success(op),
+                                    }),
+                                }
+                            }
+                            Err((err_code, err_msg)) => {
+                                let op = OperationFailure {
+                                    err_code,
+                                    err_msg: Cow::Borrowed(err_msg),
+                                };
+                                DeletedObjectResult {
+                                    requested_path: Cow::Borrowed(path),
+                                    oper_status: Some(OperationStatus {
+                                        oper_status: OneOfoper_status::oper_failure(op),
+                                    }),
+                                }
+                            }
+                        })
+                    }
+                    del_rsp
+                }),
+            }
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP GetInstancesResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the GetInstancesResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_get_instances_response;
+/// let resp = usp_get_instances_response(vec![
+///         ("Device.", Ok(vec![("Device.", vec![("Foo", "Bar")])])),
+///         ("Dev.", Err((7000, "Message failed"))),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_get_instances_response<'a>(
+    result: Vec<(
+        &'a str,
+        Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_GetInstancesResp::{CurrInstance, RequestedPathResult};
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::GetInstancesResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: get_instances_resp({
+                    let mut get_instances_rsp = GetInstancesResp::default();
+                    for (path, state) in result {
+                        get_instances_rsp.req_path_results.push(match state {
+                            Ok(success) => {
+                                let mut curr_insts = Vec::with_capacity(success.len());
+                                for (instantiated_obj_path, unique_keys) in success {
+                                    let instantiated_obj_path =
+                                        Cow::Borrowed(instantiated_obj_path);
+                                    let unique_keys = unique_keys
+                                        .into_iter()
+                                        .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                        .collect();
+
+                                    curr_insts.push(CurrInstance {
+                                        instantiated_obj_path,
+                                        unique_keys,
+                                    });
+                                }
+
+                                RequestedPathResult {
+                                    requested_path: Cow::Borrowed(path),
+                                    err_code: 0,
+                                    err_msg: Cow::Borrowed(""),
+                                    curr_insts,
+                                }
+                            }
+                            Err((err_code, err_msg)) => RequestedPathResult {
+                                requested_path: Cow::Borrowed(path),
+                                err_code,
+                                err_msg: Cow::Borrowed(err_msg),
+                                curr_insts: Vec::default(),
+                            },
+                        })
+                    }
+                    get_instances_rsp
+                }),
+            }
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP GetSupportedProtocolResp response
+///
+/// # Arguments
+///
+/// * `result` - A comma separated list of USP Protocol Versions (major.minor) supported.
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_get_supported_protocol_response;
+/// let resp = usp_get_supported_protocol_response("1.1");
+/// ```
+pub fn usp_get_supported_protocol_response(result: &str) -> Body {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::GetSupportedProtocolResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: get_supported_protocol_resp(GetSupportedProtocolResp {
+                    agent_supported_protocol_versions: Cow::Borrowed(result),
+                }),
+            }
+        }),
+    }
+}
+
+/// Enum describing the result of an operation, sent through the Operate response
+#[derive(Debug, PartialEq)]
+pub enum OperationResponse<'a> {
+    /// A path to the object responsible for performing the operation asynchronously, corresponds to
+    /// `req_obj_path` in the protobuf scheme
+    Async(&'a str),
+    /// The result of an operation that was made synchronously, corresponds to `req_output_args` in
+    /// the protobuf scheme
+    Sync(Vec<(&'a str, &'a str)>),
+    /// An operation error, corresponds to `cmd_failure` in the protobuf scheme
+    Error(u32, &'a str),
+}
+
+/// Creates a body for a USP Msg with a USP OperateResp response
+///
+/// # Arguments
+///
+/// * `result` - The result of an operation
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::{usp_operate_response, OperationResponse};
+///
+/// let resp_output_args = OperationResponse::Sync(vec![("Foo", "Bar")]);
+/// let resp_error = OperationResponse::Error(7000, "Message failed");
+/// let resp = usp_operate_response(vec![
+///         ("Device.Command()", resp_output_args),
+///         ("Device.Command()", resp_error),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_OperateResp::mod_OperationResult::{
+        CommandFailure, OneOfoperation_resp, OutputArgs,
+    };
+    use crate::usp::mod_OperateResp::OperationResult;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::OperateResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: operate_resp({
+                    let mut operate_rsp = OperateResp::default();
+                    for (executed_command, state) in result {
+                        operate_rsp.operation_results.push(match state {
+                            OperationResponse::Async(req_obj_path) => OperationResult {
+                                executed_command: Cow::Borrowed(executed_command),
+                                operation_resp: OneOfoperation_resp::req_obj_path(Cow::Borrowed(
+                                    req_obj_path,
+                                )),
+                            },
+                            OperationResponse::Sync(req_output_args) => {
+                                let output_args = req_output_args
+                                    .into_iter()
+                                    .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                    .collect();
+                                let output_args = OutputArgs { output_args };
+
+                                OperationResult {
+                                    executed_command: Cow::Borrowed(executed_command),
+                                    operation_resp: OneOfoperation_resp::req_output_args(
+                                        output_args,
+                                    ),
+                                }
+                            }
+                            OperationResponse::Error(err_code, err_msg) => {
+                                let cmd_fail = CommandFailure {
+                                    err_code,
+                                    err_msg: Cow::Borrowed(err_msg),
+                                };
+                                OperationResult {
+                                    executed_command: Cow::Borrowed(executed_command),
+                                    operation_resp: OneOfoperation_resp::cmd_failure(cmd_fail),
+                                }
+                            }
+                        })
+                    }
+                    operate_rsp
+                }),
+            }
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP SetResp response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the SetResp response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_set_response;
+/// let resp = usp_set_response(vec![
+///         ("Device.", Ok(vec![("Device.", vec![] , vec![("Foo", "Bar")])])),
+///         ("Dev.", Err((7000, "Message failed", vec![]))),
+///     ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_set_response<'a>(
+    result: Vec<(
+        &'a str,
+        Result<
+            Vec<(
+                &'a str,
+                Vec<(&'a str, u32, &'a str)>,
+                Vec<(&'a str, &'a str)>,
+            )>,
+            (u32, &'a str, Vec<(&'a str, Vec<(&'a str, u32, &'a str)>)>),
+        >,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
+        OneOfoper_status, OperationFailure, OperationSuccess, ParameterError,
+        UpdatedInstanceFailure, UpdatedInstanceResult,
+    };
+    use crate::usp::mod_SetResp::mod_UpdatedObjectResult::OperationStatus;
+    use crate::usp::mod_SetResp::UpdatedObjectResult;
+    use crate::usp::SetResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: set_resp({
+                    let mut setrsp = SetResp::default();
+                    for (path, state) in result {
+                        setrsp.updated_obj_results.push(match state {
+                            Ok(success) => {
+                                let mut updated_inst_results = Vec::with_capacity(success.len());
+                                for (affected_path, param_errs, updated_params) in success {
+                                    let param_errs = param_errs
+                                        .into_iter()
+                                        .map(|(param, err_code, err_msg)| ParameterError {
+                                            param: Cow::Borrowed(param),
+                                            err_code,
+                                            err_msg: Cow::Borrowed(err_msg),
+                                        })
+                                        .collect();
+                                    let updated_params = updated_params
+                                        .into_iter()
+                                        .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                        .collect();
+
+                                    updated_inst_results.push(UpdatedInstanceResult {
+                                        affected_path: Cow::Borrowed(affected_path),
+                                        param_errs,
+                                        updated_params,
+                                    });
+                                }
+                                let op = OperationSuccess {
+                                    updated_inst_results,
+                                };
+                                let op_status = OperationStatus {
+                                    oper_status: OneOfoper_status::oper_success(op),
+                                };
+                                UpdatedObjectResult {
+                                    requested_path: Cow::Borrowed(path),
+                                    oper_status: Some(op_status),
+                                }
+                            }
+                            Err((err_code, err_msg, inst_failures)) => {
+                                let mut updated_inst_failures =
+                                    Vec::with_capacity(inst_failures.len());
+                                for (affected_path, param_errs) in inst_failures {
+                                    let param_errs = param_errs
+                                        .into_iter()
+                                        .map(|(param, err_code, err_msg)| ParameterError {
+                                            param: Cow::Borrowed(param),
+                                            err_code,
+                                            err_msg: Cow::Borrowed(err_msg),
+                                        })
+                                        .collect();
+
+                                    updated_inst_failures.push(UpdatedInstanceFailure {
+                                        affected_path: Cow::Borrowed(affected_path),
+                                        param_errs,
+                                    });
+                                }
+                                let op = OperationFailure {
+                                    err_code,
+                                    err_msg: Cow::Borrowed(err_msg),
+                                    updated_inst_failures,
+                                };
+                                let op_status = OperationStatus {
+                                    oper_status: OneOfoper_status::oper_failure(op),
+                                };
+                                UpdatedObjectResult {
+                                    requested_path: Cow::Borrowed(path),
+                                    oper_status: Some(op_status),
+                                }
+                            }
+                        })
+                    }
+                    setrsp
+                }),
+            }
+        }),
+    }
+}
+
+/// Creates a body for a USP Msg with a USP GetSupportedDM response
+///
+/// # Arguments
+///
+/// * `result` - A vector of Result tuples to put into the GetSupportedDM response
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::usp_get_supported_dm_response;
+/// let resp = usp_get_supported_dm_response(vec![
+///     ("Device.", "urn:broadband-forum-org:tr-181-2-12-0", Ok(vec![
+///         ("Device.", "OBJ_READ_ONLY", false, vec![("Foo", "PARAM_READ_ONLY")],
+///         vec![("Bar", vec![], vec![])],
+///         vec![("Event", vec![])],)
+///     ])),
+///     ("Dev.", "urn:broadband-forum-org:tr-181-2-12-0", Err((7000, "Message failed"))),
+/// ]);
+/// ```
+#[allow(clippy::type_complexity)]
+pub fn usp_get_supported_dm_response<'a>(
+    result: Vec<(
+        &'a str, // req_obj_path
+        &'a str, // data_model_inst_uri
+        Result<
+            Vec<(
+                &'a str, // supported_obj_path
+                &'a str, // access
+                bool,    // is_multi_instance
+                Vec<(
+                    // supported params
+                    &'a str, // param name
+                    &'a str, // access
+                )>,
+                Vec<(
+                    // supported commands
+                    &'a str,      // command name
+                    Vec<&'a str>, // input args
+                    Vec<&'a str>, // output args
+                )>,
+                Vec<(
+                    // supported events
+                    &'a str,      // event name
+                    Vec<&'a str>, // arg names
+                )>,
+            )>,
+            (u32, &'a str),
+        >,
+    )>,
+) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_GetSupportedDMResp::{
+        RequestedObjectResult, SupportedCommandResult, SupportedEventResult, SupportedObjectResult,
+        SupportedParamResult,
+    };
+    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::GetSupportedDMResp;
+
+    Body {
+        msg_body: response({
+            Response {
+                resp_type: get_supported_dm_resp({
+                    let mut supported_dm_rsp = GetSupportedDMResp::default();
+                    for (path, uri, state) in result {
+                        supported_dm_rsp.req_obj_results.push(match state {
+                            Ok(success) => {
+                                let mut supported_objs = Vec::with_capacity(success.len());
+                                for (
+                                    supported_obj_path,
+                                    access,
+                                    is_multi_instance,
+                                    supported_params,
+                                    supported_commands,
+                                    supported_events,
+                                ) in success
+                                {
+                                    let supported_params = supported_params
+                                        .into_iter()
+                                        .map(|(param_name, param_access)| SupportedParamResult {
+                                            param_name: Cow::Borrowed(param_name),
+                                            access: param_access.into(),
+                                        })
+                                        .collect();
+                                    let supported_commands = supported_commands
+                                        .into_iter()
+                                        .map(|(command_name, input_arg_names, output_arg_names)| {
+                                            let input_arg_names = input_arg_names
+                                                .into_iter()
+                                                .map(Cow::Borrowed)
+                                                .collect();
+                                            let output_arg_names = output_arg_names
+                                                .into_iter()
+                                                .map(Cow::Borrowed)
+                                                .collect();
+                                            SupportedCommandResult {
+                                                command_name: Cow::Borrowed(command_name),
+                                                input_arg_names,
+                                                output_arg_names,
+                                            }
+                                        })
+                                        .collect();
+                                    let supported_events = supported_events
+                                        .into_iter()
+                                        .map(|(event_name, arg_names)| {
+                                            let arg_names =
+                                                arg_names.into_iter().map(Cow::Borrowed).collect();
+                                            SupportedEventResult {
+                                                event_name: Cow::Borrowed(event_name),
+                                                arg_names,
+                                            }
+                                        })
+                                        .collect();
+                                    supported_objs.push(SupportedObjectResult {
+                                        supported_obj_path: Cow::Borrowed(supported_obj_path),
+                                        access: access.into(),
+                                        is_multi_instance,
+                                        supported_commands,
+                                        supported_events,
+                                        supported_params,
+                                    });
+                                }
+                                RequestedObjectResult {
+                                    req_obj_path: Cow::Borrowed(path),
+                                    err_code: 0,
+                                    err_msg: Cow::Borrowed(""),
+                                    data_model_inst_uri: Cow::Borrowed(uri),
+                                    supported_objs,
+                                }
+                            }
+                            Err((err_code, err_msg)) => RequestedObjectResult {
+                                req_obj_path: Cow::Borrowed(path),
+                                err_code,
+                                err_msg: Cow::Borrowed(err_msg),
+                                data_model_inst_uri: Cow::Borrowed(uri),
+                                supported_objs: Vec::default(),
+                            },
+                        })
+                    }
+                    supported_dm_rsp
+                }),
+            }
+        }),
+    }
+}
