@@ -1136,28 +1136,39 @@ pub fn usp_get_supported_protocol_response(result: &str) -> Body {
     }
 }
 
+/// Enum describing the result of an operation, sent through the Operate response
+#[derive(Debug, PartialEq)]
+pub enum OperationResponse<'a> {
+    /// A path to the object responsible for performing the operation asynchronously, corresponds to
+    /// `req_obj_path` in the protobuf scheme
+    Async(&'a str),
+    /// The result of an operation that was made synchronously, corresponds to `req_output_args` in
+    /// the protobuf scheme
+    Sync(Vec<(&'a str, &'a str)>),
+    /// An operation error, corresponds to `cmd_failure` in the protobuf scheme
+    Error(u32, &'a str),
+}
+
 /// Creates a body for a USP Msg with a USP OperateResp response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the OperateResp response
+/// * `result` - The result of an operation
 ///
 /// # Example
 ///
 /// ```
-/// use rusp::usp_generator::usp_operate_response;
+/// use rusp::usp_generator::{usp_operate_response, OperationResponse};
+///
+/// let resp_output_args = OperationResponse::Sync(vec![("Foo", "Bar")]);
+/// let resp_error = OperationResponse::Error(7000, "Message failed");
 /// let resp = usp_operate_response(vec![
-///         ("Device.Command()", Ok(("", vec![("Foo", "Bar")]))),
-///         ("Device.Command()", Err((7000, "Message failed"))),
+///         ("Device.Command()", resp_output_args),
+///         ("Device.Command()", resp_error),
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn usp_operate_response<'a>(
-    result: Vec<(
-        &'a str,
-        Result<(&'a str, Vec<(&'a str, &'a str)>), (u32, &'a str)>,
-    )>,
-) -> Body<'a> {
+pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_OperateResp::mod_OperationResult::{
         CommandFailure, OneOfoperation_resp, OutputArgs,
@@ -1173,32 +1184,27 @@ pub fn usp_operate_response<'a>(
                     let mut operate_rsp = OperateResp::default();
                     for (executed_command, state) in result {
                         operate_rsp.operation_results.push(match state {
-                            Ok((req_obj_path, req_output_args)) => {
-                                // If the req_output_args isn't empty, we consider this response to
-                                // be of type `req_output_args`
-                                if !req_output_args.is_empty() {
-                                    let output_args = req_output_args
-                                        .into_iter()
-                                        .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
-                                        .collect();
-                                    let output_args = OutputArgs { output_args };
+                            OperationResponse::Async(req_obj_path) => OperationResult {
+                                executed_command: Cow::Borrowed(executed_command),
+                                operation_resp: OneOfoperation_resp::req_obj_path(Cow::Borrowed(
+                                    req_obj_path,
+                                )),
+                            },
+                            OperationResponse::Sync(req_output_args) => {
+                                let output_args = req_output_args
+                                    .into_iter()
+                                    .map(|(k, v)| (Cow::Borrowed(k), Cow::Borrowed(v)))
+                                    .collect();
+                                let output_args = OutputArgs { output_args };
 
-                                    OperationResult {
-                                        executed_command: Cow::Borrowed(executed_command),
-                                        operation_resp: OneOfoperation_resp::req_output_args(
-                                            output_args,
-                                        ),
-                                    }
-                                } else {
-                                    OperationResult {
-                                        executed_command: Cow::Borrowed(executed_command),
-                                        operation_resp: OneOfoperation_resp::req_obj_path(
-                                            Cow::Borrowed(req_obj_path),
-                                        ),
-                                    }
+                                OperationResult {
+                                    executed_command: Cow::Borrowed(executed_command),
+                                    operation_resp: OneOfoperation_resp::req_output_args(
+                                        output_args,
+                                    ),
                                 }
                             }
-                            Err((err_code, err_msg)) => {
+                            OperationResponse::Error(err_code, err_msg) => {
                                 let cmd_fail = CommandFailure {
                                     err_code,
                                     err_msg: Cow::Borrowed(err_msg),
