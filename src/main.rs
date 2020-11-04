@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use rusp::{
     usp_decoder::{try_decode_msg, try_decode_record},
     usp_generator,
-    usp_types::NotifyType,
+    usp_types::{NotifyType, PayloadSecurity},
 };
 
 #[derive(PartialEq)]
@@ -837,7 +837,15 @@ fn encode_no_session_record(
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
 
-    let record = usp_generator::usp_no_session_context_record(&version, &from, &to, &msg);
+    let record = usp_generator::usp_no_session_context_record(
+        &version,
+        &from,
+        &to,
+        PayloadSecurity::PLAINTEXT,
+        &[],
+        &[],
+        &msg,
+    );
 
     // Open output stream
     let out = get_out_stream(filename)?;
@@ -869,6 +877,9 @@ fn encode_session_record(
         &version,
         &from,
         &to,
+        PayloadSecurity::PLAINTEXT,
+        &[],
+        &[],
         session_id,
         sequence_id,
         expected_id,

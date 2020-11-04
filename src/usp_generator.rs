@@ -8,7 +8,7 @@ use crate::usp::{
     Notify, Operate, Request, Response, Set,
 };
 use crate::usp_record::Record;
-pub use crate::usp_types::{NotifyType, PayloadSARState};
+pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 
 /// Wraps the body of a USP Msg into a USP Msg with the specified message ID
 ///
@@ -724,16 +724,25 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 /// * `version` - The USP version of the record
 /// * `to_id` - The USP Endpoint ID of the receiver
 /// * `from_id` - The USP Endpoint ID of the sender
+/// * `payload_security` - An enumeration of type `PayloadSecurity`
+/// * `mac_signature` - Message authentication code or signature used to ensure the integrity of the
+///   non-payload fields, when integrity protection of non-payload fields is performed
+/// * `sender_cert` - PEM encoded certificate used to provide the signature in the `mac_signature`
+///   field, when the payload security mechanism does not provide the mechanism to do so
 /// * `msg` - The ProtoBuf encoded USP Msg
 ///
 /// # Example
 ///
 /// ```
 /// use rusp::usp_generator::usp_no_session_context_record;
+/// use rusp::usp_types::PayloadSecurity;
 /// let newrecord = usp_no_session_context_record(
 ///     "1.1",
 ///     "proto::myfancyrecipient",
 ///     "proto::anonymous",
+///     PayloadSecurity::PLAINTEXT,
+///     &[],
+///     &[],
 ///     &[],
 /// );
 /// ```
@@ -741,6 +750,9 @@ pub fn usp_no_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
+    payload_security: PayloadSecurity,
+    mac_signature: &'a [u8],
+    sender_cert: &'a [u8],
     msg: &'a [u8],
 ) -> Record<'a> {
     use crate::usp_record::mod_Record::OneOfrecord_type::no_session_context;
@@ -750,9 +762,9 @@ pub fn usp_no_session_context_record<'a>(
         version: version.into(),
         to_id: to_id.into(),
         from_id: from_id.into(),
-        sender_cert: Cow::Borrowed(b""),
-        mac_signature: Cow::Borrowed(b""),
-        payload_security: "".into(),
+        sender_cert: Cow::Borrowed(sender_cert),
+        mac_signature: Cow::Borrowed(mac_signature),
+        payload_security,
         record_type: no_session_context(NoSessionContextRecord {
             payload: msg.into(),
         }),
@@ -766,6 +778,11 @@ pub fn usp_no_session_context_record<'a>(
 /// * `version` - The USP version of the record
 /// * `to_id` - The USP Endpoint ID of the receiver
 /// * `from_id` - The USP Endpoint ID of the sender
+/// * `payload_security` - An enumeration of type `PayloadSecurity`
+/// * `mac_signature` - Message authentication code or signature used to ensure the integrity of the
+///   non-payload fields, when integrity protection of non-payload fields is performed
+/// * `sender_cert` - PEM encoded certificate used to provide the signature in the `mac_signature`
+///   field, when the payload security mechanism does not provide the mechanism to do so
 /// * `session_id` - The ID of the context session
 /// * `sequence_id` - The sequence number within the context session
 /// * `expected_id` - The expected next sequence number within the context session
@@ -776,10 +793,14 @@ pub fn usp_no_session_context_record<'a>(
 ///
 /// ```
 /// use rusp::usp_generator::{usp_session_context_record, PayloadSARState};
+/// use rusp::usp_types::PayloadSecurity;
 /// let newrecord = usp_session_context_record(
 ///     "1.1",
 ///     "proto::myfancyrecipient",
 ///     "proto::anonymous",
+///     PayloadSecurity::PLAINTEXT,
+///     &[],
+///     &[],
 ///     1234,
 ///     1,
 ///     2,
@@ -789,10 +810,14 @@ pub fn usp_no_session_context_record<'a>(
 ///     &[],
 /// );
 /// ```
+#[allow(clippy::too_many_arguments)]
 pub fn usp_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
+    payload_security: PayloadSecurity,
+    mac_signature: &'a [u8],
+    sender_cert: &'a [u8],
     session_id: u64,
     sequence_id: u64,
     expected_id: u64,
@@ -808,9 +833,9 @@ pub fn usp_session_context_record<'a>(
         version: version.into(),
         to_id: to_id.into(),
         from_id: from_id.into(),
-        sender_cert: Cow::Borrowed(b""),
-        mac_signature: Cow::Borrowed(b""),
-        payload_security: "".into(),
+        sender_cert: Cow::Borrowed(sender_cert),
+        mac_signature: Cow::Borrowed(mac_signature),
+        payload_security,
         record_type: session_context(SessionContextRecord {
             session_id,
             sequence_id,
