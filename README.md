@@ -1,3 +1,5 @@
+![Continuous integration](https://github.com/axiros/rusp/workflows/Continuous%20integration/badge.svg)
+
 # rusp
 
 **rusp** is the **Rust USP** toolkit, brought to you by Axiros!
