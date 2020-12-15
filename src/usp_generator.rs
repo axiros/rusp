@@ -75,8 +75,12 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 /// # Arguments
 ///
 /// * `code` - The USP error code, MUST be between 7000 and 7999
-/// * `message` - A `Option<String>` containing the user readable messge. Will be automatically
+/// * `message` - An `Option<String>` containing the user readable message. Will be automatically
 ///               filled in for standard error codes if not supplied
+///
+/// # Panics
+///
+/// Panics if both `code` is an invalid USP error code and `message` is `None`
 ///
 /// # Examples
 ///
@@ -98,39 +102,9 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
 
     let err_msg = message.unwrap_or_else(|| {
-        match code {
-            7000 => "Message failed",
-            7001 => "Message not supported",
-            7002 => "Request denied (no reason specified)",
-            7003 => "Internal error",
-            7004 => "Invalid arguments",
-            7005 => "Resources exceeded",
-            7006 => "Permission denied",
-            7007 => "Invalid configuration",
-            7008 => "Invalid path syntax",
-            7009 => "Parameter action failed",
-            7010 => "Unsupported parameter",
-            7011 => "Invalid type",
-            7012 => "Invalid value",
-            7013 => "Attempt to update non-writeable parameter",
-            7014 => "Value conflict",
-            7015 => "Operation error",
-            7016 => "Object does not exist",
-            7017 => "Object could not be created",
-            7018 => "Object is not a table",
-            7019 => "Attempt to create non-creatable Object",
-            7020 => "Object could not be updated",
-            7021 => "Required parameter failed",
-            7022 => "Command failure",
-            7023 => "Command canceled",
-            7024 => "Delete failure",
-            7025 => "Object exists with duplicate key",
-            7026 => "Invalid path",
-            7027 => "Invalid Command Arguments",
-            7800..=7999 => "Vendor specific",
-            _ => unreachable!(),
-        }
-        .to_string()
+        get_err_msg(code)
+            .expect("Invalid USP error code")
+            .to_string()
     });
 
     Body {
@@ -141,6 +115,113 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
                 param_errs: [].to_vec(),
             }
         }),
+    }
+}
+
+/// Creates a body for a USP Msg with an USP Error
+///
+/// # Arguments
+///
+/// * `code` - The USP error code, MUST be between 7000 and 7999
+/// * `message` - An `Option<String>` containing the user readable message. Will be automatically
+///               filled in for standard error codes if not supplied
+/// * `param_errs` - A slice of a parameter path, error code and error message, can be empty
+///
+/// # Panics
+///
+/// Panics if both `code` is an invalid USP error code and `message` is `None`
+///
+/// # Examples
+///
+/// ```
+/// use rusp::usp_generator::usp_error;
+/// let err = usp_error::<&'static str>(7001, None, &[]);
+/// ```
+///
+/// ```
+/// use rusp::usp_generator::usp_error;
+/// let err = usp_error(
+///     7803,
+///     Some("Funny custom vendor error".into()),
+///     &[("Some.Path", 7804, "Funny error related to path")],
+/// );
+/// ```
+///
+/// ```should_panic
+/// use rusp::usp_generator::usp_error;
+/// let err = usp_error::<&'static str>(8000, None, &[]);
+/// ```
+pub fn usp_error<S: AsRef<str>>(
+    code: u32,
+    message: Option<String>,
+    param_errs: &[(S, u32, S)],
+) -> Body {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Error::ParamError;
+
+    let err_msg = message.unwrap_or_else(|| {
+        get_err_msg(code)
+            .expect("Invalid USP error code")
+            .to_string()
+    });
+
+    Body {
+        msg_body: error({
+            Error {
+                err_code: code,
+                err_msg: err_msg.into(),
+                param_errs: param_errs
+                    .iter()
+                    .map(|(param_path, err_code, err_msg)| ParamError {
+                        param_path: Cow::Borrowed(param_path.as_ref()),
+                        err_code: *err_code,
+                        err_msg: Cow::Borrowed(err_msg.as_ref()),
+                    })
+                    .collect(),
+            }
+        }),
+    }
+}
+
+/// Gets an USP error message from the error code
+pub fn get_err_msg(code: u32) -> Option<&'static str> {
+    match code {
+        7000 => Some("Message failed"),
+        7001 => Some("Message not supported"),
+        7002 => Some("Request denied (no reason specified)"),
+        7003 => Some("Internal error"),
+        7004 => Some("Invalid arguments"),
+        7005 => Some("Resources exceeded"),
+        7006 => Some("Permission denied"),
+        7007 => Some("Invalid configuration"),
+        7008 => Some("Invalid path syntax"),
+        7009 => Some("Parameter action failed"),
+        7010 => Some("Unsupported parameter"),
+        7011 => Some("Invalid type"),
+        7012 => Some("Invalid value"),
+        7013 => Some("Attempt to update non-writeable parameter"),
+        7014 => Some("Value conflict"),
+        7015 => Some("Operation error"),
+        7016 => Some("Object does not exist"),
+        7017 => Some("Object could not be created"),
+        7018 => Some("Object is not a table"),
+        7019 => Some("Attempt to create non-creatable Object"),
+        7020 => Some("Object could not be updated"),
+        7021 => Some("Required parameter failed"),
+        7022 => Some("Command failure"),
+        7023 => Some("Command canceled"),
+        7024 => Some("Delete failure"),
+        7025 => Some("Object exists with duplicate key"),
+        7026 => Some("Invalid path"),
+        7027 => Some("Invalid Command Arguments"),
+        7100 => Some("Record could not be parsed"),
+        7101 => Some("Secure session required"),
+        7102 => Some("Secure session not supported"),
+        7103 => Some("Segmentation and reassembly not supported"),
+        7104 => Some("Invalid Record value"),
+        7028..=7099 | 7105..=7799 => Some(""),
+        7800..=7999 => Some("Vendor specific"),
+        _ => None,
     }
 }
 
