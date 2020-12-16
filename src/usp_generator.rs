@@ -75,7 +75,7 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 /// # Arguments
 ///
 /// * `code` - The USP error code, MUST be between 7000 and 7999
-/// * `message` - An `Option<String>` containing the user readable message. Will be automatically
+/// * `message` - An `Option<&str>` containing the user readable message. Will be automatically
 ///               filled in for standard error codes if not supplied
 ///
 /// # Panics
@@ -91,27 +91,23 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 ///
 /// ```
 /// use rusp::usp_generator::usp_simple_error;
-/// let err = usp_simple_error(7803, Some("Funny custom vendor error".into()));
+/// let err = usp_simple_error(7803, Some("Funny custom vendor error"));
 /// ```
 ///
 /// ```should_panic
 /// use rusp::usp_generator::usp_simple_error;
 /// let err = usp_simple_error(8000, None);
 /// ```
-pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
+pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
     use crate::usp::mod_Body::OneOfmsg_body::*;
 
-    let err_msg = message.unwrap_or_else(|| {
-        get_err_msg(code)
-            .expect("Invalid USP error code")
-            .to_string()
-    });
+    let err_msg = message.unwrap_or_else(|| get_err_msg(code).expect("Invalid USP error code"));
 
     Body {
         msg_body: error({
             Error {
                 err_code: code,
-                err_msg: err_msg.into(),
+                err_msg: Cow::Borrowed(err_msg),
                 param_errs: [].to_vec(),
             }
         }),
@@ -123,7 +119,7 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
 /// # Arguments
 ///
 /// * `code` - The USP error code, MUST be between 7000 and 7999
-/// * `message` - An `Option<String>` containing the user readable message. Will be automatically
+/// * `message` - An `Option<&str>` containing the user readable message. Will be automatically
 ///               filled in for standard error codes if not supplied
 /// * `param_errs` - A slice of a parameter path, error code and error message, can be empty
 ///
@@ -135,47 +131,43 @@ pub fn usp_simple_error<'a>(code: u32, message: Option<String>) -> Body<'a> {
 ///
 /// ```
 /// use rusp::usp_generator::usp_error;
-/// let err = usp_error::<&'static str>(7001, None, &[]);
+/// let err = usp_error(7001, None, &[]);
 /// ```
 ///
 /// ```
 /// use rusp::usp_generator::usp_error;
 /// let err = usp_error(
 ///     7803,
-///     Some("Funny custom vendor error".into()),
+///     Some("Funny custom vendor error"),
 ///     &[("Some.Path", 7804, "Funny error related to path")],
 /// );
 /// ```
 ///
 /// ```should_panic
 /// use rusp::usp_generator::usp_error;
-/// let err = usp_error::<&'static str>(8000, None, &[]);
+/// let err = usp_error(8000, None, &[]);
 /// ```
-pub fn usp_error<S: AsRef<str>>(
+pub fn usp_error<'a>(
     code: u32,
-    message: Option<String>,
-    param_errs: &[(S, u32, S)],
-) -> Body {
+    message: Option<&'a str>,
+    param_errs: &[(&'a str, u32, &'a str)],
+) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Error::ParamError;
 
-    let err_msg = message.unwrap_or_else(|| {
-        get_err_msg(code)
-            .expect("Invalid USP error code")
-            .to_string()
-    });
+    let err_msg = message.unwrap_or_else(|| get_err_msg(code).expect("Invalid USP error code"));
 
     Body {
         msg_body: error({
             Error {
                 err_code: code,
-                err_msg: err_msg.into(),
+                err_msg: Cow::Borrowed(err_msg),
                 param_errs: param_errs
                     .iter()
                     .map(|(param_path, err_code, err_msg)| ParamError {
-                        param_path: Cow::Borrowed(param_path.as_ref()),
+                        param_path: Cow::Borrowed(param_path),
                         err_code: *err_code,
-                        err_msg: Cow::Borrowed(err_msg.as_ref()),
+                        err_msg: Cow::Borrowed(err_msg),
                     })
                     .collect(),
             }
