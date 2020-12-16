@@ -430,7 +430,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             ))
         }
         MsgType::USPError { code, message } => {
-            serialize_into_vec(&usp_generator::usp_simple_error(code, message))
+            serialize_into_vec(&usp_generator::usp_simple_error(code, message.as_deref()))
         }
         MsgType::USPGet { paths } => {
             let paths = paths.join(" ");
