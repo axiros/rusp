@@ -839,8 +839,8 @@ fn encode_no_session_record(
 
     let record = usp_generator::usp_no_session_context_record(
         &version,
-        &from,
         &to,
+        &from,
         PayloadSecurity::PLAINTEXT,
         &[],
         &[],
@@ -875,8 +875,8 @@ fn encode_session_record(
 
     let record = usp_generator::usp_session_context_record(
         &version,
-        &from,
         &to,
+        &from,
         PayloadSecurity::PLAINTEXT,
         &[],
         &[],
