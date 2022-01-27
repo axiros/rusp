@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-record.proto' file
+// Automatically generated rust module for 'usp-record-1-2.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -38,6 +38,10 @@ impl<'a> MessageRead<'a> for Record<'a> {
                 Ok(50) => msg.sender_cert = r.read_bytes(bytes).map(Cow::Borrowed)?,
                 Ok(58) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::no_session_context(r.read_message::<usp_record::NoSessionContextRecord>(bytes)?),
                 Ok(66) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::session_context(r.read_message::<usp_record::SessionContextRecord>(bytes)?),
+                Ok(74) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::websocket_connect(r.read_message::<usp_record::WebSocketConnectRecord>(bytes)?),
+                Ok(82) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::mqtt_connect(r.read_message::<usp_record::MQTTConnectRecord>(bytes)?),
+                Ok(90) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::stomp_connect(r.read_message::<usp_record::STOMPConnectRecord>(bytes)?),
+                Ok(98) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::disconnect(r.read_message::<usp_record::DisconnectRecord>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -58,6 +62,10 @@ impl<'a> MessageWrite for Record<'a> {
         + match self.record_type {
             usp_record::mod_Record::OneOfrecord_type::no_session_context(ref m) => 1 + sizeof_len((m).get_size()),
             usp_record::mod_Record::OneOfrecord_type::session_context(ref m) => 1 + sizeof_len((m).get_size()),
+            usp_record::mod_Record::OneOfrecord_type::websocket_connect(ref m) => 1 + sizeof_len((m).get_size()),
+            usp_record::mod_Record::OneOfrecord_type::mqtt_connect(ref m) => 1 + sizeof_len((m).get_size()),
+            usp_record::mod_Record::OneOfrecord_type::stomp_connect(ref m) => 1 + sizeof_len((m).get_size()),
+            usp_record::mod_Record::OneOfrecord_type::disconnect(ref m) => 1 + sizeof_len((m).get_size()),
             usp_record::mod_Record::OneOfrecord_type::None => 0,
     }    }
 
@@ -70,6 +78,10 @@ impl<'a> MessageWrite for Record<'a> {
         if self.sender_cert != Cow::Borrowed(b"") { w.write_with_tag(50, |w| w.write_bytes(&**&self.sender_cert))?; }
         match self.record_type {            usp_record::mod_Record::OneOfrecord_type::no_session_context(ref m) => { w.write_with_tag(58, |w| w.write_message(m))? },
             usp_record::mod_Record::OneOfrecord_type::session_context(ref m) => { w.write_with_tag(66, |w| w.write_message(m))? },
+            usp_record::mod_Record::OneOfrecord_type::websocket_connect(ref m) => { w.write_with_tag(74, |w| w.write_message(m))? },
+            usp_record::mod_Record::OneOfrecord_type::mqtt_connect(ref m) => { w.write_with_tag(82, |w| w.write_message(m))? },
+            usp_record::mod_Record::OneOfrecord_type::stomp_connect(ref m) => { w.write_with_tag(90, |w| w.write_message(m))? },
+            usp_record::mod_Record::OneOfrecord_type::disconnect(ref m) => { w.write_with_tag(98, |w| w.write_message(m))? },
             usp_record::mod_Record::OneOfrecord_type::None => {},
     }        Ok(())
     }
@@ -115,6 +127,10 @@ impl<'a> From<&'a str> for PayloadSecurity {
 pub enum OneOfrecord_type<'a> {
     no_session_context(usp_record::NoSessionContextRecord<'a>),
     session_context(usp_record::SessionContextRecord<'a>),
+    websocket_connect(usp_record::WebSocketConnectRecord),
+    mqtt_connect(usp_record::MQTTConnectRecord<'a>),
+    stomp_connect(usp_record::STOMPConnectRecord<'a>),
+    disconnect(usp_record::DisconnectRecord<'a>),
     None,
 }
 
@@ -253,5 +269,193 @@ impl<'a> From<&'a str> for PayloadSARState {
     }
 }
 
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct WebSocketConnectRecord { }
+
+impl<'a> MessageRead<'a> for WebSocketConnectRecord {
+    fn from_reader(r: &mut BytesReader, _: &[u8]) -> Result<Self> {
+        r.read_to_end();
+        Ok(Self::default())
+    }
+}
+
+impl MessageWrite for WebSocketConnectRecord { }
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct MQTTConnectRecord<'a> {
+    pub version: usp_record::mod_MQTTConnectRecord::MQTTVersion,
+    pub subscribed_topic: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for MQTTConnectRecord<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(8) => msg.version = r.read_enum(bytes)?,
+                Ok(18) => msg.subscribed_topic = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for MQTTConnectRecord<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.version == usp_record::mod_MQTTConnectRecord::MQTTVersion::V3_1_1 { 0 } else { 1 + sizeof_varint(*(&self.version) as u64) }
+        + if self.subscribed_topic == "" { 0 } else { 1 + sizeof_len((&self.subscribed_topic).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.version != usp_record::mod_MQTTConnectRecord::MQTTVersion::V3_1_1 { w.write_with_tag(8, |w| w.write_enum(*&self.version as i32))?; }
+        if self.subscribed_topic != "" { w.write_with_tag(18, |w| w.write_string(&**&self.subscribed_topic))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_MQTTConnectRecord {
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum MQTTVersion {
+    V3_1_1 = 0,
+    V5 = 1,
+}
+
+impl Default for MQTTVersion {
+    fn default() -> Self {
+        MQTTVersion::V3_1_1
+    }
+}
+
+impl From<i32> for MQTTVersion {
+    fn from(i: i32) -> Self {
+        match i {
+            0 => MQTTVersion::V3_1_1,
+            1 => MQTTVersion::V5,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl<'a> From<&'a str> for MQTTVersion {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "V3_1_1" => MQTTVersion::V3_1_1,
+            "V5" => MQTTVersion::V5,
+            _ => Self::default(),
+        }
+    }
+}
+
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct STOMPConnectRecord<'a> {
+    pub version: usp_record::mod_STOMPConnectRecord::STOMPVersion,
+    pub subscribed_destination: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for STOMPConnectRecord<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(8) => msg.version = r.read_enum(bytes)?,
+                Ok(18) => msg.subscribed_destination = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for STOMPConnectRecord<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.version == usp_record::mod_STOMPConnectRecord::STOMPVersion::V1_2 { 0 } else { 1 + sizeof_varint(*(&self.version) as u64) }
+        + if self.subscribed_destination == "" { 0 } else { 1 + sizeof_len((&self.subscribed_destination).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.version != usp_record::mod_STOMPConnectRecord::STOMPVersion::V1_2 { w.write_with_tag(8, |w| w.write_enum(*&self.version as i32))?; }
+        if self.subscribed_destination != "" { w.write_with_tag(18, |w| w.write_string(&**&self.subscribed_destination))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_STOMPConnectRecord {
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum STOMPVersion {
+    V1_2 = 0,
+}
+
+impl Default for STOMPVersion {
+    fn default() -> Self {
+        STOMPVersion::V1_2
+    }
+}
+
+impl From<i32> for STOMPVersion {
+    fn from(i: i32) -> Self {
+        match i {
+            0 => STOMPVersion::V1_2,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl<'a> From<&'a str> for STOMPVersion {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "V1_2" => STOMPVersion::V1_2,
+            _ => Self::default(),
+        }
+    }
+}
+
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct DisconnectRecord<'a> {
+    pub reason: Cow<'a, str>,
+    pub reason_code: u32,
+}
+
+impl<'a> MessageRead<'a> for DisconnectRecord<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.reason = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(21) => msg.reason_code = r.read_fixed32(bytes)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for DisconnectRecord<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.reason == "" { 0 } else { 1 + sizeof_len((&self.reason).len()) }
+        + if self.reason_code == 0u32 { 0 } else { 1 + 4 }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.reason != "" { w.write_with_tag(10, |w| w.write_string(&**&self.reason))?; }
+        if self.reason_code != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.reason_code))?; }
+        Ok(())
+    }
 }
 
