@@ -249,6 +249,7 @@ enum MsgType {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[structopt(multiple = true)]
         paths: Vec<String>,
+        max_depth: u32,
     },
     /// Generate an USP GetResp response message
     #[structopt(name = "GetResp")]
@@ -432,11 +433,11 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         MsgType::USPError { code, message } => {
             serialize_into_vec(&usp_generator::usp_simple_error(code, message.as_deref()))
         }
-        MsgType::USPGet { paths } => {
+        MsgType::USPGet { paths, max_depth } => {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&paths)
                 .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\",  got '{}'", paths))?;
-            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice()))
+            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice(), max_depth))
         }
         MsgType::USPGetInstances {
             first_level_only,
@@ -785,6 +786,10 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat) -> R
             write_msg(msg, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
+        OneOfrecord_type::websocket_connect(_) => unimplemented!(),
+        OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
+        OneOfrecord_type::stomp_connect(_) => unimplemented!(),
+        OneOfrecord_type::disconnect(_) => unimplemented!(),
         OneOfrecord_type::None => unreachable!(),
     }
 
@@ -821,6 +826,10 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat)
             write_body(body, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
+        OneOfrecord_type::websocket_connect(_) => unimplemented!(),
+        OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
+        OneOfrecord_type::stomp_connect(_) => unimplemented!(),
+        OneOfrecord_type::disconnect(_) => unimplemented!(),
         OneOfrecord_type::None => unreachable!(),
     }
 

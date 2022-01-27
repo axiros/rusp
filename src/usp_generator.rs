@@ -23,7 +23,7 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 /// use rusp::usp_generator::{usp_msg, usp_get_request};
 /// let newmsg = usp_msg(
 ///     "fancymsgid".to_string(),
-///     usp_get_request(&["Device.", "Device.DeviceInfo."]),
+///     usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
 /// );
 /// ```
 pub fn usp_msg(msg_id: String, body: Body) -> Msg {
@@ -222,14 +222,16 @@ pub fn get_err_msg(code: u32) -> Option<&'static str> {
 /// # Arguments
 ///
 /// * `params` - An array of parameter/object names to put into the Get request
+/// * `max_depth` - Used to limit the maximum tree depth of the results in the corresponding
+///   Get Response. A zero value represents no limit.
 ///
 /// # Example
 ///
 /// ```
 /// use rusp::usp_generator::usp_get_request;
-/// let req = usp_get_request(&["Device.", "Device.DeviceInfo."]);
+/// let req = usp_get_request(&["Device.", "Device.DeviceInfo."], 0);
 /// ```
-pub fn usp_get_request<S: AsRef<str>>(params: &'_ [S]) -> Body<'_> {
+pub fn usp_get_request<S: AsRef<str>>(params: &'_ [S], max_depth: u32) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Request::OneOfreq_type::*;
 
@@ -237,11 +239,10 @@ pub fn usp_get_request<S: AsRef<str>>(params: &'_ [S]) -> Body<'_> {
         msg_body: request({
             Request {
                 req_type: get({
-                    let mut getr = Get::default();
-                    for path in params {
-                        getr.param_paths.push(Cow::Borrowed(path.as_ref()));
+                    Get {
+                        max_depth,
+                        param_paths: params.iter().map(|p| Cow::Borrowed(p.as_ref())).collect(),
                     }
-                    getr
                 }),
             }
         }),
@@ -1452,9 +1453,9 @@ pub fn usp_set_response<'a>(
 /// use rusp::usp_generator::usp_get_supported_dm_response;
 /// let resp = usp_get_supported_dm_response(vec![
 ///     ("Device.", "urn:broadband-forum-org:tr-181-2-12-0", Ok(vec![
-///         ("Device.", "OBJ_READ_ONLY", false, vec![("Foo", "PARAM_READ_ONLY")],
-///         vec![("Bar", vec![], vec![])],
-///         vec![("Event", vec![])],)
+///         ("Device.", "OBJ_READ_ONLY", false, vec![("Foo", "PARAM_READ_ONLY", "PARAM_STRING", "VALUE_CHANGE_ALLOWED")],
+///         vec![("Bar", vec![], vec![], "CMD_SYNC")],
+///         vec![("Event", vec![])], vec![],)
 ///     ])),
 ///     ("Dev.", "urn:broadband-forum-org:tr-181-2-12-0", Err((7000, "Message failed"))),
 /// ]);
@@ -1473,18 +1474,22 @@ pub fn usp_get_supported_dm_response<'a>(
                     // supported params
                     &'a str, // param name
                     &'a str, // access
+                    &'a str, // value type
+                    &'a str, // value change
                 )>,
                 Vec<(
                     // supported commands
                     &'a str,      // command name
                     Vec<&'a str>, // input args
                     Vec<&'a str>, // output args
+                    &'a str,      // command type
                 )>,
                 Vec<(
                     // supported events
                     &'a str,      // event name
                     Vec<&'a str>, // arg names
                 )>,
+                Vec<&'a str>, // divergent_paths
             )>,
             (u32, &'a str),
         >,
@@ -1514,32 +1519,52 @@ pub fn usp_get_supported_dm_response<'a>(
                                     supported_params,
                                     supported_commands,
                                     supported_events,
+                                    divergent_paths,
                                 ) in success
                                 {
                                     let supported_params = supported_params
                                         .into_iter()
-                                        .map(|(param_name, param_access)| SupportedParamResult {
-                                            param_name: Cow::Borrowed(param_name),
-                                            access: param_access.into(),
-                                        })
+                                        .map(
+                                            |(
+                                                param_name,
+                                                param_access,
+                                                param_value_type,
+                                                param_value_change,
+                                            )| {
+                                                SupportedParamResult {
+                                                    param_name: Cow::Borrowed(param_name),
+                                                    access: param_access.into(),
+                                                    value_type: param_value_type.into(),
+                                                    value_change: param_value_change.into(),
+                                                }
+                                            },
+                                        )
                                         .collect();
                                     let supported_commands = supported_commands
                                         .into_iter()
-                                        .map(|(command_name, input_arg_names, output_arg_names)| {
-                                            let input_arg_names = input_arg_names
-                                                .into_iter()
-                                                .map(Cow::Borrowed)
-                                                .collect();
-                                            let output_arg_names = output_arg_names
-                                                .into_iter()
-                                                .map(Cow::Borrowed)
-                                                .collect();
-                                            SupportedCommandResult {
-                                                command_name: Cow::Borrowed(command_name),
+                                        .map(
+                                            |(
+                                                command_name,
                                                 input_arg_names,
                                                 output_arg_names,
-                                            }
-                                        })
+                                                command_type,
+                                            )| {
+                                                let input_arg_names = input_arg_names
+                                                    .into_iter()
+                                                    .map(Cow::Borrowed)
+                                                    .collect();
+                                                let output_arg_names = output_arg_names
+                                                    .into_iter()
+                                                    .map(Cow::Borrowed)
+                                                    .collect();
+                                                SupportedCommandResult {
+                                                    command_name: Cow::Borrowed(command_name),
+                                                    input_arg_names,
+                                                    output_arg_names,
+                                                    command_type: command_type.into(),
+                                                }
+                                            },
+                                        )
                                         .collect();
                                     let supported_events = supported_events
                                         .into_iter()
@@ -1559,6 +1584,10 @@ pub fn usp_get_supported_dm_response<'a>(
                                         supported_commands,
                                         supported_events,
                                         supported_params,
+                                        divergent_paths: divergent_paths
+                                            .into_iter()
+                                            .map(Cow::Borrowed)
+                                            .collect(),
                                     });
                                 }
                                 RequestedObjectResult {
