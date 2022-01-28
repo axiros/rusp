@@ -209,7 +209,8 @@ mod tests {
         "Get": {
           "param_paths": [
             "Device.LocalAgent.MTP.1.WebSocket."
-          ]
+          ],
+          "max_depth": 0
         }
       }
     }
