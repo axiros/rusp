@@ -10,7 +10,10 @@ impl Serialize for Record<'_> {
         S: Serializer,
     {
         use crate::usp_decoder::*;
-        use mod_Record::OneOfrecord_type::{no_session_context, session_context};
+        use mod_Record::OneOfrecord_type::{
+            disconnect, mqtt_connect, no_session_context, session_context, stomp_connect,
+            websocket_connect,
+        };
 
         let mut state = serializer.serialize_struct("Record", 7)?;
         state.serialize_field("version", &self.version)?;
@@ -33,10 +36,16 @@ impl Serialize for Record<'_> {
                 }
             }
             session_context(context) => {
-                state.serialize_field("payload", context)?;
+                state.serialize_field("session_context", context)?;
             }
+            websocket_connect(ws) => state.serialize_field("websocket_connect", ws)?,
+            mqtt_connect(mqtt) => state.serialize_field("mqtt_connect", mqtt)?,
+            stomp_connect(stomp) => state.serialize_field("stomp_connect", stomp)?,
+            disconnect(disc) => state.serialize_field("disconnect", disc)?,
             _ => {
-                return Err(serde::ser::Error::custom("Can't handle session_context!"));
+                return Err(serde::ser::Error::custom(
+                    "Unknown/Unsupported record type!",
+                ));
             }
         }
 
@@ -86,6 +95,80 @@ impl Serialize for mod_SessionContextRecord::PayloadSARState {
             INPROCESS => serializer.serialize_unit_variant("PayloadSARState", 2, "INPROCESS"),
             COMPLETE => serializer.serialize_unit_variant("PayloadSARState", 3, "COMPLETE"),
         }
+    }
+}
+
+impl Serialize for WebSocketConnectRecord {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_unit_struct("WebSocketConnectRecord")
+    }
+}
+
+impl Serialize for MQTTConnectRecord<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("MQTTConnectRecord", 2)?;
+        state.serialize_field("version", &self.version)?;
+        state.serialize_field("subscribed_topic", &self.subscribed_topic)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_MQTTConnectRecord::MQTTVersion {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_MQTTConnectRecord::MQTTVersion::*;
+
+        let (value, index) = match self {
+            V3_1_1 => ("V3_1_1", 0),
+            V5 => ("V5", 1),
+        };
+        serializer.serialize_unit_variant("MQTTVersion", index, value)
+    }
+}
+
+impl Serialize for STOMPConnectRecord<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("STOMPConnectRecord", 2)?;
+        state.serialize_field("version", &self.version)?;
+        state.serialize_field("subscribed_destination", &self.subscribed_destination)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_STOMPConnectRecord::STOMPVersion {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_STOMPConnectRecord::STOMPVersion::*;
+
+        let (value, index) = match self {
+            V1_2 => ("V1_2", 0),
+        };
+        serializer.serialize_unit_variant("STOMPVersion", index, value)
+    }
+}
+
+impl Serialize for DisconnectRecord<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("DisconnectRecord", 2)?;
+        state.serialize_field("reason", &self.reason)?;
+        state.serialize_field("reason_code", &self.reason_code)?;
+        state.end()
     }
 }
 
@@ -268,8 +351,9 @@ impl Serialize for Get<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Get", 1)?;
+        let mut state = serializer.serialize_struct("Get", 2)?;
         state.serialize_field("param_paths", &self.param_paths)?;
+        state.serialize_field("max_depth", &self.max_depth)?;
         state.end()
     }
 }
@@ -595,13 +679,14 @@ impl Serialize for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SupportedObjectResult", 6)?;
+        let mut state = serializer.serialize_struct("SupportedObjectResult", 7)?;
         state.serialize_field("supported_obj_path", &self.supported_obj_path)?;
         state.serialize_field("access", &self.access)?;
         state.serialize_field("is_multi_instance", &self.is_multi_instance)?;
         state.serialize_field("supported_commands", &self.supported_commands)?;
         state.serialize_field("supported_events", &self.supported_events)?;
         state.serialize_field("supported_params", &self.supported_params)?;
+        state.serialize_field("divergent_paths", &self.divergent_paths)?;
         state.end()
     }
 }
@@ -631,11 +716,28 @@ impl Serialize for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SupportedCommandResult", 3)?;
+        let mut state = serializer.serialize_struct("SupportedCommandResult", 4)?;
         state.serialize_field("command_name", &self.command_name)?;
         state.serialize_field("input_arg_names", &self.input_arg_names)?;
         state.serialize_field("output_arg_names", &self.output_arg_names)?;
+        state.serialize_field("command_type", &self.command_type)?;
         state.end()
+    }
+}
+
+impl Serialize for mod_GetSupportedDMResp::CmdType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_GetSupportedDMResp::CmdType::*;
+
+        let (value, index) = match self {
+            CMD_UNKNOWN => ("CMD_UNKNOWN", 0),
+            CMD_SYNC => ("CMD_SYNC", 1),
+            CMD_ASYNC => ("CMD_ASYNC", 2),
+        };
+        serializer.serialize_unit_variant("CmdType", index, value)
     }
 }
 
@@ -656,10 +758,52 @@ impl Serialize for mod_GetSupportedDMResp::SupportedParamResult<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SupportedParamResult", 2)?;
+        let mut state = serializer.serialize_struct("SupportedParamResult", 4)?;
         state.serialize_field("param_name", &self.param_name)?;
         state.serialize_field("access", &self.access)?;
+        state.serialize_field("value_type", &self.value_type)?;
+        state.serialize_field("value_change", &self.value_change)?;
         state.end()
+    }
+}
+
+impl Serialize for mod_GetSupportedDMResp::ParamValueType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_GetSupportedDMResp::ParamValueType::*;
+
+        let (value, index) = match self {
+            PARAM_UNKNOWN => ("PARAM_UNKNOWN", 0),
+            PARAM_BASE_64 => ("PARAM_BASE_64", 1),
+            PARAM_BOOLEAN => ("PARAM_BOOLEAN", 2),
+            PARAM_DATE_TIME => ("PARAM_DATE_TIME", 3),
+            PARAM_DECIMAL => ("PARAM_DECIMAL", 4),
+            PARAM_HEX_BINARY => ("PARAM_HEX_BINARY", 5),
+            PARAM_INT => ("PARAM_INT", 6),
+            PARAM_LONG => ("PARAM_LONG", 7),
+            PARAM_STRING => ("PARAM_STRING", 8),
+            PARAM_UNSIGNED_INT => ("PARAM_UNSIGNED_INT", 9),
+            PARAM_UNSIGNED_LONG => ("PARAM_UNSIGNED_LONG", 10),
+        };
+        serializer.serialize_unit_variant("ParamValueType", index, value)
+    }
+}
+
+impl Serialize for mod_GetSupportedDMResp::ValueChangeType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_GetSupportedDMResp::ValueChangeType::*;
+
+        let (value, index) = match self {
+            VALUE_CHANGE_UNKNOWN => ("VALUE_CHANGE_UNKNOWN", 0),
+            VALUE_CHANGE_ALLOWED => ("VALUE_CHANGE_ALLOWED", 1),
+            VALUE_CHANGE_WILL_IGNORE => ("VALUE_CHANGE_WILL_IGNORE", 2),
+        };
+        serializer.serialize_unit_variant("ValueChangeType", index, value)
     }
 }
 

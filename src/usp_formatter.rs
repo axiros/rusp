@@ -9,7 +9,10 @@ const INDENT: usize = 2;
 impl Display for Record<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         use crate::usp_decoder::*;
-        use mod_Record::OneOfrecord_type::{no_session_context, session_context};
+        use mod_Record::OneOfrecord_type::{
+            disconnect, mqtt_connect, no_session_context, session_context, stomp_connect,
+            websocket_connect,
+        };
 
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -57,6 +60,18 @@ impl Display for Record<'_> {
             session_context(context) => {
                 write!(f, "{:aby$}", context, aby = aby2)?;
             }
+            websocket_connect(ws) => {
+                write!(f, "{:aby$}", ws, aby = aby2)?;
+            }
+            mqtt_connect(mqtt) => {
+                write!(f, "{:aby$}", mqtt, aby = aby2)?;
+            }
+            stomp_connect(stomp) => {
+                write!(f, "{:aby$}", stomp, aby = aby2)?;
+            }
+            disconnect(disc) => {
+                write!(f, "{:aby$}", disc, aby = aby2)?;
+            }
             _ => {
                 writeln!(f, "{:aby$}unknown/unsupported record type!", "", aby = aby2)?;
             }
@@ -73,7 +88,7 @@ impl Display for SessionContextRecord<'_> {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
 
-        let data = &self
+        let data = self
             .payload
             .iter()
             .flat_map(|e| e.clone().into_owned())
@@ -145,6 +160,103 @@ impl Display for mod_Record::PayloadSecurity {
 
         // TODO: Implement
         writeln!(f, "{:aby$}{:#?}", "", self, aby = aby2)
+    }
+}
+
+impl Display for WebSocketConnectRecord {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+
+        writeln!(f, "{:aby$}WebSocketConnectRecord {{ }}", "", aby = aby)
+    }
+}
+
+impl Display for MQTTConnectRecord<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}MQTTConnectRecord {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}version: {}", "", self.version, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}subscribed_topic: \"{}\"",
+            "",
+            self.subscribed_topic,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_MQTTConnectRecord::MQTTVersion {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_MQTTConnectRecord::MQTTVersion::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                V3_1_1 => "V3_1_1",
+                V5 => "V5",
+            },
+            aby = aby
+        )
+    }
+}
+
+impl Display for STOMPConnectRecord<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}STOMPConnectRecord {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}version: {}", "", self.version, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}subscribed_destination: \"{}\"",
+            "",
+            self.subscribed_destination,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_STOMPConnectRecord::STOMPVersion {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_STOMPConnectRecord::STOMPVersion::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                V1_2 => "V1_2",
+            },
+            aby = aby
+        )
+    }
+}
+
+impl Display for DisconnectRecord<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}DisconnectRecord {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}reason: \"{}\"", "", self.reason, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}reason_code: {}",
+            "",
+            self.reason_code,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -333,19 +445,22 @@ impl Display for DeleteResp<'_> {
 impl Display for Get<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
 
+        writeln!(f, "{:aby$}Get: {{", "", aby = aby)?;
         writeln!(
             f,
-            "{:aby$}Get {{ param_paths: [ {} ] }}",
+            "{:aby$}param_paths: [ {} ]",
             "",
             self.param_paths
-                .clone()
-                .into_iter()
+                .iter()
                 .map(|s| format!("\"{}\"", s))
                 .collect::<Vec<_>>()
                 .join(", "),
-            aby = aby
-        )
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}max_depth: {}", "", self.max_depth, aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
 
@@ -852,6 +967,17 @@ impl Display for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
         for result in self.supported_params.iter() {
             write!(f, "{:aby$}", result, aby = aby2)?;
         }
+        writeln!(
+            f,
+            "{:aby$}divergent_paths: [ {} ]",
+            "",
+            self.divergent_paths
+                .iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -900,7 +1026,33 @@ impl Display for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
             writeln!(f, "{:aby$}\"{}\"", "", result, aby = aby3)?;
         }
         writeln!(f, "{:aby$}]", "", aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}command_type: {}",
+            "",
+            self.command_type,
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_GetSupportedDMResp::CmdType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_GetSupportedDMResp::CmdType::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                CMD_UNKNOWN => "CMD_UNKNOWN",
+                CMD_SYNC => "CMD_SYNC",
+                CMD_ASYNC => "CMD_ASYNC",
+            },
+            aby = aby
+        )
     }
 }
 
@@ -941,6 +1093,14 @@ impl Display for mod_GetSupportedDMResp::SupportedParamResult<'_> {
             aby = aby2
         )?;
         writeln!(f, "{:aby$}access: {}", "", self.access, aby = aby2)?;
+        writeln!(f, "{:aby$}value_type: {}", "", self.value_type, aby = aby2)?;
+        writeln!(
+            f,
+            "{:aby$}value_change: {}",
+            "",
+            self.value_change,
+            aby = aby2
+        )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -958,6 +1118,52 @@ impl Display for mod_GetSupportedDMResp::ParamAccessType {
                 PARAM_READ_ONLY => "PARAM_READ_ONLY",
                 PARAM_READ_WRITE => "PARAM_READ_WRITE",
                 PARAM_WRITE_ONLY => "PARAM_WRITE_ONLY",
+            },
+            aby = aby
+        )
+    }
+}
+
+impl Display for mod_GetSupportedDMResp::ParamValueType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_GetSupportedDMResp::ParamValueType::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                PARAM_UNKNOWN => "PARAM_UNKNOWN",
+                PARAM_BASE_64 => "PARAM_BASE_64",
+                PARAM_BOOLEAN => "PARAM_BOOLEAN",
+                PARAM_DATE_TIME => "PARAM_DATE_TIME",
+                PARAM_DECIMAL => "PARAM_DECIMAL",
+                PARAM_HEX_BINARY => "PARAM_HEX_BINARY",
+                PARAM_INT => "PARAM_INT",
+                PARAM_LONG => "PARAM_LONG",
+                PARAM_STRING => "PARAM_STRING",
+                PARAM_UNSIGNED_INT => "PARAM_UNSIGNED_INT",
+                PARAM_UNSIGNED_LONG => "PARAM_UNSIGNED_LONG",
+            },
+            aby = aby
+        )
+    }
+}
+
+impl Display for mod_GetSupportedDMResp::ValueChangeType {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        use mod_GetSupportedDMResp::ValueChangeType::*;
+        let aby = f.width().unwrap_or(0);
+
+        write!(
+            f,
+            "{:aby$}{}",
+            "",
+            match self {
+                VALUE_CHANGE_UNKNOWN => "VALUE_CHANGE_UNKNOWN",
+                VALUE_CHANGE_ALLOWED => "VALUE_CHANGE_ALLOWED",
+                VALUE_CHANGE_WILL_IGNORE => "VALUE_CHANGE_WILL_IGNORE",
             },
             aby = aby
         )

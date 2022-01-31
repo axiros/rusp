@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-msg.proto' file
+// Automatically generated rust module for 'usp-msg-1-2.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -490,6 +490,7 @@ impl<'a> MessageWrite for ParamError<'a> {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Get<'a> {
     pub param_paths: Vec<Cow<'a, str>>,
+    pub max_depth: u32,
 }
 
 impl<'a> MessageRead<'a> for Get<'a> {
@@ -498,6 +499,7 @@ impl<'a> MessageRead<'a> for Get<'a> {
         while !r.is_eof() {
             match r.next_tag(bytes) {
                 Ok(10) => msg.param_paths.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(21) => msg.max_depth = r.read_fixed32(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -510,10 +512,12 @@ impl<'a> MessageWrite for Get<'a> {
     fn get_size(&self) -> usize {
         0
         + self.param_paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+        + if self.max_depth == 0u32 { 0 } else { 1 + 4 }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         for s in &self.param_paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
+        if self.max_depth != 0u32 { w.write_with_tag(21, |w| w.write_fixed32(*&self.max_depth))?; }
         Ok(())
     }
 }
@@ -777,6 +781,7 @@ pub struct SupportedObjectResult<'a> {
     pub supported_commands: Vec<usp::mod_GetSupportedDMResp::SupportedCommandResult<'a>>,
     pub supported_events: Vec<usp::mod_GetSupportedDMResp::SupportedEventResult<'a>>,
     pub supported_params: Vec<usp::mod_GetSupportedDMResp::SupportedParamResult<'a>>,
+    pub divergent_paths: Vec<Cow<'a, str>>,
 }
 
 impl<'a> MessageRead<'a> for SupportedObjectResult<'a> {
@@ -790,6 +795,7 @@ impl<'a> MessageRead<'a> for SupportedObjectResult<'a> {
                 Ok(34) => msg.supported_commands.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedCommandResult>(bytes)?),
                 Ok(42) => msg.supported_events.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedEventResult>(bytes)?),
                 Ok(50) => msg.supported_params.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedParamResult>(bytes)?),
+                Ok(58) => msg.divergent_paths.push(r.read_string(bytes).map(Cow::Borrowed)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -807,6 +813,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
         + self.supported_commands.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.supported_events.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.supported_params.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+        + self.divergent_paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
@@ -816,6 +823,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
         for s in &self.supported_commands { w.write_with_tag(34, |w| w.write_message(s))?; }
         for s in &self.supported_events { w.write_with_tag(42, |w| w.write_message(s))?; }
         for s in &self.supported_params { w.write_with_tag(50, |w| w.write_message(s))?; }
+        for s in &self.divergent_paths { w.write_with_tag(58, |w| w.write_string(&**s))?; }
         Ok(())
     }
 }
@@ -824,6 +832,8 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
 pub struct SupportedParamResult<'a> {
     pub param_name: Cow<'a, str>,
     pub access: usp::mod_GetSupportedDMResp::ParamAccessType,
+    pub value_type: usp::mod_GetSupportedDMResp::ParamValueType,
+    pub value_change: usp::mod_GetSupportedDMResp::ValueChangeType,
 }
 
 impl<'a> MessageRead<'a> for SupportedParamResult<'a> {
@@ -833,6 +843,8 @@ impl<'a> MessageRead<'a> for SupportedParamResult<'a> {
             match r.next_tag(bytes) {
                 Ok(10) => msg.param_name = r.read_string(bytes).map(Cow::Borrowed)?,
                 Ok(16) => msg.access = r.read_enum(bytes)?,
+                Ok(24) => msg.value_type = r.read_enum(bytes)?,
+                Ok(32) => msg.value_change = r.read_enum(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -846,11 +858,15 @@ impl<'a> MessageWrite for SupportedParamResult<'a> {
         0
         + if self.param_name == "" { 0 } else { 1 + sizeof_len((&self.param_name).len()) }
         + if self.access == usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { 0 } else { 1 + sizeof_varint(*(&self.access) as u64) }
+        + if self.value_type == usp::mod_GetSupportedDMResp::ParamValueType::PARAM_UNKNOWN { 0 } else { 1 + sizeof_varint(*(&self.value_type) as u64) }
+        + if self.value_change == usp::mod_GetSupportedDMResp::ValueChangeType::VALUE_CHANGE_UNKNOWN { 0 } else { 1 + sizeof_varint(*(&self.value_change) as u64) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.param_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.param_name))?; }
         if self.access != usp::mod_GetSupportedDMResp::ParamAccessType::PARAM_READ_ONLY { w.write_with_tag(16, |w| w.write_enum(*&self.access as i32))?; }
+        if self.value_type != usp::mod_GetSupportedDMResp::ParamValueType::PARAM_UNKNOWN { w.write_with_tag(24, |w| w.write_enum(*&self.value_type as i32))?; }
+        if self.value_change != usp::mod_GetSupportedDMResp::ValueChangeType::VALUE_CHANGE_UNKNOWN { w.write_with_tag(32, |w| w.write_enum(*&self.value_change as i32))?; }
         Ok(())
     }
 }
@@ -860,6 +876,7 @@ pub struct SupportedCommandResult<'a> {
     pub command_name: Cow<'a, str>,
     pub input_arg_names: Vec<Cow<'a, str>>,
     pub output_arg_names: Vec<Cow<'a, str>>,
+    pub command_type: usp::mod_GetSupportedDMResp::CmdType,
 }
 
 impl<'a> MessageRead<'a> for SupportedCommandResult<'a> {
@@ -870,6 +887,7 @@ impl<'a> MessageRead<'a> for SupportedCommandResult<'a> {
                 Ok(10) => msg.command_name = r.read_string(bytes).map(Cow::Borrowed)?,
                 Ok(18) => msg.input_arg_names.push(r.read_string(bytes).map(Cow::Borrowed)?),
                 Ok(26) => msg.output_arg_names.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(32) => msg.command_type = r.read_enum(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -884,12 +902,14 @@ impl<'a> MessageWrite for SupportedCommandResult<'a> {
         + if self.command_name == "" { 0 } else { 1 + sizeof_len((&self.command_name).len()) }
         + self.input_arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
         + self.output_arg_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+        + if self.command_type == usp::mod_GetSupportedDMResp::CmdType::CMD_UNKNOWN { 0 } else { 1 + sizeof_varint(*(&self.command_type) as u64) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.command_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.command_name))?; }
         for s in &self.input_arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
         for s in &self.output_arg_names { w.write_with_tag(26, |w| w.write_string(&**s))?; }
+        if self.command_type != usp::mod_GetSupportedDMResp::CmdType::CMD_UNKNOWN { w.write_with_tag(32, |w| w.write_enum(*&self.command_type as i32))?; }
         Ok(())
     }
 }
@@ -997,6 +1017,135 @@ impl<'a> From<&'a str> for ObjAccessType {
             "OBJ_ADD_DELETE" => ObjAccessType::OBJ_ADD_DELETE,
             "OBJ_ADD_ONLY" => ObjAccessType::OBJ_ADD_ONLY,
             "OBJ_DELETE_ONLY" => ObjAccessType::OBJ_DELETE_ONLY,
+            _ => Self::default(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ParamValueType {
+    PARAM_UNKNOWN = 0,
+    PARAM_BASE_64 = 1,
+    PARAM_BOOLEAN = 2,
+    PARAM_DATE_TIME = 3,
+    PARAM_DECIMAL = 4,
+    PARAM_HEX_BINARY = 5,
+    PARAM_INT = 6,
+    PARAM_LONG = 7,
+    PARAM_STRING = 8,
+    PARAM_UNSIGNED_INT = 9,
+    PARAM_UNSIGNED_LONG = 10,
+}
+
+impl Default for ParamValueType {
+    fn default() -> Self {
+        ParamValueType::PARAM_UNKNOWN
+    }
+}
+
+impl From<i32> for ParamValueType {
+    fn from(i: i32) -> Self {
+        match i {
+            0 => ParamValueType::PARAM_UNKNOWN,
+            1 => ParamValueType::PARAM_BASE_64,
+            2 => ParamValueType::PARAM_BOOLEAN,
+            3 => ParamValueType::PARAM_DATE_TIME,
+            4 => ParamValueType::PARAM_DECIMAL,
+            5 => ParamValueType::PARAM_HEX_BINARY,
+            6 => ParamValueType::PARAM_INT,
+            7 => ParamValueType::PARAM_LONG,
+            8 => ParamValueType::PARAM_STRING,
+            9 => ParamValueType::PARAM_UNSIGNED_INT,
+            10 => ParamValueType::PARAM_UNSIGNED_LONG,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl<'a> From<&'a str> for ParamValueType {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "PARAM_UNKNOWN" => ParamValueType::PARAM_UNKNOWN,
+            "PARAM_BASE_64" => ParamValueType::PARAM_BASE_64,
+            "PARAM_BOOLEAN" => ParamValueType::PARAM_BOOLEAN,
+            "PARAM_DATE_TIME" => ParamValueType::PARAM_DATE_TIME,
+            "PARAM_DECIMAL" => ParamValueType::PARAM_DECIMAL,
+            "PARAM_HEX_BINARY" => ParamValueType::PARAM_HEX_BINARY,
+            "PARAM_INT" => ParamValueType::PARAM_INT,
+            "PARAM_LONG" => ParamValueType::PARAM_LONG,
+            "PARAM_STRING" => ParamValueType::PARAM_STRING,
+            "PARAM_UNSIGNED_INT" => ParamValueType::PARAM_UNSIGNED_INT,
+            "PARAM_UNSIGNED_LONG" => ParamValueType::PARAM_UNSIGNED_LONG,
+            _ => Self::default(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ValueChangeType {
+    VALUE_CHANGE_UNKNOWN = 0,
+    VALUE_CHANGE_ALLOWED = 1,
+    VALUE_CHANGE_WILL_IGNORE = 2,
+}
+
+impl Default for ValueChangeType {
+    fn default() -> Self {
+        ValueChangeType::VALUE_CHANGE_UNKNOWN
+    }
+}
+
+impl From<i32> for ValueChangeType {
+    fn from(i: i32) -> Self {
+        match i {
+            0 => ValueChangeType::VALUE_CHANGE_UNKNOWN,
+            1 => ValueChangeType::VALUE_CHANGE_ALLOWED,
+            2 => ValueChangeType::VALUE_CHANGE_WILL_IGNORE,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl<'a> From<&'a str> for ValueChangeType {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "VALUE_CHANGE_UNKNOWN" => ValueChangeType::VALUE_CHANGE_UNKNOWN,
+            "VALUE_CHANGE_ALLOWED" => ValueChangeType::VALUE_CHANGE_ALLOWED,
+            "VALUE_CHANGE_WILL_IGNORE" => ValueChangeType::VALUE_CHANGE_WILL_IGNORE,
+            _ => Self::default(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum CmdType {
+    CMD_UNKNOWN = 0,
+    CMD_SYNC = 1,
+    CMD_ASYNC = 2,
+}
+
+impl Default for CmdType {
+    fn default() -> Self {
+        CmdType::CMD_UNKNOWN
+    }
+}
+
+impl From<i32> for CmdType {
+    fn from(i: i32) -> Self {
+        match i {
+            0 => CmdType::CMD_UNKNOWN,
+            1 => CmdType::CMD_SYNC,
+            2 => CmdType::CMD_ASYNC,
+            _ => Self::default(),
+        }
+    }
+}
+
+impl<'a> From<&'a str> for CmdType {
+    fn from(s: &'a str) -> Self {
+        match s {
+            "CMD_UNKNOWN" => CmdType::CMD_UNKNOWN,
+            "CMD_SYNC" => CmdType::CMD_SYNC,
+            "CMD_ASYNC" => CmdType::CMD_ASYNC,
             _ => Self::default(),
         }
     }
