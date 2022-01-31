@@ -1,7 +1,7 @@
+use clap::{Parser, StructOpt, Subcommand};
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::PathBuf;
-use structopt::*;
 
 use anyhow::{Context, Result};
 
@@ -28,9 +28,9 @@ enum OutputFormat {
 }
 
 #[derive(StructOpt)]
-#[structopt(name = "rusp", about = "the Rust USP toolkit")]
+#[clap(author, version, name = "rusp", about = "the Rust USP toolkit")]
 struct Rusp {
-    #[structopt(
+    #[clap(
         long = "carray",
         conflicts_with = "cstr",
         conflicts_with = "json",
@@ -38,7 +38,7 @@ struct Rusp {
     )]
     /// Output as C array (and length) for inclusion in source code
     carray: bool,
-    #[structopt(
+    #[clap(
         long = "json",
         conflicts_with = "cstr",
         conflicts_with = "carray",
@@ -46,7 +46,7 @@ struct Rusp {
     )]
     /// Output as JSON
     json: bool,
-    #[structopt(
+    #[clap(
         long = "cstr",
         conflicts_with = "json",
         conflicts_with = "carray",
@@ -54,7 +54,7 @@ struct Rusp {
     )]
     /// Output binary as Protobuf in a C string / Rust bytearray representation
     cstr: bool,
-    #[structopt(
+    #[clap(
         long = "protobuf",
         conflicts_with = "json",
         conflicts_with = "carray",
@@ -62,180 +62,180 @@ struct Rusp {
     )]
     /// Output binary as native Protobuf binary
     protobuf: bool,
-    #[structopt(flatten)]
+    #[clap(subcommand)]
     action: RuspAction,
 }
 
-#[derive(StructOpt)]
+#[derive(Subcommand)]
 enum RuspAction {
     /// Decode a single raw USP message from standard input and print to standard output
-    #[structopt(name = "decode_msg")]
+    #[clap(name = "decode_msg")]
     DecodeMsg {},
     /// Decode ore or more USP messages from specified filenames and print to standard output
-    #[structopt(name = "decode_msg_files")]
+    #[clap(name = "decode_msg_files")]
     DecodeMsgFiles {
-        #[structopt(parse(from_os_str), required = true)]
+        #[clap(parse(from_os_str), required = true)]
         /// Filenames of USP protobuf messages to decode
         files: Vec<PathBuf>,
     },
     /// Decode a single raw USP record from standard input and print to standard output
-    #[structopt(name = "decode_record")]
+    #[clap(name = "decode_record")]
     DecodeRecord {},
     /// Decode one or more USP records from specified filenames and print to standard output
-    #[structopt(name = "decode_record_files")]
+    #[clap(name = "decode_record_files")]
     DecodeRecordFiles {
-        #[structopt(parse(from_os_str), required = true)]
+        #[clap(parse(from_os_str), required = true)]
         /// Filenames of USP protobuf records to decode
         files: Vec<PathBuf>,
     },
     /// Encode command line input into a single raw USP message
-    #[structopt(name = "encode_msg")]
+    #[clap(name = "encode_msg")]
     EncodeMsg {
         /// Output the serialised protobuf as C char array
-        #[structopt(short = "c")]
+        #[clap(short = 'c')]
         as_c_array: bool,
         /// The message ID to use in the USP Msg header
         msgid: String,
         /// Filename (will output to standard output if omitted)
-        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        #[clap(parse(from_os_str), short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
-        #[structopt(subcommand)]
+        #[clap(subcommand)]
         typ: MsgType,
     },
     /// Encode command line input into a single raw USP message body
-    #[structopt(name = "encode_msg_body")]
+    #[clap(name = "encode_msg_body")]
     EncodeMsgBody {
         /// Output the serialised protobuf as C char array
-        #[structopt(short = "c")]
+        #[clap(short = 'c')]
         as_c_array: bool,
         /// Filename (will output to standard output if omitted)
-        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        #[clap(parse(from_os_str), short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
-        #[structopt(subcommand)]
+        #[clap(subcommand)]
         typ: MsgType,
     },
     /// Extract the USP message from an USP record
-    #[structopt(name = "extract_msg")]
+    #[clap(name = "extract_msg")]
     ExtractMsg {
-        #[structopt(parse(from_os_str))]
+        #[clap(parse(from_os_str))]
         /// Input filename of USP protobuf record to decode
         in_file: PathBuf,
         /// Output filename of USP protobuf message to write into, use `-` for stdout
-        #[structopt(parse(from_os_str))]
+        #[clap(parse(from_os_str))]
         out_file: PathBuf,
     },
     /// Extract the USP message body from an USP record
-    #[structopt(name = "extract_msg_body")]
+    #[clap(name = "extract_msg_body")]
     ExtractMsgBody {
-        #[structopt(parse(from_os_str))]
+        #[clap(parse(from_os_str))]
         /// Input filename of USP protobuf record to decode
         in_file: PathBuf,
         /// Output filename of USP protobuf message body to write into, use `-` for stdout
-        #[structopt(parse(from_os_str))]
+        #[clap(parse(from_os_str))]
         out_file: PathBuf,
     },
     /// Wrap msg from stdin into a single no-session context USP record (this option is deprecated
     /// and will be removed in a future version, use `encode_no_session_record` instead)
-    #[structopt(name = "wrap_msg_raw")]
+    #[clap(name = "wrap_msg_raw")]
     WrapMsgRaw {
         /// Output the serialised protobuf as C char array
-        #[structopt(short = "c")]
+        #[clap(short = 'c')]
         as_c_array: bool,
-        #[structopt(long = "version", default_value = "1.1")]
+        #[clap(long = "version", default_value = "1.1")]
         /// USP specification version
         version: String,
-        #[structopt(long = "from", default_value = "doc::from")]
+        #[clap(long = "from", default_value = "doc::from")]
         /// Sender Id
         from: String,
-        #[structopt(long = "to", default_value = "doc::to")]
+        #[clap(long = "to", default_value = "doc::to")]
         /// Recipient Id
         to: String,
         /// Filename (will output to standard output if omitted)
-        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        #[clap(parse(from_os_str), short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf record to
         filename: Option<PathBuf>,
     },
     /// Encode Msg payload provided via stdin into a single no-session context USP Record
-    #[structopt(name = "encode_no_session_record")]
+    #[clap(name = "encode_no_session_record")]
     EncodeNoSessionRecord {
-        #[structopt(long = "version", default_value = "1.1")]
+        #[clap(long = "version", default_value = "1.1")]
         /// USP specification version
         version: String,
-        #[structopt(long = "from", default_value = "doc::from")]
+        #[clap(long = "from", default_value = "doc::from")]
         /// Sender Id
         from: String,
-        #[structopt(long = "to", default_value = "doc::to")]
+        #[clap(long = "to", default_value = "doc::to")]
         /// Recipient Id
         to: String,
         /// Filename (will output to standard output if omitted)
-        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        #[clap(parse(from_os_str), short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf record to
         filename: Option<PathBuf>,
     },
     /// Encode Msg payload provided via stdin into a single session context USP Record
-    #[structopt(name = "encode_session_record")]
+    #[clap(name = "encode_session_record")]
     EncodeSessionRecord {
-        #[structopt(long = "version", default_value = "1.1")]
+        #[clap(long = "version", default_value = "1.1")]
         /// USP specification version
         version: String,
-        #[structopt(long = "from", default_value = "doc::from")]
+        #[clap(long = "from", default_value = "doc::from")]
         /// Sender Id
         from: String,
-        #[structopt(long = "to", default_value = "doc::to")]
+        #[clap(long = "to", default_value = "doc::to")]
         /// Recipient Id
         to: String,
-        #[structopt(long = "session_id", default_value = "1234")]
+        #[clap(long = "session_id", default_value = "1234")]
         /// The ID of the context session
         session_id: u64,
-        #[structopt(long = "sequence_id", default_value = "1")]
+        #[clap(long = "sequence_id", default_value = "1")]
         /// The sequence number within the context session
         sequence_id: u64,
-        #[structopt(long = "expected_id", default_value = "2")]
+        #[clap(long = "expected_id", default_value = "2")]
         /// The expected next sequence number within the context session
         expected_id: u64,
-        #[structopt(long = "retransmit_id", default_value = "0")]
+        #[clap(long = "retransmit_id", default_value = "0")]
         /// The sequence number of the part which is being retransmitted
         retransmit_id: u64,
         /// Filename (will output to standard output if omitted)
-        #[structopt(parse(from_os_str), short = "f", long = "file")]
+        #[clap(parse(from_os_str), short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf record to
         filename: Option<PathBuf>,
     },
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(rename_all = "verbatim")]
+#[derive(Parser, Debug)]
+#[clap(rename_all = "verbatim")]
 enum MsgType {
     /// Generate an USP Add request message
-    #[structopt(name = "Add")]
+    #[clap(name = "Add")]
     USPAdd {
         /// Do we allow partial execution?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Add operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         args: Vec<String>,
     },
     /// Generate an USP Delete request message
-    #[structopt(name = "Delete")]
+    #[clap(name = "Delete")]
     USPDelete {
         /// Do we allow partial execution?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Delete operation
         ///
         /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         obj_paths: Vec<String>,
     },
     /// Generate an USP Error message
-    #[structopt(name = "Error")]
+    #[clap(name = "Error")]
     USPError {
         /// The USP error code (MUST be between 7000 and 7999)
         code: u32,
@@ -244,101 +244,101 @@ enum MsgType {
         message: Option<String>,
     },
     /// Generate an USP Get request message
-    #[structopt(name = "Get")]
+    #[clap(name = "Get")]
     USPGet {
         /// A JSON array of Strings resembling the paths for the Get operation
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         paths: Vec<String>,
         max_depth: u32,
     },
     /// Generate an USP GetResp response message
-    #[structopt(name = "GetResp")]
+    #[clap(name = "GetResp")]
     USPGetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         result: Vec<String>,
     },
     /// Generate an USP GetInstances request message
-    #[structopt(name = "GetInstances")]
+    #[clap(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         first_level_only: bool,
         /// A JSON array ressembling the object paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         obj_paths: Vec<String>,
     },
     /// Generate an USP GetSupportedDM request message
-    #[structopt(name = "GetSupportedDM")]
+    #[clap(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         first_level_only: bool,
         /// Return commands?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         return_commands: bool,
         /// Return events?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         return_events: bool,
         /// Return parameters?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         return_params: bool,
         /// A JSON array ressembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         paths: Vec<String>,
     },
     /// Generate an USP GetSupportedProtocol request message
-    #[structopt(name = "GetSupportedProtocol")]
+    #[clap(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
         cspv: String,
     },
     /// Generate an USP Notify request message
-    #[structopt(name = "Notify")]
+    #[clap(name = "Notify")]
     USPNotify {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a response?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         send_resp: bool,
         /// Type of notification
-        #[structopt(subcommand)]
+        #[clap(subcommand)]
         typ: NotifyType,
     },
     /// Generate an USP Notify response message
-    #[structopt(name = "NotifyResp")]
+    #[clap(name = "NotifyResp")]
     USPNotifyResp {
         /// Subscription ID
         sub_id: String,
     },
     /// Generate an USP Operate request message
-    #[structopt(name = "Operate")]
+    #[clap(name = "Operate")]
     USPOperate {
         /// The full pathname of of the command to execute
         command: String,
         /// * The command key to use in the request to allow later matching with a result
         command_key: String,
         /// A boolean indicating whether a response is expected in reply to this request
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         send_resp: bool,
         /// A JSON array of arrays containing the command input arguments with path names and values
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         args: Vec<String>,
     },
     /// Generate an USP Set request message
-    #[structopt(name = "Set")]
+    #[clap(name = "Set")]
     USPSet {
         /// Do we allow partial execution?
-        #[structopt(parse(try_from_str))]
+        #[clap(parse(try_from_str))]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Set operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[structopt(multiple = true)]
+        #[clap(multiple_values = true)]
         args: Vec<String>,
     },
 }
@@ -917,7 +917,7 @@ fn main() -> Result<()> {
         cstr,
         carray,
         protobuf,
-    } = Rusp::from_args();
+    } = Rusp::parse();
 
     // Pass on the user chosen format to use for the output
     let format = {

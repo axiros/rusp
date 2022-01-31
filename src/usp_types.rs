@@ -1,6 +1,6 @@
 pub use crate::usp_record::mod_Record::PayloadSecurity;
 use std::collections::HashMap;
-use structopt::*;
+use clap::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum OperateResponse {
