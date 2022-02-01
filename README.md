@@ -56,7 +56,7 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 
 messages via commandline tool.
 
-**NEWSFLASH**: 0.12 offers convenience improvements with regards to Error messages.
+**NEWSFLASH**: 0.13 offers USP 1.2 support.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -74,8 +74,8 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.12"
-quick-protobuf = "0.7"
+rusp = "0.13"
+quick-protobuf = "0.8"
 
 ...
 ```
