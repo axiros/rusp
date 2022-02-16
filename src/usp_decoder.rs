@@ -34,8 +34,8 @@ use anyhow::{Context, Result};
     note = "this function will panic on unexpected data, use `try_decode_record` instead"
 )]
 pub fn decode_record(bytes: &[u8]) -> Record {
-    let mut reader = BytesReader::from_bytes(&bytes);
-    Record::from_reader(&mut reader, &bytes).expect("Cannot read Record")
+    let mut reader = BytesReader::from_bytes(bytes);
+    Record::from_reader(&mut reader, bytes).expect("Cannot read Record")
 }
 
 /// Decodes a slice of bytes containing a protobuf encoded USP Record into a Record structure for
@@ -63,8 +63,8 @@ pub fn decode_record(bytes: &[u8]) -> Record {
 ///     ]);
 /// ```
 pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
-    let mut reader = BytesReader::from_bytes(&bytes);
-    Record::from_reader(&mut reader, &bytes).context("while parsing protobuf as USP Record")
+    let mut reader = BytesReader::from_bytes(bytes);
+    Record::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Record")
 }
 
 /// Decodes a slice of bytes containing a protobuf encoded USP Msg into a Msg structure for further
@@ -96,8 +96,8 @@ pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
     note = "this function will panic on unexpected data, use `try_decode_msg` instead"
 )]
 pub fn decode_msg(bytes: &[u8]) -> Msg {
-    let mut reader = BytesReader::from_bytes(&bytes);
-    Msg::from_reader(&mut reader, &bytes).expect("Cannot read Msg")
+    let mut reader = BytesReader::from_bytes(bytes);
+    Msg::from_reader(&mut reader, bytes).expect("Cannot read Msg")
 }
 
 /// Decodes a slice of bytes containing a protobuf encoded USP Msg into a Msg structure for further
@@ -125,6 +125,6 @@ pub fn decode_msg(bytes: &[u8]) -> Msg {
 ///     ]);
 /// ```
 pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
-    let mut reader = BytesReader::from_bytes(&bytes);
-    Msg::from_reader(&mut reader, &bytes).context("while parsing protobuf as USP Message")
+    let mut reader = BytesReader::from_bytes(bytes);
+    Msg::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Message")
 }

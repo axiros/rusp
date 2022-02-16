@@ -273,12 +273,15 @@ pub fn usp_add_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
         msg_body: request({
             Request {
                 req_type: add({
-                    let mut addr = Add::default();
-                    addr.allow_partial = allow_partial;
+                    let mut addr = Add {
+                        allow_partial,
+                        ..Default::default()
+                    };
                     for (dir, pars) in args {
-                        let mut obj: crate::usp::mod_Add::CreateObject =
-                            crate::usp::mod_Add::CreateObject::default();
-                        obj.obj_path = Cow::Borrowed(dir.as_ref());
+                        let mut obj = crate::usp::mod_Add::CreateObject {
+                            obj_path: Cow::Borrowed(dir.as_ref()),
+                            ..Default::default()
+                        };
                         for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Add::CreateParamSetting {
@@ -354,12 +357,15 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
         msg_body: request({
             Request {
                 req_type: set({
-                    let mut setr = Set::default();
-                    setr.allow_partial = allow_partial;
+                    let mut setr = Set {
+                        allow_partial,
+                        ..Default::default()
+                    };
                     for (dir, pars) in args {
-                        let mut obj: crate::usp::mod_Set::UpdateObject =
-                            crate::usp::mod_Set::UpdateObject::default();
-                        obj.obj_path = Cow::Borrowed(dir.as_ref());
+                        let mut obj = crate::usp::mod_Set::UpdateObject {
+                            obj_path: Cow::Borrowed(dir.as_ref()),
+                            ..Default::default()
+                        };
                         for par in pars.as_ref() {
                             obj.param_settings
                                 .push(crate::usp::mod_Set::UpdateParamSetting {
@@ -411,10 +417,10 @@ pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyT
         msg_body: request({
             Request {
                 req_type: notify({
-                    let mut notr = Notify::default();
-                    notr.subscription_id = sub_id.into();
-                    notr.send_resp = send_resp;
-                    notr.notification = match typ {
+                    Notify {
+                    subscription_id : sub_id.into(),
+                    send_resp,
+                    notification : match typ {
                         NotifyType::OnBoardRequest {
                             oui,
                             product_class,
@@ -496,8 +502,8 @@ pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyT
                                 }
                             },
                         }),
-                    };
-                    notr
+                    }
+                }
                 }),
             }
         }),
@@ -532,16 +538,16 @@ pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
         msg_body: request({
             Request {
                 req_type: operate({
-                    let mut operater = Operate::default();
-                    operater.command = Cow::Borrowed(command);
-                    operater.command_key = Cow::Borrowed(command_key);
-                    operater.send_resp = send_resp;
-                    operater.input_args = args
-                        .as_ref()
-                        .iter()
-                        .map(|(k, v)| (Cow::Borrowed(*k), Cow::Borrowed(*v)))
-                        .collect::<HashMap<_, _>>();
-                    operater
+                    Operate {
+                        command: Cow::Borrowed(command),
+                        command_key: Cow::Borrowed(command_key),
+                        send_resp,
+                        input_args: args
+                            .as_ref()
+                            .iter()
+                            .map(|(k, v)| (Cow::Borrowed(*k), Cow::Borrowed(*v)))
+                            .collect::<HashMap<_, _>>(),
+                    }
                 }),
             }
         }),
@@ -770,7 +776,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 
                 for res_path in &req_path_result.resolved_path_results {
                     resolved_path_result.push((
-                        &res_path.resolved_path,
+                        res_path.resolved_path,
                         res_path
                             .result_params
                             .iter()
@@ -778,12 +784,12 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
                             .collect(),
                     ));
                 }
-                d.push((&req_path_result.requested_path, Ok(resolved_path_result)))
+                d.push((req_path_result.requested_path, Ok(resolved_path_result)))
             }
 
             _ => d.push((
-                &req_path_result.requested_path,
-                Err((req_path_result.err_code, &req_path_result.err_msg)),
+                req_path_result.requested_path,
+                Err((req_path_result.err_code, req_path_result.err_msg)),
             )),
         };
     }
@@ -1021,7 +1027,7 @@ pub fn usp_add_response<'a>(
                                     unique_keys,
                                 };
                                 CreatedObjectResult {
-                                    requested_path: Cow::Borrowed(&path),
+                                    requested_path: Cow::Borrowed(path),
                                     oper_status: Some(OperationStatus {
                                         oper_status: OneOfoper_status::oper_success(op),
                                     }),
@@ -1033,7 +1039,7 @@ pub fn usp_add_response<'a>(
                                     err_msg: Cow::Borrowed(err_msg),
                                 };
                                 CreatedObjectResult {
-                                    requested_path: Cow::Borrowed(&path),
+                                    requested_path: Cow::Borrowed(path),
                                     oper_status: Some(OperationStatus {
                                         oper_status: OneOfoper_status::oper_failure(op),
                                     }),
@@ -1089,7 +1095,7 @@ pub fn usp_delete_response<'a>(
                             Ok((affected_paths, unaffected_path_errs)) => {
                                 let affected_paths = affected_paths
                                     .into_iter()
-                                    .map(|aff_path| Cow::Borrowed(aff_path))
+                                    .map(Cow::Borrowed)
                                     .collect();
 
                                 let unaffected_path_errs = unaffected_path_errs

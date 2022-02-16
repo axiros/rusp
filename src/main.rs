@@ -1,7 +1,7 @@
 use clap::{Parser, StructOpt, Subcommand};
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 
@@ -17,7 +17,7 @@ enum OutputFormat {
     /// Our custom text representation
     Native,
     /// Valid JSON format
-    JSON,
+    Json,
     /// Protobuf output as C strings or Rust byarrays where non-ascii characters are replaced with
     /// backslashed escaped hex codes
     CStr,
@@ -605,7 +605,7 @@ fn write_msg(msg: rusp::usp::Msg, mut out: Box<dyn Write>, format: &OutputFormat
         .context("Failed encoding USP Msg")?;
 
     match format {
-        OutputFormat::JSON => {
+        OutputFormat::Json => {
             writeln!(
                 out,
                 "{}",
@@ -622,7 +622,7 @@ fn write_msg(msg: rusp::usp::Msg, mut out: Box<dyn Write>, format: &OutputFormat
             write_c_array(out, buf.as_slice())?;
         }
         OutputFormat::Protobuf => {
-            out.write_all(&buf.as_slice())?;
+            out.write_all(buf.as_slice())?;
         }
     }
 
@@ -644,7 +644,7 @@ fn write_record(
         .context("Failed encoding USP Record")?;
 
     match format {
-        OutputFormat::JSON => {
+        OutputFormat::Json => {
             writeln!(
                 out,
                 "{}",
@@ -661,7 +661,7 @@ fn write_record(
             write_c_array(out, buf.as_slice())?;
         }
         OutputFormat::Protobuf => {
-            out.write_all(&buf.as_slice())?;
+            out.write_all(buf.as_slice())?;
         }
     }
 
@@ -678,7 +678,7 @@ fn write_body(msg: rusp::usp::Body, mut out: Box<dyn Write>, format: &OutputForm
         .context("Failed encoding USP Msg Body")?;
 
     match format {
-        OutputFormat::JSON => {
+        OutputFormat::Json => {
             writeln!(
                 out,
                 "{}",
@@ -695,7 +695,7 @@ fn write_body(msg: rusp::usp::Body, mut out: Box<dyn Write>, format: &OutputForm
             write_c_array(out, buf.as_slice())?;
         }
         OutputFormat::Protobuf => {
-            out.write_all(&buf.as_slice())?;
+            out.write_all(buf.as_slice())?;
         }
     }
 
@@ -719,7 +719,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat
     let mut out = get_out_stream(filename)?;
 
     match format {
-        OutputFormat::JSON => {
+        OutputFormat::Json => {
             writeln!(
                 out,
                 "{}",
@@ -736,7 +736,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat
             write_c_array(out, buf.as_slice())?;
         }
         OutputFormat::Protobuf => {
-            out.write_all(&buf.as_slice())?;
+            out.write_all(buf.as_slice())?;
         }
     }
 
@@ -760,7 +760,7 @@ fn encode_msg(
     write_msg(msg, get_out_stream(filename)?, &format)
 }
 
-fn extract_msg(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat) -> Result<()> {
+fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(&in_file)?;
@@ -776,7 +776,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat) -> R
             let out = if let Some("-") = out_file.to_str() {
                 get_out_stream(None)?
             } else {
-                get_out_stream(Some(out_file.clone()))?
+                get_out_stream(Some(out_file.to_path_buf()))?
             };
             let format = if format == OutputFormat::Native {
                 OutputFormat::Protobuf
@@ -796,7 +796,7 @@ fn extract_msg(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat) -> R
     Ok(())
 }
 
-fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat) -> Result<()> {
+fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(&in_file)?;
@@ -814,7 +814,7 @@ fn extract_msg_body(in_file: &PathBuf, out_file: &PathBuf, format: OutputFormat)
             let out = if let Some("-") = out_file.to_str() {
                 get_out_stream(None)?
             } else {
-                get_out_stream(Some(out_file.clone()))?
+                get_out_stream(Some(out_file.to_path_buf()))?
             };
 
             let format = if format == OutputFormat::Native {
@@ -922,7 +922,7 @@ fn main() -> Result<()> {
     // Pass on the user chosen format to use for the output
     let format = {
         if json {
-            OutputFormat::JSON
+            OutputFormat::Json
         } else if carray {
             OutputFormat::CArray
         } else if cstr {
