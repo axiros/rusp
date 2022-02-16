@@ -1093,10 +1093,8 @@ pub fn usp_delete_response<'a>(
                     for (path, state) in result {
                         del_rsp.deleted_obj_results.push(match state {
                             Ok((affected_paths, unaffected_path_errs)) => {
-                                let affected_paths = affected_paths
-                                    .into_iter()
-                                    .map(Cow::Borrowed)
-                                    .collect();
+                                let affected_paths =
+                                    affected_paths.into_iter().map(Cow::Borrowed).collect();
 
                                 let unaffected_path_errs = unaffected_path_errs
                                     .into_iter()
