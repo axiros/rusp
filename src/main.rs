@@ -249,7 +249,8 @@ enum MsgType {
         /// A JSON array of Strings resembling the paths for the Get operation
         #[clap(multiple_values = true)]
         paths: Vec<String>,
-        max_depth: u32,
+        #[clap(long = "max_depth")]
+        max_depth: Option<u32>,
     },
     /// Generate an USP GetResp response message
     #[clap(name = "GetResp")]
@@ -437,7 +438,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<&str>>(&paths)
                 .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\",  got '{}'", paths))?;
-            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice(), max_depth))
+            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice(), max_depth.unwrap_or(0)))
         }
         MsgType::USPGetInstances {
             first_level_only,
