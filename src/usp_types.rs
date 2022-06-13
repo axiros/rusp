@@ -19,29 +19,37 @@ pub enum NotifyType {
     /// USP OnBoardRequest notification
     OnBoardRequest {
         /// The OUI associated with the manufacturer of the device
+        #[clap(action)]
         oui: String,
 
         /// The product class associated with the device
+        #[clap(action)]
         product_class: String,
 
         /// The serial number of the device
+        #[clap(action)]
         serial_number: String,
 
         /// A comma separated list of supported USP versions
+        #[clap(action)]
         agent_supported_protocol_versions: String,
     },
     /// USP ValueChange notification
     ValueChange {
         /// The path of the changed parameter
+        #[clap(action)]
         param_path: String,
         /// The new value of the changed parameter
+        #[clap(action)]
         param_value: String,
     },
     /// USP Event notification
     Event {
         /// The path of the event
+        #[clap(action)]
         obj_path: String,
         /// The name of the event
+        #[clap(action)]
         event_name: String,
         /// A list of parameter/value pairs associated with the event
         #[structopt(skip)]
@@ -50,6 +58,7 @@ pub enum NotifyType {
     /// USP ObjectCreation notification
     ObjectCreation {
         /// The path of the created object
+        #[clap(action)]
         obj_path: String,
         /// A list of parameter/value pairs which are unique keys for the created object
         #[structopt(skip)]
@@ -58,16 +67,20 @@ pub enum NotifyType {
     /// USP ObjectDeletion notification
     ObjectDeletion {
         /// The path of the deleted object
+        #[clap(action)]
         obj_path: String,
     },
 
     /// USP OperationComplete notification
     OperationComplete {
         /// The path of the operation object
+        #[clap(action)]
         obj_path: String,
         /// The name of the operated command
+        #[clap(action)]
         command_name: String,
         /// The command key associated with the operation
+        #[clap(action)]
         command_key: String,
         /// The result of the operation
         #[structopt(skip)]
