@@ -2,8 +2,9 @@ pub use crate::usp_record::mod_Record::PayloadSecurity;
 use clap::StructOpt;
 use std::collections::HashMap;
 
+/// Parse a JSON object into a Rust HashMap
 fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
-    serde_json::from_str::<HashMap<String, String>>(&s).map_err(|e| e.to_string())
+    serde_json::from_str::<HashMap<String, String>>(s).map_err(|e| e.to_string())
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -55,7 +56,7 @@ pub enum NotifyType {
         /// The name of the event
         #[clap(action)]
         event_name: String,
-        /// A list of parameter/value pairs associated with the event
+        /// A stringified JSON object containing the output arguments of the USP Event
         #[clap(value_parser = parse_key_val_json)]
         params: HashMap<String, String>,
     },
@@ -64,7 +65,7 @@ pub enum NotifyType {
         /// The path of the created object
         #[clap(action)]
         obj_path: String,
-        /// A list of parameter/value pairs which are unique keys for the created object
+        /// A stringified JSON object containing the unique_keys and values of the created Object
         #[clap(value_parser = parse_key_val_json)]
         unique_keys: HashMap<String, String>,
     },
