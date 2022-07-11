@@ -28,8 +28,8 @@ mod tests {
         assert!(record.version == "1.0");
         assert!(record.from_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.payload_security == "".into());
-        assert!(record.mac_signature == vec!());
-        assert!(record.sender_cert == vec!());
+        assert!(record.mac_signature.clone().is_empty());
+        assert!(record.sender_cert.clone().is_empty());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -97,8 +97,8 @@ mod tests {
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
         assert!(record.payload_security == "".into());
-        assert!(record.mac_signature == vec!());
-        assert!(record.sender_cert == vec!());
+        assert!(record.mac_signature.clone().is_empty());
+        assert!(record.sender_cert.clone().is_empty());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -169,8 +169,8 @@ mod tests {
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
         assert!(record.payload_security == "".into());
-        assert!(record.mac_signature == vec!());
-        assert!(record.sender_cert == vec!());
+        assert!(record.mac_signature.clone().is_empty());
+        assert!(record.sender_cert.clone().is_empty());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
@@ -230,8 +230,8 @@ mod tests {
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
         assert!(record.payload_security == "".into());
-        assert!(record.mac_signature == vec!());
-        assert!(record.sender_cert == vec!());
+        assert!(record.mac_signature.clone().is_empty());
+        assert!(record.sender_cert.clone().is_empty());
         assert!(if let no_session_context(_) = record.record_type {
             true
         } else {
