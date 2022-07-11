@@ -2,6 +2,10 @@ pub use crate::usp_record::mod_Record::PayloadSecurity;
 use clap::StructOpt;
 use std::collections::HashMap;
 
+fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
+    serde_json::from_str::<HashMap<String, String>>(&s).map_err(|e| e.to_string())
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum OperateResponse {
     OutputArgs(HashMap<String, String>),
@@ -52,7 +56,7 @@ pub enum NotifyType {
         #[clap(action)]
         event_name: String,
         /// A list of parameter/value pairs associated with the event
-        #[structopt(skip)]
+        #[clap(value_parser = parse_key_val_json)]
         params: HashMap<String, String>,
     },
     /// USP ObjectCreation notification
@@ -61,7 +65,7 @@ pub enum NotifyType {
         #[clap(action)]
         obj_path: String,
         /// A list of parameter/value pairs which are unique keys for the created object
-        #[structopt(skip)]
+        #[clap(value_parser = parse_key_val_json)]
         unique_keys: HashMap<String, String>,
     },
     /// USP ObjectDeletion notification
