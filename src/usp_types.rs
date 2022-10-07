@@ -1,5 +1,5 @@
 pub use crate::usp_record::mod_Record::PayloadSecurity;
-use clap::StructOpt;
+use clap::Parser;
 use std::collections::HashMap;
 
 /// Parse a JSON object into a Rust HashMap
@@ -19,7 +19,7 @@ impl Default for OperateResponse {
     }
 }
 
-#[derive(StructOpt, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq)]
 pub enum NotifyType {
     /// USP OnBoardRequest notification
     OnBoardRequest {
@@ -93,7 +93,7 @@ pub enum NotifyType {
     },
 }
 
-#[derive(StructOpt, Copy, Clone, Debug, PartialEq)]
+#[derive(Parser, Copy, Clone, Debug, PartialEq)]
 pub enum PayloadSARState {
     /// No segmentation
     NONE = 0,

@@ -1,4 +1,4 @@
-use clap::{Parser, StructOpt, Subcommand};
+use clap::{Parser, Subcommand};
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
@@ -27,7 +27,7 @@ enum OutputFormat {
     Protobuf,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 #[clap(author, version, name = "rusp", about = "the Rust USP toolkit")]
 struct Rusp {
     #[clap(
@@ -224,7 +224,7 @@ enum MsgType {
         /// A JSON structure resesembling the input for a Add operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         args: Vec<String>,
     },
     /// Generate an USP Delete request message
@@ -236,7 +236,7 @@ enum MsgType {
         /// A JSON structure resesembling the input for a Delete operation
         ///
         /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         obj_paths: Vec<String>,
     },
     /// Generate an USP Error message
@@ -254,7 +254,7 @@ enum MsgType {
     #[clap(name = "Get")]
     USPGet {
         /// A JSON array of Strings resembling the paths for the Get operation
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         paths: Vec<String>,
         #[clap(long = "max_depth", action)]
         max_depth: Option<u32>,
@@ -263,7 +263,7 @@ enum MsgType {
     #[clap(name = "GetResp")]
     USPGetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         result: Vec<String>,
     },
     /// Generate an USP GetInstances request message
@@ -275,7 +275,7 @@ enum MsgType {
         /// A JSON array ressembling the object paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         obj_paths: Vec<String>,
     },
     /// Generate an USP GetSupportedDM request message
@@ -296,7 +296,7 @@ enum MsgType {
         /// A JSON array ressembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         paths: Vec<String>,
     },
     /// Generate an USP GetSupportedProtocol request message
@@ -339,7 +339,7 @@ enum MsgType {
         #[clap(action)]
         send_resp: bool,
         /// A JSON array of arrays containing the command input arguments with path names and values
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         args: Vec<String>,
     },
     /// Generate an USP Set request message
@@ -351,7 +351,7 @@ enum MsgType {
         /// A JSON structure resesembling the input for a Set operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[clap(multiple_values = true, action)]
+        #[clap(num_args(1..), action)]
         args: Vec<String>,
     },
 }
