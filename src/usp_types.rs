@@ -7,7 +7,7 @@ fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
     serde_json::from_str::<HashMap<String, String>>(s).map_err(|e| e.to_string())
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OperateResponse {
     OutputArgs(HashMap<String, String>),
     CommandFailure(u32, String),
@@ -19,7 +19,7 @@ impl Default for OperateResponse {
     }
 }
 
-#[derive(Parser, Clone, Debug, PartialEq)]
+#[derive(Parser, Clone, Debug, PartialEq, Eq)]
 pub enum NotifyType {
     /// USP OnBoardRequest notification
     OnBoardRequest {
@@ -80,7 +80,7 @@ pub enum NotifyType {
     },
 }
 
-#[derive(Parser, Copy, Clone, Debug, PartialEq)]
+#[derive(Parser, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum PayloadSARState {
     /// No segmentation
     NONE = 0,

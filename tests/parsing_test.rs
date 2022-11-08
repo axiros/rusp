@@ -56,7 +56,7 @@ mod tests {
 
                     if let notify(a) = req.req_type {
                         assert!(a.subscription_id == "subscription_id");
-                        assert!(a.send_resp == false);
+                        assert!(!a.send_resp);
                         if let on_board_req(n) = a.notification {
                             assert!(n.oui == "oui");
                             assert!(n.product_class == "product_class");
@@ -124,7 +124,7 @@ mod tests {
                     });
 
                     if let add(a) = req.req_type {
-                        assert!(a.allow_partial == true);
+                        assert!(a.allow_partial);
                         assert!(a.create_objs.len() == 1);
                         let createobj = &a.create_objs[0];
                         assert!(createobj.obj_path == "Device.LocalAgent.Controller.");
@@ -132,12 +132,12 @@ mod tests {
                         let param1 = &createobj.param_settings[0];
                         assert!(param1.param == "Alias");
                         assert!(param1.value == "test");
-                        assert!(param1.required == true);
+                        assert!(param1.required);
 
                         let param2 = &createobj.param_settings[1];
                         assert!(param2.param == "EndpointID");
                         assert!(param2.value == "test");
-                        assert!(param2.required == true);
+                        assert!(param2.required);
                     }
                 }
             }
@@ -196,7 +196,7 @@ mod tests {
                     });
 
                     if let delete(a) = req.req_type {
-                        assert!(a.allow_partial == true);
+                        assert!(a.allow_partial);
                         assert!(a.obj_paths.len() == 1);
                         assert!(&a.obj_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
                     }

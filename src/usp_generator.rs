@@ -1224,7 +1224,7 @@ pub fn usp_get_supported_protocol_response(result: &str) -> Body {
 }
 
 /// Enum describing the result of an operation, sent through the Operate response
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum OperationResponse<'a> {
     /// A path to the object responsible for performing the operation asynchronously, corresponds to
     /// `req_obj_path` in the protobuf scheme
