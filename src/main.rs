@@ -750,7 +750,7 @@ fn encode_msg(
 fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
-    let fp = File::open(&in_file)?;
+    let fp = File::open(in_file)?;
     let mut buf_reader = BufReader::new(fp);
     let mut contents = Vec::new();
     buf_reader.read_to_end(&mut contents)?;
@@ -786,7 +786,7 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
 fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
-    let fp = File::open(&in_file)?;
+    let fp = File::open(in_file)?;
     let mut buf_reader = BufReader::new(fp);
     let mut contents = Vec::new();
     buf_reader.read_to_end(&mut contents)?;

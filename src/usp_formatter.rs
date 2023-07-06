@@ -98,7 +98,7 @@ impl Display for SessionContextRecord<'_> {
         if msg.is_err() {
             return write!(
                 f,
-                "{:aby$}{}",
+                "{:aby$}",
                 msg.context("parsing of the protobuf USP Message failed")
                     .unwrap_err(),
                 aby = aby2
