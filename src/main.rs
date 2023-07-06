@@ -210,6 +210,7 @@ enum MsgType {
     #[clap(name = "Add")]
     USPAdd {
         /// Do we allow partial execution?
+        #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Add operation
         ///
@@ -221,6 +222,7 @@ enum MsgType {
     #[clap(name = "Delete")]
     USPDelete {
         /// Do we allow partial execution?
+        #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Delete operation
         ///
@@ -257,6 +259,7 @@ enum MsgType {
     #[clap(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
+        #[arg(action = clap::ArgAction::Set)]
         first_level_only: bool,
         /// A JSON array ressembling the object paths we're interested in
         ///
@@ -268,12 +271,16 @@ enum MsgType {
     #[clap(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
+        #[arg(action = clap::ArgAction::Set)]
         first_level_only: bool,
         /// Return commands?
+        #[arg(action = clap::ArgAction::Set)]
         return_commands: bool,
         /// Return events?
+        #[arg(action = clap::ArgAction::Set)]
         return_events: bool,
         /// Return parameters?
+        #[arg(action = clap::ArgAction::Set)]
         return_params: bool,
         /// A JSON array ressembling the paths we're interested in
         ///
@@ -293,6 +300,7 @@ enum MsgType {
         /// Subscription ID
         sub_id: String,
         /// Do we expect a response?
+        #[arg(action = clap::ArgAction::Set)]
         send_resp: bool,
         /// Type of notification
         #[clap(subcommand)]
@@ -312,6 +320,7 @@ enum MsgType {
         /// The command key to use in the request to allow later matching with a result
         command_key: String,
         /// A boolean indicating whether a response is expected in reply to this request
+        #[arg(action = clap::ArgAction::Set)]
         send_resp: bool,
         /// A JSON array of arrays containing the command input arguments with path names and values
         #[clap(num_args(1..))]
@@ -321,6 +330,7 @@ enum MsgType {
     #[clap(name = "Set")]
     USPSet {
         /// Do we allow partial execution?
+        #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
         /// A JSON structure resesembling the input for a Set operation
         ///
