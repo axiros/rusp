@@ -204,34 +204,52 @@ impl Serialize for mod_Header::MsgType {
         use mod_Header::MsgType::*;
 
         match *self {
-            ERROR => serializer.serialize_unit_variant("MsgType", 0, "ERROR"),
-            GET => serializer.serialize_unit_variant("MsgType", 1, "GET"),
-            GET_RESP => serializer.serialize_unit_variant("MsgType", 2, "GET_RESP"),
-            NOTIFY => serializer.serialize_unit_variant("MsgType", 3, "NOTIFY"),
-            SET => serializer.serialize_unit_variant("MsgType", 4, "SET"),
-            SET_RESP => serializer.serialize_unit_variant("MsgType", 5, "SET_RESP"),
-            OPERATE => serializer.serialize_unit_variant("MsgType", 6, "OPERATE"),
-            OPERATE_RESP => serializer.serialize_unit_variant("MsgType", 7, "OPERATE_RESP"),
-            ADD => serializer.serialize_unit_variant("MsgType", 8, "ADD"),
-            ADD_RESP => serializer.serialize_unit_variant("MsgType", 9, "ADD_RESP"),
-            DELETE => serializer.serialize_unit_variant("MsgType", 10, "DELETE"),
-            DELETE_RESP => serializer.serialize_unit_variant("MsgType", 11, "DELETE_RESP"),
+            ERROR => serializer.serialize_unit_variant("MsgType", *self as u32, "ERROR"),
+            GET => serializer.serialize_unit_variant("MsgType", *self as u32, "GET"),
+            GET_RESP => serializer.serialize_unit_variant("MsgType", *self as u32, "GET_RESP"),
+            NOTIFY => serializer.serialize_unit_variant("MsgType", *self as u32, "NOTIFY"),
+            SET => serializer.serialize_unit_variant("MsgType", *self as u32, "SET"),
+            SET_RESP => serializer.serialize_unit_variant("MsgType", *self as u32, "SET_RESP"),
+            OPERATE => serializer.serialize_unit_variant("MsgType", *self as u32, "OPERATE"),
+            OPERATE_RESP => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "OPERATE_RESP")
+            }
+            ADD => serializer.serialize_unit_variant("MsgType", *self as u32, "ADD"),
+            ADD_RESP => serializer.serialize_unit_variant("MsgType", *self as u32, "ADD_RESP"),
+            DELETE => serializer.serialize_unit_variant("MsgType", *self as u32, "DELETE"),
+            DELETE_RESP => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "DELETE_RESP")
+            }
             GET_SUPPORTED_DM => {
-                serializer.serialize_unit_variant("MsgType", 12, "GET_SUPPORTED_DM")
+                serializer.serialize_unit_variant("MsgType", *self as u32, "GET_SUPPORTED_DM")
             }
             GET_SUPPORTED_DM_RESP => {
-                serializer.serialize_unit_variant("MsgType", 13, "GET_SUPPORTED_DM_RESP")
+                serializer.serialize_unit_variant("MsgType", *self as u32, "GET_SUPPORTED_DM_RESP")
             }
-            GET_INSTANCES => serializer.serialize_unit_variant("MsgType", 14, "GET_INSTANCES"),
+            GET_INSTANCES => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "GET_INSTANCES")
+            }
             GET_INSTANCES_RESP => {
-                serializer.serialize_unit_variant("MsgType", 15, "GET_INSTANCES_RESP")
+                serializer.serialize_unit_variant("MsgType", *self as u32, "GET_INSTANCES_RESP")
             }
-            NOTIFY_RESP => serializer.serialize_unit_variant("MsgType", 16, "NOTIFY_RESP"),
+            NOTIFY_RESP => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "NOTIFY_RESP")
+            }
             GET_SUPPORTED_PROTO => {
-                serializer.serialize_unit_variant("MsgType", 17, "GET_SUPPORTED_PROTO")
+                serializer.serialize_unit_variant("MsgType", *self as u32, "GET_SUPPORTED_PROTO")
             }
-            GET_SUPPORTED_PROTO_RESP => {
-                serializer.serialize_unit_variant("MsgType", 18, "GET_SUPPORTED_PROTO_RESP")
+            GET_SUPPORTED_PROTO_RESP => serializer.serialize_unit_variant(
+                "MsgType",
+                *self as u32,
+                "GET_SUPPORTED_PROTO_RESP",
+            ),
+            REGISTER => serializer.serialize_unit_variant("MsgType", *self as u32, "REGISTER"),
+            REGISTER_RESP => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "REGISTER_RESP")
+            }
+            DEREGISTER => serializer.serialize_unit_variant("MsgType", *self as u32, "DEREGISTER"),
+            DEREGISTER_RESP => {
+                serializer.serialize_unit_variant("MsgType", *self as u32, "DEREGISTER_RESP")
             }
         }
     }
@@ -273,6 +291,8 @@ impl Serialize for Request<'_> {
             operate(ref m) => state.serialize_field("Operate", &m)?,
             notify(ref m) => state.serialize_field("Notify", &m)?,
             get_supported_protocol(ref m) => state.serialize_field("GetSupportedProtocol", &m)?,
+            register(ref m) => state.serialize_field("Register", &m)?,
+            deregister(ref m) => state.serialize_field("Deregister", &m)?,
             None => return Err(serde::ser::Error::custom("USP Request Msg without type?!?")),
         }
         state.end()
@@ -299,6 +319,8 @@ impl Serialize for Response<'_> {
             get_supported_protocol_resp(ref m) => {
                 state.serialize_field("GetSupportedProtocolResp", &m)?
             }
+            register_resp(ref m) => state.serialize_field("RegisterResp", &m)?,
+            deregister_resp(ref m) => state.serialize_field("DeregisterResp", &m)?,
             None => {
                 return Err(serde::ser::Error::custom(
                     "USP Response Msg without type?!?",
@@ -422,6 +444,40 @@ impl Serialize for Notify<'_> {
             None => return Err(serde::ser::Error::custom("Unknown USP Notify type")),
         }
 
+        state.end()
+    }
+}
+
+impl Serialize for Register<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Register", 2)?;
+        state.serialize_field("reg_paths", &self.reg_paths)?;
+        state.serialize_field("allow_partial", &self.allow_partial)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_Register::RegistrationPath<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("RegistrationPath", 1)?;
+        state.serialize_field("path", &self.path)?;
+        state.end()
+    }
+}
+
+impl Serialize for Deregister<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Deregister", 1)?;
+        state.serialize_field("paths", &self.paths)?;
         state.end()
     }
 }
@@ -920,9 +976,7 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult<'_>
-{
+impl Serialize for mod_SetResp::UpdatedInstanceResult<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -935,9 +989,7 @@ impl Serialize
     }
 }
 
-impl Serialize
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceFailure<'_>
-{
+impl Serialize for mod_SetResp::UpdatedInstanceFailure<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -962,7 +1014,7 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+impl Serialize for mod_SetResp::ParameterError<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1057,6 +1109,148 @@ impl Serialize for GetSupportedProtocolResp<'_> {
     }
 }
 
+impl Serialize for RegisterResp<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("RegisterResp", 1)?;
+        state.serialize_field("registered_path_results", &self.registered_path_results)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_RegisterResp::RegisteredPathResult<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("RegisteredPathResult", 2)?;
+        state.serialize_field("oper_status", &self.oper_status)?;
+        state.serialize_field("requested_path", &self.requested_path)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::*;
+
+        let mut state = serializer.serialize_struct("OperationStatus", 1)?;
+        match &self.oper_status {
+            oper_success(ref m) => state.serialize_field("oper_success", m)?,
+            oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
+            None => {
+                return Err(serde::ser::Error::custom(
+                    "USP Msg OperationStatus is unknown?!?",
+                ))
+            }
+        }
+        state.end()
+    }
+}
+
+impl Serialize
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OperationSuccess", 1)?;
+        state.serialize_field("registered_path", &self.registered_path)?;
+        state.end()
+    }
+}
+
+impl Serialize
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OperationFailure", 2)?;
+        state.serialize_field("err_code", &self.err_code)?;
+        state.serialize_field("err_msg", &self.err_msg)?;
+        state.end()
+    }
+}
+
+impl Serialize for DeregisterResp<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("DeregisterResp", 1)?;
+        state.serialize_field("deregistered_path_results", &self.deregistered_path_results)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_DeregisterResp::DeregisteredPathResult<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("DeregisteredPathResult", 2)?;
+        state.serialize_field("requested_path", &self.requested_path)?;
+        state.serialize_field("oper_status", &self.oper_status)?;
+        state.end()
+    }
+}
+
+impl Serialize for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::*;
+
+        let mut state = serializer.serialize_struct("OperationStatus", 1)?;
+        match &self.oper_status {
+            oper_success(ref m) => state.serialize_field("oper_success", m)?,
+            oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
+            None => {
+                return Err(serde::ser::Error::custom(
+                    "USP Msg OperationStatus is unknown?!?",
+                ))
+            }
+        }
+        state.end()
+    }
+}
+
+impl Serialize
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OperationSuccess", 1)?;
+        state.serialize_field("deregistered_path", &self.deregistered_path)?;
+        state.end()
+    }
+}
+
+impl Serialize
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("OperationFailure", 2)?;
+        state.serialize_field("err_code", &self.err_code)?;
+        state.serialize_field("err_msg", &self.err_msg)?;
+        state.end()
+    }
+}
+
 impl Serialize for mod_DeleteResp::DeletedObjectResult<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1118,9 +1312,7 @@ impl Serialize
     }
 }
 
-impl Serialize
-    for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::UnaffectedPathError<'_>
-{
+impl Serialize for mod_DeleteResp::UnaffectedPathError<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1227,7 +1419,7 @@ impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+impl Serialize for mod_AddResp::ParameterError<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

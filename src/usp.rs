@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-msg-1-2.proto' file
+// Automatically generated rust module for 'usp-msg-1-3.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -12,10 +12,11 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
+use quick_protobuf::{MessageInfo, MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Msg<'a> {
     pub header: Option<usp::Header<'a>>,
@@ -51,6 +52,7 @@ impl<'a> MessageWrite for Msg<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Header<'a> {
     pub msg_id: Cow<'a, str>,
@@ -110,6 +112,10 @@ pub enum MsgType {
     NOTIFY_RESP = 16,
     GET_SUPPORTED_PROTO = 17,
     GET_SUPPORTED_PROTO_RESP = 18,
+    REGISTER = 19,
+    REGISTER_RESP = 20,
+    DEREGISTER = 21,
+    DEREGISTER_RESP = 22,
 }
 
 impl Default for MsgType {
@@ -140,6 +146,10 @@ impl From<i32> for MsgType {
             16 => MsgType::NOTIFY_RESP,
             17 => MsgType::GET_SUPPORTED_PROTO,
             18 => MsgType::GET_SUPPORTED_PROTO_RESP,
+            19 => MsgType::REGISTER,
+            20 => MsgType::REGISTER_RESP,
+            21 => MsgType::DEREGISTER,
+            22 => MsgType::DEREGISTER_RESP,
             _ => Self::default(),
         }
     }
@@ -167,6 +177,10 @@ impl<'a> From<&'a str> for MsgType {
             "NOTIFY_RESP" => MsgType::NOTIFY_RESP,
             "GET_SUPPORTED_PROTO" => MsgType::GET_SUPPORTED_PROTO,
             "GET_SUPPORTED_PROTO_RESP" => MsgType::GET_SUPPORTED_PROTO_RESP,
+            "REGISTER" => MsgType::REGISTER,
+            "REGISTER_RESP" => MsgType::REGISTER_RESP,
+            "DEREGISTER" => MsgType::DEREGISTER,
+            "DEREGISTER_RESP" => MsgType::DEREGISTER_RESP,
             _ => Self::default(),
         }
     }
@@ -174,6 +188,7 @@ impl<'a> From<&'a str> for MsgType {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Body<'a> {
     pub msg_body: usp::mod_Body::OneOfmsg_body<'a>,
@@ -234,6 +249,7 @@ impl<'a> Default for OneOfmsg_body<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Request<'a> {
     pub req_type: usp::mod_Request::OneOfreq_type<'a>,
@@ -253,6 +269,8 @@ impl<'a> MessageRead<'a> for Request<'a> {
                 Ok(58) => msg.req_type = usp::mod_Request::OneOfreq_type::operate(r.read_message::<usp::Operate>(bytes)?),
                 Ok(66) => msg.req_type = usp::mod_Request::OneOfreq_type::notify(r.read_message::<usp::Notify>(bytes)?),
                 Ok(74) => msg.req_type = usp::mod_Request::OneOfreq_type::get_supported_protocol(r.read_message::<usp::GetSupportedProtocol>(bytes)?),
+                Ok(82) => msg.req_type = usp::mod_Request::OneOfreq_type::register(r.read_message::<usp::Register>(bytes)?),
+                Ok(90) => msg.req_type = usp::mod_Request::OneOfreq_type::deregister(r.read_message::<usp::Deregister>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -274,6 +292,8 @@ impl<'a> MessageWrite for Request<'a> {
             usp::mod_Request::OneOfreq_type::operate(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Request::OneOfreq_type::notify(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Request::OneOfreq_type::get_supported_protocol(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_Request::OneOfreq_type::register(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_Request::OneOfreq_type::deregister(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Request::OneOfreq_type::None => 0,
     }    }
 
@@ -287,6 +307,8 @@ impl<'a> MessageWrite for Request<'a> {
             usp::mod_Request::OneOfreq_type::operate(ref m) => { w.write_with_tag(58, |w| w.write_message(m))? },
             usp::mod_Request::OneOfreq_type::notify(ref m) => { w.write_with_tag(66, |w| w.write_message(m))? },
             usp::mod_Request::OneOfreq_type::get_supported_protocol(ref m) => { w.write_with_tag(74, |w| w.write_message(m))? },
+            usp::mod_Request::OneOfreq_type::register(ref m) => { w.write_with_tag(82, |w| w.write_message(m))? },
+            usp::mod_Request::OneOfreq_type::deregister(ref m) => { w.write_with_tag(90, |w| w.write_message(m))? },
             usp::mod_Request::OneOfreq_type::None => {},
     }        Ok(())
     }
@@ -307,6 +329,8 @@ pub enum OneOfreq_type<'a> {
     operate(usp::Operate<'a>),
     notify(usp::Notify<'a>),
     get_supported_protocol(usp::GetSupportedProtocol<'a>),
+    register(usp::Register<'a>),
+    deregister(usp::Deregister<'a>),
     None,
 }
 
@@ -318,6 +342,7 @@ impl<'a> Default for OneOfreq_type<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Response<'a> {
     pub resp_type: usp::mod_Response::OneOfresp_type<'a>,
@@ -337,6 +362,8 @@ impl<'a> MessageRead<'a> for Response<'a> {
                 Ok(58) => msg.resp_type = usp::mod_Response::OneOfresp_type::operate_resp(r.read_message::<usp::OperateResp>(bytes)?),
                 Ok(66) => msg.resp_type = usp::mod_Response::OneOfresp_type::notify_resp(r.read_message::<usp::NotifyResp>(bytes)?),
                 Ok(74) => msg.resp_type = usp::mod_Response::OneOfresp_type::get_supported_protocol_resp(r.read_message::<usp::GetSupportedProtocolResp>(bytes)?),
+                Ok(82) => msg.resp_type = usp::mod_Response::OneOfresp_type::register_resp(r.read_message::<usp::RegisterResp>(bytes)?),
+                Ok(90) => msg.resp_type = usp::mod_Response::OneOfresp_type::deregister_resp(r.read_message::<usp::DeregisterResp>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -358,6 +385,8 @@ impl<'a> MessageWrite for Response<'a> {
             usp::mod_Response::OneOfresp_type::operate_resp(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Response::OneOfresp_type::notify_resp(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Response::OneOfresp_type::get_supported_protocol_resp(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_Response::OneOfresp_type::register_resp(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_Response::OneOfresp_type::deregister_resp(ref m) => 1 + sizeof_len((m).get_size()),
             usp::mod_Response::OneOfresp_type::None => 0,
     }    }
 
@@ -371,6 +400,8 @@ impl<'a> MessageWrite for Response<'a> {
             usp::mod_Response::OneOfresp_type::operate_resp(ref m) => { w.write_with_tag(58, |w| w.write_message(m))? },
             usp::mod_Response::OneOfresp_type::notify_resp(ref m) => { w.write_with_tag(66, |w| w.write_message(m))? },
             usp::mod_Response::OneOfresp_type::get_supported_protocol_resp(ref m) => { w.write_with_tag(74, |w| w.write_message(m))? },
+            usp::mod_Response::OneOfresp_type::register_resp(ref m) => { w.write_with_tag(82, |w| w.write_message(m))? },
+            usp::mod_Response::OneOfresp_type::deregister_resp(ref m) => { w.write_with_tag(90, |w| w.write_message(m))? },
             usp::mod_Response::OneOfresp_type::None => {},
     }        Ok(())
     }
@@ -391,6 +422,8 @@ pub enum OneOfresp_type<'a> {
     operate_resp(usp::OperateResp<'a>),
     notify_resp(usp::NotifyResp<'a>),
     get_supported_protocol_resp(usp::GetSupportedProtocolResp<'a>),
+    register_resp(usp::RegisterResp<'a>),
+    deregister_resp(usp::DeregisterResp<'a>),
     None,
 }
 
@@ -402,6 +435,7 @@ impl<'a> Default for OneOfresp_type<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Error<'a> {
     pub err_code: u32,
@@ -446,6 +480,7 @@ pub mod mod_Error {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ParamError<'a> {
     pub param_path: Cow<'a, str>,
@@ -487,6 +522,7 @@ impl<'a> MessageWrite for ParamError<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Get<'a> {
     pub param_paths: Vec<Cow<'a, str>>,
@@ -522,6 +558,7 @@ impl<'a> MessageWrite for Get<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetResp<'a> {
     pub req_path_results: Vec<usp::mod_GetResp::RequestedPathResult<'a>>,
@@ -560,6 +597,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct RequestedPathResult<'a> {
     pub requested_path: Cow<'a, str>,
@@ -603,6 +641,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ResolvedPathResult<'a> {
     pub resolved_path: Cow<'a, str>,
@@ -643,6 +682,7 @@ impl<'a> MessageWrite for ResolvedPathResult<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetSupportedDM<'a> {
     pub obj_paths: Vec<Cow<'a, str>>,
@@ -690,6 +730,7 @@ impl<'a> MessageWrite for GetSupportedDM<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetSupportedDMResp<'a> {
     pub req_obj_results: Vec<usp::mod_GetSupportedDMResp::RequestedObjectResult<'a>>,
@@ -726,6 +767,7 @@ pub mod mod_GetSupportedDMResp {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct RequestedObjectResult<'a> {
     pub req_obj_path: Cow<'a, str>,
@@ -773,6 +815,7 @@ impl<'a> MessageWrite for RequestedObjectResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SupportedObjectResult<'a> {
     pub supported_obj_path: Cow<'a, str>,
@@ -828,6 +871,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SupportedParamResult<'a> {
     pub param_name: Cow<'a, str>,
@@ -871,6 +915,7 @@ impl<'a> MessageWrite for SupportedParamResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SupportedCommandResult<'a> {
     pub command_name: Cow<'a, str>,
@@ -914,6 +959,7 @@ impl<'a> MessageWrite for SupportedCommandResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SupportedEventResult<'a> {
     pub event_name: Cow<'a, str>,
@@ -1153,6 +1199,7 @@ impl<'a> From<&'a str> for CmdType {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetInstances<'a> {
     pub obj_paths: Vec<Cow<'a, str>>,
@@ -1188,6 +1235,7 @@ impl<'a> MessageWrite for GetInstances<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetInstancesResp<'a> {
     pub req_path_results: Vec<usp::mod_GetInstancesResp::RequestedPathResult<'a>>,
@@ -1226,6 +1274,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct RequestedPathResult<'a> {
     pub requested_path: Cow<'a, str>,
@@ -1269,6 +1318,7 @@ impl<'a> MessageWrite for RequestedPathResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CurrInstance<'a> {
     pub instantiated_obj_path: Cow<'a, str>,
@@ -1309,6 +1359,7 @@ impl<'a> MessageWrite for CurrInstance<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetSupportedProtocol<'a> {
     pub controller_supported_protocol_versions: Cow<'a, str>,
@@ -1340,6 +1391,7 @@ impl<'a> MessageWrite for GetSupportedProtocol<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct GetSupportedProtocolResp<'a> {
     pub agent_supported_protocol_versions: Cow<'a, str>,
@@ -1371,6 +1423,7 @@ impl<'a> MessageWrite for GetSupportedProtocolResp<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Add<'a> {
     pub allow_partial: bool,
@@ -1411,6 +1464,7 @@ pub mod mod_Add {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CreateObject<'a> {
     pub obj_path: Cow<'a, str>,
@@ -1446,6 +1500,7 @@ impl<'a> MessageWrite for CreateObject<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CreateParamSetting<'a> {
     pub param: Cow<'a, str>,
@@ -1487,6 +1542,7 @@ impl<'a> MessageWrite for CreateParamSetting<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct AddResp<'a> {
     pub created_obj_results: Vec<usp::mod_AddResp::CreatedObjectResult<'a>>,
@@ -1523,6 +1579,7 @@ pub mod mod_AddResp {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CreatedObjectResult<'a> {
     pub requested_path: Cow<'a, str>,
@@ -1562,6 +1619,7 @@ pub mod mod_CreatedObjectResult {
 
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationStatus<'a> {
     pub oper_status: usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OneOfoper_status<'a>,
@@ -1606,6 +1664,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationFailure<'a> {
     pub err_code: u32,
@@ -1641,10 +1700,11 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationSuccess<'a> {
     pub instantiated_path: Cow<'a, str>,
-    pub param_errs: Vec<usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'a>>,
+    pub param_errs: Vec<usp::mod_AddResp::ParameterError<'a>>,
     pub unique_keys: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
@@ -1654,7 +1714,7 @@ impl<'a> MessageRead<'a> for OperationSuccess<'a> {
         while !r.is_eof() {
             match r.next_tag(bytes) {
                 Ok(10) => msg.instantiated_path = r.read_string(bytes).map(Cow::Borrowed)?,
-                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError>(bytes)?),
+                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_AddResp::ParameterError>(bytes)?),
                 Ok(26) => {
                     let (key, value) = r.read_map(bytes, |r, bytes| Ok(r.read_string(bytes).map(Cow::Borrowed)?), |r, bytes| Ok(r.read_string(bytes).map(Cow::Borrowed)?))?;
                     msg.unique_keys.insert(key, value);
@@ -1683,6 +1743,24 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum OneOfoper_status<'a> {
+    oper_failure(usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure<'a>),
+    oper_success(usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
+    None,
+}
+
+impl<'a> Default for OneOfoper_status<'a> {
+    fn default() -> Self {
+        OneOfoper_status::None
+    }
+}
+
+}
+
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ParameterError<'a> {
     pub param: Cow<'a, str>,
@@ -1722,25 +1800,9 @@ impl<'a> MessageWrite for ParameterError<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum OneOfoper_status<'a> {
-    oper_failure(usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure<'a>),
-    oper_success(usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
-    None,
 }
 
-impl<'a> Default for OneOfoper_status<'a> {
-    fn default() -> Self {
-        OneOfoper_status::None
-    }
-}
-
-}
-
-}
-
-}
-
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Delete<'a> {
     pub allow_partial: bool,
@@ -1776,6 +1838,7 @@ impl<'a> MessageWrite for Delete<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct DeleteResp<'a> {
     pub deleted_obj_results: Vec<usp::mod_DeleteResp::DeletedObjectResult<'a>>,
@@ -1812,6 +1875,7 @@ pub mod mod_DeleteResp {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct DeletedObjectResult<'a> {
     pub requested_path: Cow<'a, str>,
@@ -1851,6 +1915,7 @@ pub mod mod_DeletedObjectResult {
 
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationStatus<'a> {
     pub oper_status: usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OneOfoper_status<'a>,
@@ -1893,6 +1958,7 @@ pub mod mod_OperationStatus {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationFailure<'a> {
     pub err_code: u32,
@@ -1928,10 +1994,11 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationSuccess<'a> {
     pub affected_paths: Vec<Cow<'a, str>>,
-    pub unaffected_path_errs: Vec<usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::UnaffectedPathError<'a>>,
+    pub unaffected_path_errs: Vec<usp::mod_DeleteResp::UnaffectedPathError<'a>>,
 }
 
 impl<'a> MessageRead<'a> for OperationSuccess<'a> {
@@ -1940,7 +2007,7 @@ impl<'a> MessageRead<'a> for OperationSuccess<'a> {
         while !r.is_eof() {
             match r.next_tag(bytes) {
                 Ok(10) => msg.affected_paths.push(r.read_string(bytes).map(Cow::Borrowed)?),
-                Ok(18) => msg.unaffected_path_errs.push(r.read_message::<usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::UnaffectedPathError>(bytes)?),
+                Ok(18) => msg.unaffected_path_errs.push(r.read_message::<usp::mod_DeleteResp::UnaffectedPathError>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -1963,6 +2030,24 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum OneOfoper_status<'a> {
+    oper_failure(usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationFailure<'a>),
+    oper_success(usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
+    None,
+}
+
+impl<'a> Default for OneOfoper_status<'a> {
+    fn default() -> Self {
+        OneOfoper_status::None
+    }
+}
+
+}
+
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UnaffectedPathError<'a> {
     pub unaffected_path: Cow<'a, str>,
@@ -2002,25 +2087,9 @@ impl<'a> MessageWrite for UnaffectedPathError<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum OneOfoper_status<'a> {
-    oper_failure(usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationFailure<'a>),
-    oper_success(usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
-    None,
 }
 
-impl<'a> Default for OneOfoper_status<'a> {
-    fn default() -> Self {
-        OneOfoper_status::None
-    }
-}
-
-}
-
-}
-
-}
-
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Set<'a> {
     pub allow_partial: bool,
@@ -2061,6 +2130,7 @@ pub mod mod_Set {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UpdateObject<'a> {
     pub obj_path: Cow<'a, str>,
@@ -2096,6 +2166,7 @@ impl<'a> MessageWrite for UpdateObject<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UpdateParamSetting<'a> {
     pub param: Cow<'a, str>,
@@ -2137,6 +2208,7 @@ impl<'a> MessageWrite for UpdateParamSetting<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SetResp<'a> {
     pub updated_obj_results: Vec<usp::mod_SetResp::UpdatedObjectResult<'a>>,
@@ -2171,8 +2243,11 @@ impl<'a> MessageWrite for SetResp<'a> {
 pub mod mod_SetResp {
 
 use std::borrow::Cow;
+use std::collections::HashMap;
+type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UpdatedObjectResult<'a> {
     pub requested_path: Cow<'a, str>,
@@ -2212,6 +2287,7 @@ pub mod mod_UpdatedObjectResult {
 
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationStatus<'a> {
     pub oper_status: usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OneOfoper_status<'a>,
@@ -2252,15 +2328,14 @@ impl<'a> MessageWrite for OperationStatus<'a> {
 pub mod mod_OperationStatus {
 
 use std::borrow::Cow;
-use std::collections::HashMap;
-type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationFailure<'a> {
     pub err_code: u32,
     pub err_msg: Cow<'a, str>,
-    pub updated_inst_failures: Vec<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceFailure<'a>>,
+    pub updated_inst_failures: Vec<usp::mod_SetResp::UpdatedInstanceFailure<'a>>,
 }
 
 impl<'a> MessageRead<'a> for OperationFailure<'a> {
@@ -2270,7 +2345,7 @@ impl<'a> MessageRead<'a> for OperationFailure<'a> {
             match r.next_tag(bytes) {
                 Ok(13) => msg.err_code = r.read_fixed32(bytes)?,
                 Ok(18) => msg.err_msg = r.read_string(bytes).map(Cow::Borrowed)?,
-                Ok(26) => msg.updated_inst_failures.push(r.read_message::<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceFailure>(bytes)?),
+                Ok(26) => msg.updated_inst_failures.push(r.read_message::<usp::mod_SetResp::UpdatedInstanceFailure>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -2295,9 +2370,10 @@ impl<'a> MessageWrite for OperationFailure<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationSuccess<'a> {
-    pub updated_inst_results: Vec<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult<'a>>,
+    pub updated_inst_results: Vec<usp::mod_SetResp::UpdatedInstanceResult<'a>>,
 }
 
 impl<'a> MessageRead<'a> for OperationSuccess<'a> {
@@ -2305,7 +2381,7 @@ impl<'a> MessageRead<'a> for OperationSuccess<'a> {
         let mut msg = Self::default();
         while !r.is_eof() {
             match r.next_tag(bytes) {
-                Ok(10) => msg.updated_inst_results.push(r.read_message::<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult>(bytes)?),
+                Ok(10) => msg.updated_inst_results.push(r.read_message::<usp::mod_SetResp::UpdatedInstanceResult>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -2326,10 +2402,28 @@ impl<'a> MessageWrite for OperationSuccess<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum OneOfoper_status<'a> {
+    oper_failure(usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'a>),
+    oper_success(usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
+    None,
+}
+
+impl<'a> Default for OneOfoper_status<'a> {
+    fn default() -> Self {
+        OneOfoper_status::None
+    }
+}
+
+}
+
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UpdatedInstanceFailure<'a> {
     pub affected_path: Cow<'a, str>,
-    pub param_errs: Vec<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'a>>,
+    pub param_errs: Vec<usp::mod_SetResp::ParameterError<'a>>,
 }
 
 impl<'a> MessageRead<'a> for UpdatedInstanceFailure<'a> {
@@ -2338,7 +2432,7 @@ impl<'a> MessageRead<'a> for UpdatedInstanceFailure<'a> {
         while !r.is_eof() {
             match r.next_tag(bytes) {
                 Ok(10) => msg.affected_path = r.read_string(bytes).map(Cow::Borrowed)?,
-                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError>(bytes)?),
+                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_SetResp::ParameterError>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -2361,10 +2455,11 @@ impl<'a> MessageWrite for UpdatedInstanceFailure<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct UpdatedInstanceResult<'a> {
     pub affected_path: Cow<'a, str>,
-    pub param_errs: Vec<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'a>>,
+    pub param_errs: Vec<usp::mod_SetResp::ParameterError<'a>>,
     pub updated_params: KVMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
@@ -2374,7 +2469,7 @@ impl<'a> MessageRead<'a> for UpdatedInstanceResult<'a> {
         while !r.is_eof() {
             match r.next_tag(bytes) {
                 Ok(10) => msg.affected_path = r.read_string(bytes).map(Cow::Borrowed)?,
-                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError>(bytes)?),
+                Ok(18) => msg.param_errs.push(r.read_message::<usp::mod_SetResp::ParameterError>(bytes)?),
                 Ok(26) => {
                     let (key, value) = r.read_map(bytes, |r, bytes| Ok(r.read_string(bytes).map(Cow::Borrowed)?), |r, bytes| Ok(r.read_string(bytes).map(Cow::Borrowed)?))?;
                     msg.updated_params.insert(key, value);
@@ -2403,6 +2498,7 @@ impl<'a> MessageWrite for UpdatedInstanceResult<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ParameterError<'a> {
     pub param: Cow<'a, str>,
@@ -2442,25 +2538,9 @@ impl<'a> MessageWrite for ParameterError<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum OneOfoper_status<'a> {
-    oper_failure(usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'a>),
-    oper_success(usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'a>),
-    None,
 }
 
-impl<'a> Default for OneOfoper_status<'a> {
-    fn default() -> Self {
-        OneOfoper_status::None
-    }
-}
-
-}
-
-}
-
-}
-
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Operate<'a> {
     pub command: Cow<'a, str>,
@@ -2507,6 +2587,7 @@ impl<'a> MessageWrite for Operate<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperateResp<'a> {
     pub operation_results: Vec<usp::mod_OperateResp::OperationResult<'a>>,
@@ -2543,6 +2624,7 @@ pub mod mod_OperateResp {
 use std::borrow::Cow;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationResult<'a> {
     pub executed_command: Cow<'a, str>,
@@ -2594,6 +2676,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OutputArgs<'a> {
     pub output_args: KVMap<Cow<'a, str>, Cow<'a, str>>,
@@ -2628,6 +2711,7 @@ impl<'a> MessageWrite for OutputArgs<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CommandFailure<'a> {
     pub err_code: u32,
@@ -2681,6 +2765,7 @@ impl<'a> Default for OneOfoperation_resp<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Notify<'a> {
     pub subscription_id: Cow<'a, str>,
@@ -2745,6 +2830,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Event<'a> {
     pub obj_path: Cow<'a, str>,
@@ -2787,6 +2873,7 @@ impl<'a> MessageWrite for Event<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ValueChange<'a> {
     pub param_path: Cow<'a, str>,
@@ -2822,6 +2909,7 @@ impl<'a> MessageWrite for ValueChange<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ObjectCreation<'a> {
     pub obj_path: Cow<'a, str>,
@@ -2860,6 +2948,7 @@ impl<'a> MessageWrite for ObjectCreation<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ObjectDeletion<'a> {
     pub obj_path: Cow<'a, str>,
@@ -2891,6 +2980,7 @@ impl<'a> MessageWrite for ObjectDeletion<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OperationComplete<'a> {
     pub obj_path: Cow<'a, str>,
@@ -2947,6 +3037,7 @@ use std::collections::HashMap;
 type KVMap<K, V> = HashMap<K, V>;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OutputArgs<'a> {
     pub output_args: KVMap<Cow<'a, str>, Cow<'a, str>>,
@@ -2981,6 +3072,7 @@ impl<'a> MessageWrite for OutputArgs<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct CommandFailure<'a> {
     pub err_code: u32,
@@ -3031,6 +3123,7 @@ impl<'a> Default for OneOfoperation_resp<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct OnBoardRequest<'a> {
     pub oui: Cow<'a, str>,
@@ -3093,6 +3186,7 @@ impl<'a> Default for OneOfnotification<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct NotifyResp<'a> {
     pub subscription_id: Cow<'a, str>,
@@ -3122,5 +3216,526 @@ impl<'a> MessageWrite for NotifyResp<'a> {
         if self.subscription_id != "" { w.write_with_tag(10, |w| w.write_string(&**&self.subscription_id))?; }
         Ok(())
     }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct Register<'a> {
+    pub allow_partial: bool,
+    pub reg_paths: Vec<usp::mod_Register::RegistrationPath<'a>>,
+}
+
+impl<'a> MessageRead<'a> for Register<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(8) => msg.allow_partial = r.read_bool(bytes)?,
+                Ok(18) => msg.reg_paths.push(r.read_message::<usp::mod_Register::RegistrationPath>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for Register<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.allow_partial == false { 0 } else { 1 + sizeof_varint(*(&self.allow_partial) as u64) }
+        + self.reg_paths.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.allow_partial != false { w.write_with_tag(8, |w| w.write_bool(*&self.allow_partial))?; }
+        for s in &self.reg_paths { w.write_with_tag(18, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_Register {
+
+use std::borrow::Cow;
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct RegistrationPath<'a> {
+    pub path: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for RegistrationPath<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.path = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for RegistrationPath<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.path == "" { 0 } else { 1 + sizeof_len((&self.path).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.path))?; }
+        Ok(())
+    }
+}
+
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct RegisterResp<'a> {
+    pub registered_path_results: Vec<usp::mod_RegisterResp::RegisteredPathResult<'a>>,
+}
+
+impl<'a> MessageRead<'a> for RegisterResp<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.registered_path_results.push(r.read_message::<usp::mod_RegisterResp::RegisteredPathResult>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for RegisterResp<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + self.registered_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        for s in &self.registered_path_results { w.write_with_tag(10, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_RegisterResp {
+
+use std::borrow::Cow;
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct RegisteredPathResult<'a> {
+    pub requested_path: Cow<'a, str>,
+    pub oper_status: Option<usp::mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'a>>,
+}
+
+impl<'a> MessageRead<'a> for RegisteredPathResult<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.requested_path = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(18) => msg.oper_status = Some(r.read_message::<usp::mod_RegisterResp::mod_RegisteredPathResult::OperationStatus>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for RegisteredPathResult<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_RegisteredPathResult {
+
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationStatus<'a> {
+    pub oper_status: usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status<'a>,
+}
+
+impl<'a> MessageRead<'a> for OperationStatus<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.oper_status = usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(r.read_message::<usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure>(bytes)?),
+                Ok(18) => msg.oper_status = usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(r.read_message::<usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationStatus<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + match self.oper_status {
+            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::None => 0,
+    }    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        match self.oper_status {            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
+            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
+            usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::None => {},
+    }        Ok(())
+    }
+}
+
+pub mod mod_OperationStatus {
+
+use std::borrow::Cow;
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationFailure<'a> {
+    pub err_code: u32,
+    pub err_msg: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for OperationFailure<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(13) => msg.err_code = r.read_fixed32(bytes)?,
+                Ok(18) => msg.err_msg = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationFailure<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.err_code == 0u32 { 0 } else { 1 + 4 }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        Ok(())
+    }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationSuccess<'a> {
+    pub registered_path: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for OperationSuccess<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.registered_path = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationSuccess<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.registered_path == "" { 0 } else { 1 + sizeof_len((&self.registered_path).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.registered_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.registered_path))?; }
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum OneOfoper_status<'a> {
+    oper_failure(usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure<'a>),
+    oper_success(usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess<'a>),
+    None,
+}
+
+impl<'a> Default for OneOfoper_status<'a> {
+    fn default() -> Self {
+        OneOfoper_status::None
+    }
+}
+
+}
+
+}
+
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct Deregister<'a> {
+    pub paths: Vec<Cow<'a, str>>,
+}
+
+impl<'a> MessageRead<'a> for Deregister<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.paths.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for Deregister<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + self.paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        for s in &self.paths { w.write_with_tag(10, |w| w.write_string(&**s))?; }
+        Ok(())
+    }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct DeregisterResp<'a> {
+    pub deregistered_path_results: Vec<usp::mod_DeregisterResp::DeregisteredPathResult<'a>>,
+}
+
+impl<'a> MessageRead<'a> for DeregisterResp<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.deregistered_path_results.push(r.read_message::<usp::mod_DeregisterResp::DeregisteredPathResult>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for DeregisterResp<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + self.deregistered_path_results.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        for s in &self.deregistered_path_results { w.write_with_tag(10, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_DeregisterResp {
+
+use std::borrow::Cow;
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct DeregisteredPathResult<'a> {
+    pub requested_path: Cow<'a, str>,
+    pub oper_status: Option<usp::mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus<'a>>,
+}
+
+impl<'a> MessageRead<'a> for DeregisteredPathResult<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.requested_path = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(18) => msg.oper_status = Some(r.read_message::<usp::mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for DeregisteredPathResult<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.requested_path == "" { 0 } else { 1 + sizeof_len((&self.requested_path).len()) }
+        + self.oper_status.as_ref().map_or(0, |m| 1 + sizeof_len((m).get_size()))
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.requested_path != "" { w.write_with_tag(10, |w| w.write_string(&**&self.requested_path))?; }
+        if let Some(ref s) = self.oper_status { w.write_with_tag(18, |w| w.write_message(s))?; }
+        Ok(())
+    }
+}
+
+pub mod mod_DeregisteredPathResult {
+
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationStatus<'a> {
+    pub oper_status: usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status<'a>,
+}
+
+impl<'a> MessageRead<'a> for OperationStatus<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.oper_status = usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(r.read_message::<usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure>(bytes)?),
+                Ok(18) => msg.oper_status = usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(r.read_message::<usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess>(bytes)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationStatus<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + match self.oper_status {
+            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => 1 + sizeof_len((m).get_size()),
+            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::None => 0,
+    }    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        match self.oper_status {            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_failure(ref m) => { w.write_with_tag(10, |w| w.write_message(m))? },
+            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::oper_success(ref m) => { w.write_with_tag(18, |w| w.write_message(m))? },
+            usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::None => {},
+    }        Ok(())
+    }
+}
+
+pub mod mod_OperationStatus {
+
+use std::borrow::Cow;
+use super::*;
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationFailure<'a> {
+    pub err_code: u32,
+    pub err_msg: Cow<'a, str>,
+}
+
+impl<'a> MessageRead<'a> for OperationFailure<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(13) => msg.err_code = r.read_fixed32(bytes)?,
+                Ok(18) => msg.err_msg = r.read_string(bytes).map(Cow::Borrowed)?,
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationFailure<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + if self.err_code == 0u32 { 0 } else { 1 + 4 }
+        + if self.err_msg == "" { 0 } else { 1 + sizeof_len((&self.err_msg).len()) }
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        if self.err_code != 0u32 { w.write_with_tag(13, |w| w.write_fixed32(*&self.err_code))?; }
+        if self.err_msg != "" { w.write_with_tag(18, |w| w.write_string(&**&self.err_msg))?; }
+        Ok(())
+    }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct OperationSuccess<'a> {
+    pub deregistered_path: Vec<Cow<'a, str>>,
+}
+
+impl<'a> MessageRead<'a> for OperationSuccess<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.deregistered_path.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for OperationSuccess<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + self.deregistered_path.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        for s in &self.deregistered_path { w.write_with_tag(10, |w| w.write_string(&**s))?; }
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum OneOfoper_status<'a> {
+    oper_failure(usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure<'a>),
+    oper_success(usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess<'a>),
+    None,
+}
+
+impl<'a> Default for OneOfoper_status<'a> {
+    fn default() -> Self {
+        OneOfoper_status::None
+    }
+}
+
+}
+
+}
+
 }
 

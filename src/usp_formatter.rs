@@ -317,6 +317,10 @@ impl Display for mod_Header::MsgType {
                 NOTIFY_RESP => "NOTIFY_RESP",
                 GET_SUPPORTED_PROTO => "GET_SUPPORTED_PROTO",
                 GET_SUPPORTED_PROTO_RESP => "GET_SUPPORTED_PROTO_RESP",
+                REGISTER => "REGISTER",
+                DEREGISTER => "DEREGISTER",
+                REGISTER_RESP => "REGISTER_RESP",
+                DEREGISTER_RESP => "DEREGISTER_RESP",
             },
             aby = aby
         )
@@ -359,6 +363,8 @@ impl Display for Request<'_> {
             operate(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             notify(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             get_supported_protocol(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            register(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            deregister(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             None => writeln!(f, "{:aby$}None", "", aby = aby2),
         }?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -383,6 +389,8 @@ impl Display for Response<'_> {
             operate_resp(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             notify_resp(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             get_supported_protocol_resp(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            register_resp(ref m) => write!(f, "{:aby$}", m, aby = aby2),
+            deregister_resp(ref m) => write!(f, "{:aby$}", m, aby = aby2),
             None => writeln!(f, "{:aby$}None", "", aby = aby2),
         }?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -719,6 +727,57 @@ impl Display for mod_Notify::OnBoardRequest<'_> {
             "{:aby$}agent_supported_protocol_versions: \"{}\"",
             "",
             self.agent_supported_protocol_versions,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for Register<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}Register: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}allow_partial: {}",
+            "",
+            self.allow_partial,
+            aby = aby2
+        )?;
+        writeln!(
+            f,
+            "{:aby$}reg_paths: [ {} ]",
+            "",
+            self.reg_paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s.path))
+                .collect::<Vec<_>>()
+                .join(", "),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for Deregister<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}Deregister: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}paths: [ {} ]",
+            "",
+            self.paths
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
             aby = aby2
         )?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
@@ -1297,9 +1356,7 @@ impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Oper
     }
 }
 
-impl Display
-    for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::UpdatedInstanceResult<'_>
-{
+impl Display for mod_SetResp::UpdatedInstanceResult<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -1343,7 +1400,7 @@ impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Oper
     }
 }
 
-impl Display for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+impl Display for mod_SetResp::ParameterError<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -1433,6 +1490,184 @@ impl Display for NotifyResp<'_> {
             self.subscription_id,
             aby = aby2
         )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for RegisterResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}RegisterResp: [", "", aby = aby)?;
+        for result in self.registered_path_results.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+        writeln!(f, "{:aby$}]", "", aby = aby)
+    }
+}
+
+impl Display for mod_RegisterResp::RegisteredPathResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}RegisteredPathResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}requested_path: \"{}\"",
+            "",
+            self.requested_path,
+            aby = aby2
+        )?;
+        write!(
+            f,
+            "{:aby$}oper_status: {:aby$}",
+            "",
+            self.oper_status.clone().unwrap(),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        use mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OneOfoper_status::*;
+
+        match &self.oper_status {
+            oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            None => writeln!(f, "{:aby$}None", "", aby = aby2),
+        }
+    }
+}
+
+impl Display
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+{
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "OperationSuccess: {{")?;
+        writeln!(
+            f,
+            "{:aby$}registered_path: {}",
+            "",
+            self.registered_path,
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+{
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f)?;
+        writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for DeregisterResp<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}DeregisterResp: [", "", aby = aby)?;
+        for result in self.deregistered_path_results.iter() {
+            write!(f, "{:aby$}", result, aby = aby2)?;
+        }
+
+        writeln!(f, "{:aby$}]", "", aby = aby)
+    }
+}
+
+impl Display for mod_DeregisterResp::DeregisteredPathResult<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "{:aby$}DeregisteredPathResult: {{", "", aby = aby)?;
+        writeln!(
+            f,
+            "{:aby$}requested_path: \"{}\"",
+            "",
+            self.requested_path,
+            aby = aby2
+        )?;
+        write!(
+            f,
+            "{:aby$}oper_status: {:aby$}",
+            "",
+            self.oper_status.clone().unwrap(),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus<'_> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        use mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OneOfoper_status::*;
+
+        match &self.oper_status {
+            oper_success(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            oper_failure(ref m) => write!(f, "{:aby$}", m, aby = aby),
+            None => writeln!(f, "{:aby$}None", "", aby = aby2),
+        }
+    }
+}
+
+impl Display
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+{
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f, "OperationSuccess: {{")?;
+        writeln!(
+            f,
+            "{:aby$}deregistered_path: [ {} ]",
+            "",
+            self.deregistered_path
+                .clone()
+                .into_iter()
+                .map(|s| format!("\"{}\"", s))
+                .collect::<Vec<_>>()
+                .join(", "),
+            aby = aby2
+        )?;
+        writeln!(f, "{:aby$}}}", "", aby = aby)
+    }
+}
+
+impl Display
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+{
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        let aby = f.width().unwrap_or(0);
+        let aby2 = aby + INDENT;
+
+        writeln!(f)?;
+        writeln!(f, "{:aby$}OperationFailure: {{", "", aby = aby)?;
+        writeln!(f, "{:aby$}err_code: {}", "", self.err_code, aby = aby2)?;
+        writeln!(f, "{:aby$}err_msg: \"{}\"", "", self.err_msg, aby = aby2)?;
         writeln!(f, "{:aby$}}}", "", aby = aby)
     }
 }
@@ -1537,9 +1772,7 @@ impl Display
     }
 }
 
-impl Display
-    for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::UnaffectedPathError<'_>
-{
+impl Display for mod_DeleteResp::UnaffectedPathError<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;
@@ -1696,7 +1929,7 @@ impl Display for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::Oper
     }
 }
 
-impl Display for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::ParameterError<'_> {
+impl Display for mod_AddResp::ParameterError<'_> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         let aby = f.width().unwrap_or(0);
         let aby2 = aby + INDENT;

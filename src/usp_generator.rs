@@ -972,13 +972,11 @@ pub fn usp_add_response<'a>(
     )>,
 ) -> Body<'a> {
     use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
-        OneOfoper_status, ParameterError,
-    };
-    use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
-        OperationFailure, OperationSuccess,
+        OneOfoper_status, OperationFailure, OperationSuccess,
     };
     use crate::usp::mod_AddResp::mod_CreatedObjectResult::OperationStatus;
     use crate::usp::mod_AddResp::CreatedObjectResult;
+    use crate::usp::mod_AddResp::ParameterError;
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Response::OneOfresp_type::*;
     use crate::usp::AddResp;
@@ -1062,10 +1060,10 @@ pub fn usp_delete_response<'a>(
 ) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::{
-        OneOfoper_status, OperationFailure, OperationSuccess, UnaffectedPathError,
+        OneOfoper_status, OperationFailure, OperationSuccess,
     };
     use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::OperationStatus;
-    use crate::usp::mod_DeleteResp::DeletedObjectResult;
+    use crate::usp::mod_DeleteResp::{DeletedObjectResult, UnaffectedPathError};
     use crate::usp::mod_Response::OneOfresp_type::*;
     use crate::usp::DeleteResp;
 
@@ -1342,11 +1340,11 @@ pub fn usp_set_response<'a>(
     use crate::usp::mod_Body::OneOfmsg_body::*;
     use crate::usp::mod_Response::OneOfresp_type::*;
     use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
-        OneOfoper_status, OperationFailure, OperationSuccess, ParameterError,
-        UpdatedInstanceFailure, UpdatedInstanceResult,
+        OneOfoper_status, OperationFailure, OperationSuccess,
     };
     use crate::usp::mod_SetResp::mod_UpdatedObjectResult::OperationStatus;
     use crate::usp::mod_SetResp::UpdatedObjectResult;
+    use crate::usp::mod_SetResp::{ParameterError, UpdatedInstanceFailure, UpdatedInstanceResult};
     use crate::usp::SetResp;
 
     Body {
