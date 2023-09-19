@@ -19,12 +19,12 @@ While a Protobuf schema exists which allows generating bindings for several comm
 ## What is included?
 
 The toolkit includes:
-* Generated lowlevel Rust protobuf bindings
+* Generated lowlevel Rust Protobuf bindings
 * A library providing:
-  * Higher level access to serialisation/deserialisation functionality
+  * Higher level access to de-/serialisation functionality
   * Convenience functions to generate messages
   * Pretty printing of **USP** records and messages
-  * Serde de-/serialization of **USP** records and messages
+  * Serde de-/serialisation of **USP** records and messages
   * Unittests and documentation (including doctests/examples)
 * A **rusp** binary granting access to library functionality via command line. Included functionality at the moment are:
   * Decoding of **USP** Msg Protobuf bytestreams from standard input
@@ -40,7 +40,7 @@ The toolkit includes:
 
 **rusp** includes a binary with the same name demonstrating some of the uses.
 
-At the moment this mostly allows to convert Protobuf encapsulated USP **Record** and **Msg** structures into human readable text. It also allows to extract a **Msg** structure from a **Record** for own implementations as well as to encode USP
+At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text. It also allows extracting a **Msg** structure from a **Record** for own implementations as well as to encode USP
 * **Add**
 * **Delete**
 * **Error**
@@ -54,9 +54,9 @@ At the moment this mostly allows to convert Protobuf encapsulated USP **Record**
 * **Operate**
 * **Set**
 
-messages via commandline tool.
+messages via command line tool.
 
-**NEWSFLASH**: 0.13 offers USP 1.2 support.
+**NEWSFLASH**: 0.14 offers USP 1.3 support. Also, the made-up prototext encoding was removed and JSON is now the default.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -74,7 +74,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.13"
+rusp = "0.14"
 quick-protobuf = "0.8"
 
 ...
