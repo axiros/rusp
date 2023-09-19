@@ -14,8 +14,6 @@ use rusp::{
 #[derive(PartialEq)]
 /// The supported output formats
 enum OutputFormat {
-    /// Our custom text representation
-    Native,
     /// Valid JSON format
     Json,
     /// Protobuf output as C strings or Rust byarrays where non-ascii characters are replaced with
@@ -44,7 +42,7 @@ struct Rusp {
         conflicts_with = "carray",
         conflicts_with = "protobuf"
     )]
-    /// Output as JSON
+    /// Output as JSON (the default format as of version 0.14)
     json: bool,
     #[clap(
         long = "cstr",
@@ -609,9 +607,6 @@ fn write_msg(msg: rusp::usp::Msg, mut out: Box<dyn Write>, format: &OutputFormat
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
         }
-        OutputFormat::Native => {
-            writeln!(out, "{}", &msg)?;
-        }
         OutputFormat::CStr => {
             write_c_str(out, buf.as_slice())?;
         }
@@ -648,9 +643,6 @@ fn write_record(
                 serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
             )?;
         }
-        OutputFormat::Native => {
-            writeln!(out, "{}", &record)?;
-        }
         OutputFormat::CStr => {
             write_c_str(out, buf.as_slice())?;
         }
@@ -681,9 +673,6 @@ fn write_body(msg: rusp::usp::Body, mut out: Box<dyn Write>, format: &OutputForm
                 "{}",
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
-        }
-        OutputFormat::Native => {
-            writeln!(out, "{}", &msg)?;
         }
         OutputFormat::CStr => {
             write_c_str(out, buf.as_slice())?;
@@ -722,9 +711,6 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat
                 "{}",
                 serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
             )?;
-        }
-        OutputFormat::Native => {
-            writeln!(out, "{}", &body)?;
         }
         OutputFormat::CStr => {
             write_c_str(out, buf.as_slice())?;
@@ -775,11 +761,6 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
             } else {
                 get_out_stream(Some(out_file.to_path_buf()))?
             };
-            let format = if format == OutputFormat::Native {
-                OutputFormat::Protobuf
-            } else {
-                format
-            };
             write_msg(msg, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
@@ -812,12 +793,6 @@ fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Re
                 get_out_stream(None)?
             } else {
                 get_out_stream(Some(out_file.to_path_buf()))?
-            };
-
-            let format = if format == OutputFormat::Native {
-                OutputFormat::Protobuf
-            } else {
-                format
             };
 
             write_body(body, out, &format)?;
@@ -856,12 +831,6 @@ fn encode_no_session_record(
     // Open output stream
     let out = get_out_stream(filename)?;
 
-    let format = if format == OutputFormat::Native {
-        OutputFormat::Protobuf
-    } else {
-        format
-    };
-
     write_record(record, out, &format)
 }
 
@@ -898,19 +867,13 @@ fn encode_session_record(
     // Open output stream
     let out = get_out_stream(filename)?;
 
-    let format = if format == OutputFormat::Native {
-        OutputFormat::Protobuf
-    } else {
-        format
-    };
-
     write_record(record, out, &format)
 }
 
 fn main() -> Result<()> {
     let Rusp {
         action,
-        json,
+        json: _,
         cstr,
         carray,
         protobuf,
@@ -918,16 +881,14 @@ fn main() -> Result<()> {
 
     // Pass on the user chosen format to use for the output
     let format = {
-        if json {
-            OutputFormat::Json
-        } else if carray {
+        if carray {
             OutputFormat::CArray
         } else if cstr {
             OutputFormat::CStr
         } else if protobuf {
             OutputFormat::Protobuf
         } else {
-            OutputFormat::Native
+            OutputFormat::Json
         }
     };
 
