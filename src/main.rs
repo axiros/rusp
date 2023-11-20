@@ -156,7 +156,7 @@ enum RuspAction {
     /// Encode Msg payload provided via stdin into a single no-session context USP Record
     #[clap(name = "encode_no_session_record")]
     EncodeNoSessionRecord {
-        #[clap(long = "version", default_value = "1.1")]
+        #[clap(long = "version", default_value = "1.3")]
         /// USP specification version
         version: String,
         #[clap(long = "from", default_value = "doc::from")]
@@ -173,7 +173,7 @@ enum RuspAction {
     /// Encode Msg payload provided via stdin into a single session context USP Record
     #[clap(name = "encode_session_record")]
     EncodeSessionRecord {
-        #[clap(long = "version", default_value = "1.2")]
+        #[clap(long = "version", default_value = "1.3")]
         /// USP specification version
         version: String,
         #[clap(long = "from", default_value = "doc::from")]
