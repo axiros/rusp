@@ -199,6 +199,29 @@ enum RuspAction {
         /// Output filename of file to encode USP protobuf record to
         filename: Option<PathBuf>,
     },
+    /// Encode a USP Record of type MQTT Connect
+    #[clap(name = "create_mqtt_connect_record")]
+    CreateMQTTConnectRecord {
+        #[clap(long = "version", default_value = "1.3")]
+        /// USP specification version
+        version: String,
+        #[clap(long = "from", default_value = "doc::from")]
+        /// Sender Id
+        from: String,
+        #[clap(long = "to", default_value = "doc::to")]
+        /// Recipient Id
+        to: String,
+        /// Indicate that we're using MQTT v3.11 instead of the default MQTT 5
+        #[clap(short = '4', long = "mqtt311")]
+        mqtt311: bool,
+        /// The subscribed topic the MQTT client is expecting to receive the messages for
+        #[clap(short = 's')]
+        subscribed_topic: String,
+        /// Filename (will output to standard output if omitted)
+        #[clap(short = 'f', long = "file")]
+        /// Output filename of file to encode USP protobuf record to
+        filename: Option<PathBuf>,
+    },
 }
 
 #[derive(Parser, Debug)]
@@ -870,6 +893,32 @@ fn encode_session_record(
     write_record(record, out, &format)
 }
 
+fn create_mqtt_connect_record(
+    version: String,
+    from: String,
+    to: String,
+    filename: Option<PathBuf>,
+    mqtt311: bool,
+    subscribed_topic: String,
+    format: OutputFormat,
+) -> Result<()> {
+    let record = usp_generator::usp_mqtt_connect_record(
+        &version,
+        &to,
+        &from,
+        PayloadSecurity::PLAINTEXT,
+        &[],
+        &[],
+        mqtt311,
+        &subscribed_topic,
+    );
+
+    // Open output stream
+    let out = get_out_stream(filename)?;
+
+    write_record(record, out, &format)
+}
+
 fn main() -> Result<()> {
     let Rusp {
         action,
@@ -969,6 +1018,22 @@ fn main() -> Result<()> {
             expected_id,
             retransmit_id,
             filename,
+            format,
+        ),
+        RuspAction::CreateMQTTConnectRecord {
+            version,
+            from,
+            to,
+            mqtt311,
+            subscribed_topic,
+            filename,
+        } => create_mqtt_connect_record(
+            version,
+            from,
+            to,
+            filename,
+            mqtt311,
+            subscribed_topic,
             format,
         ),
     }?;

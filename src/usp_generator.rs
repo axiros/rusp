@@ -912,6 +912,61 @@ pub fn usp_session_context_record<'a>(
     }
 }
 
+/// Create a USP record of type MQTT Connect
+///
+/// # Arguments
+///
+/// * `version` - The USP version of the record
+/// * `to_id` - The USP Endpoint ID of the receiver
+/// * `from_id` - The USP Endpoint ID of the sender
+/// * `payload_security` - An enumeration of type `PayloadSecurity`
+/// * `mac_signature` - Message authentication code or signature used to ensure the integrity of the
+///   non-payload fields, when integrity protection of non-payload fields is performed
+/// * `sender_cert` - PEM encoded certificate used to provide the signature in the `mac_signature`
+///   field, when the payload security mechanism does not provide the mechanism to do so
+/// * `mqtt311` - true if we want to use MQTT v3.11, false for MQTT v5
+/// * `subscribed_topic` - The topic the sender can receive responses on
+///
+/// # Examples
+///
+/// ```
+/// use rusp::usp_generator::usp_mqtt_connect_record;
+/// use rusp::usp_types::PayloadSecurity;
+///
+/// let newrecord = usp_mqtt_connect_record("1.3", "doc::to", "doc::from", PayloadSecurity::PLAINTEXT, &[], &[], false, "/topic/doc::from");
+/// ```
+pub fn usp_mqtt_connect_record<'a>(
+    version: &'a str,
+    to_id: &'a str,
+    from_id: &'a str,
+    payload_security: PayloadSecurity,
+    mac_signature: &'a [u8],
+    sender_cert: &'a [u8],
+    mqtt311: bool,
+    subscribed_topic: &'a str,
+) -> Record<'a> {
+    use crate::usp_record::mod_MQTTConnectRecord::MQTTVersion;
+    use crate::usp_record::mod_Record::OneOfrecord_type::mqtt_connect;
+    use crate::usp_record::MQTTConnectRecord;
+
+    Record {
+        version: version.into(),
+        to_id: to_id.into(),
+        from_id: from_id.into(),
+        sender_cert: Cow::Borrowed(sender_cert),
+        mac_signature: Cow::Borrowed(mac_signature),
+        payload_security,
+        record_type: mqtt_connect(MQTTConnectRecord {
+            version: if mqtt311 {
+                MQTTVersion::V3_1_1
+            } else {
+                MQTTVersion::V5
+            },
+            subscribed_topic: subscribed_topic.into(),
+        }),
+    }
+}
+
 /// Creates a body for a USP Msg with a USP NotifyResp response
 ///
 /// # Arguments
