@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-record-1-2.proto' file
+// Automatically generated rust module for 'usp-record-1-3.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -10,10 +10,11 @@
 
 
 use std::borrow::Cow;
-use quick_protobuf::{MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
+use quick_protobuf::{MessageInfo, MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
 use quick_protobuf::sizeofs::*;
 use super::*;
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Record<'a> {
     pub version: Cow<'a, str>,
@@ -42,6 +43,7 @@ impl<'a> MessageRead<'a> for Record<'a> {
                 Ok(82) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::mqtt_connect(r.read_message::<usp_record::MQTTConnectRecord>(bytes)?),
                 Ok(90) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::stomp_connect(r.read_message::<usp_record::STOMPConnectRecord>(bytes)?),
                 Ok(98) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::disconnect(r.read_message::<usp_record::DisconnectRecord>(bytes)?),
+                Ok(106) => msg.record_type = usp_record::mod_Record::OneOfrecord_type::uds_connect(r.read_message::<usp_record::UDSConnectRecord>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -66,6 +68,7 @@ impl<'a> MessageWrite for Record<'a> {
             usp_record::mod_Record::OneOfrecord_type::mqtt_connect(ref m) => 1 + sizeof_len((m).get_size()),
             usp_record::mod_Record::OneOfrecord_type::stomp_connect(ref m) => 1 + sizeof_len((m).get_size()),
             usp_record::mod_Record::OneOfrecord_type::disconnect(ref m) => 1 + sizeof_len((m).get_size()),
+            usp_record::mod_Record::OneOfrecord_type::uds_connect(ref m) => 1 + sizeof_len((m).get_size()),
             usp_record::mod_Record::OneOfrecord_type::None => 0,
     }    }
 
@@ -82,6 +85,7 @@ impl<'a> MessageWrite for Record<'a> {
             usp_record::mod_Record::OneOfrecord_type::mqtt_connect(ref m) => { w.write_with_tag(82, |w| w.write_message(m))? },
             usp_record::mod_Record::OneOfrecord_type::stomp_connect(ref m) => { w.write_with_tag(90, |w| w.write_message(m))? },
             usp_record::mod_Record::OneOfrecord_type::disconnect(ref m) => { w.write_with_tag(98, |w| w.write_message(m))? },
+            usp_record::mod_Record::OneOfrecord_type::uds_connect(ref m) => { w.write_with_tag(106, |w| w.write_message(m))? },
             usp_record::mod_Record::OneOfrecord_type::None => {},
     }        Ok(())
     }
@@ -131,6 +135,7 @@ pub enum OneOfrecord_type<'a> {
     mqtt_connect(usp_record::MQTTConnectRecord<'a>),
     stomp_connect(usp_record::STOMPConnectRecord<'a>),
     disconnect(usp_record::DisconnectRecord<'a>),
+    uds_connect(usp_record::UDSConnectRecord),
     None,
 }
 
@@ -142,6 +147,7 @@ impl<'a> Default for OneOfrecord_type<'a> {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct NoSessionContextRecord<'a> {
     pub payload: Cow<'a, [u8]>,
@@ -173,6 +179,7 @@ impl<'a> MessageWrite for NoSessionContextRecord<'a> {
     }
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct SessionContextRecord<'a> {
     pub session_id: u64,
@@ -271,6 +278,7 @@ impl<'a> From<&'a str> for PayloadSARState {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct WebSocketConnectRecord { }
 
@@ -283,6 +291,7 @@ impl<'a> MessageRead<'a> for WebSocketConnectRecord {
 
 impl MessageWrite for WebSocketConnectRecord { }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct MQTTConnectRecord<'a> {
     pub version: usp_record::mod_MQTTConnectRecord::MQTTVersion,
@@ -355,6 +364,7 @@ impl<'a> From<&'a str> for MQTTVersion {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct STOMPConnectRecord<'a> {
     pub version: usp_record::mod_STOMPConnectRecord::STOMPVersion,
@@ -424,6 +434,20 @@ impl<'a> From<&'a str> for STOMPVersion {
 
 }
 
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct UDSConnectRecord { }
+
+impl<'a> MessageRead<'a> for UDSConnectRecord {
+    fn from_reader(r: &mut BytesReader, _: &[u8]) -> Result<Self> {
+        r.read_to_end();
+        Ok(Self::default())
+    }
+}
+
+impl MessageWrite for UDSConnectRecord { }
+
+#[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct DisconnectRecord<'a> {
     pub reason: Cow<'a, str>,

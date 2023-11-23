@@ -790,6 +790,7 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
         OneOfrecord_type::websocket_connect(_) => unimplemented!(),
         OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
         OneOfrecord_type::stomp_connect(_) => unimplemented!(),
+        OneOfrecord_type::uds_connect(_) => unimplemented!(),
         OneOfrecord_type::disconnect(_) => unimplemented!(),
         OneOfrecord_type::None => unreachable!(),
     }
@@ -824,6 +825,7 @@ fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Re
         OneOfrecord_type::websocket_connect(_) => unimplemented!(),
         OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
         OneOfrecord_type::stomp_connect(_) => unimplemented!(),
+        OneOfrecord_type::uds_connect(_) => unimplemented!(),
         OneOfrecord_type::disconnect(_) => unimplemented!(),
         OneOfrecord_type::None => unreachable!(),
     }
