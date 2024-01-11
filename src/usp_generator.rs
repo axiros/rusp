@@ -189,14 +189,20 @@ pub fn get_err_msg(code: u32) -> &'static str {
         7024 => "Delete failure",
         7025 => "Object exists with duplicate key",
         7026 => "Invalid path",
-        7027 => "Invalid Command Arguments",
+        7027 => "Invalid command arguments",
+        7028 => "Register failure",
+        7029 => "Already in use",
+        7030 => "Deregister failure",
+        7031 => "Path already registered",
         7100 => "Record could not be parsed",
         7101 => "Secure session required",
         7102 => "Secure session not supported",
         7103 => "Segmentation and reassembly not supported",
         7104 => "Invalid Record value",
+        7105 => "Session Context terminated",
+        7106 => "Session Context not allowed",
         7800..=7999 => "Vendor specific",
-        // Includes `7028..=7099 | 7105..=7799` too
+        // Includes `7032..=7099 | 7107..=7799` too
         _ => "",
     }
 }
