@@ -43,6 +43,8 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
             operate(_) => OPERATE,
             notify(_) => NOTIFY,
             get_supported_protocol(_) => GET_SUPPORTED_PROTO,
+            register(_) => REGISTER,
+            deregister(_) => DEREGISTER,
             _ => unreachable!(),
         },
         response(ref resp) => match &resp.resp_type {
@@ -55,6 +57,8 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
             operate_resp(_) => OPERATE_RESP,
             notify_resp(_) => NOTIFY_RESP,
             get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
+            register_resp(_) => REGISTER_RESP,
+            deregister_resp(_) => DEREGISTER_RESP,
             _ => unreachable!(),
         },
         error(_) => ERROR,
