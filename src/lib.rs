@@ -44,10 +44,16 @@
 ///
 /// [`USP Messages Protobuf schema`]: <https://usp.technology/specification/usp-msg-1-3.proto>
 pub mod usp;
+
+/// Builder style functions to generate USP Messages
+pub mod usp_builder;
+
 /// Helper functions to decode a Protobuf encoded byte stream into Rust types
 pub mod usp_decoder;
+
 /// Helper functions to generate USP Messages
 pub mod usp_generator;
+
 /// Automatically generated bindings for USP Records from the [`USP Records Protobuf schema`]
 ///
 /// [`USP Records Protobuf schema`]: <https://usp.technology/specification/usp-record-1-3.proto>
