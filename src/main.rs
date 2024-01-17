@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use rusp::usp_builder;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::fs::File;
@@ -560,49 +561,45 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             args,
         } => {
             let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args)
+            let v = serde_json::from_str::<Vec<(String, Vec<(String, String, bool)>)>>(&args)
                 .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got '{}'", args))?;
-            serialize_into_vec(&usp_generator::usp_add_request(
-                allow_partial,
-                v.iter()
-                    .map(|(path, par)| (*path, par.as_slice()))
-                    .collect::<Vec<_>>()
-                    .as_slice(),
-            ))
+
+            let builder = usp_builder::AddBuilder::new().with_allow_partial(allow_partial);
+
+            let create_objs = v.into_iter().map(|o| {
+                usp_builder::CreateObjectBuilder::new(o.0).with_param_settings(o.1)
+            }).collect::<Vec<_>>();
+
+            serialize_into_vec(&builder.with_create_objs(create_objs).build()?)
         }
         MsgType::USPDelete {
             allow_partial,
             obj_paths,
         } => {
             let obj_paths = obj_paths.join(" ");
-            let obj_paths = serde_json::from_str::<Vec<&str>>(&obj_paths)
+            let obj_paths = serde_json::from_str::<Vec<String>>(&obj_paths)
                 .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got '{}'", obj_paths))?;
-            serialize_into_vec(&usp_generator::usp_delete_request(
-                allow_partial,
-                &obj_paths,
-            ))
+            serialize_into_vec(&usp_builder::DeleteBuilder::new().with_allow_partial(allow_partial).with_obj_paths(obj_paths).build()?)
         }
         MsgType::USPError { code, message } => {
-            serialize_into_vec(&usp_generator::usp_simple_error(code, message.as_deref()))
+            let error = usp_builder::ErrorBuilder::new().set_err (code, message);
+            serialize_into_vec(&error.build()?)
         }
         MsgType::USPGet { paths, max_depth } => {
             let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths)
+            let v = serde_json::from_str::<Vec<String>>(&paths)
                 .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\",  got '{}'", paths))?;
-            serialize_into_vec(&usp_generator::usp_get_request(v.as_slice(), max_depth.unwrap_or(0)))
+            serialize_into_vec(&usp_builder::GetBuilder::new().with_max_depth(max_depth.unwrap_or(0)).with_params(v).build()?)
         }
         MsgType::USPGetInstances {
             first_level_only,
             obj_paths,
         } => {
             let obj_paths = obj_paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&obj_paths)
+            let v = serde_json::from_str::<Vec<String>>(&obj_paths)
                 .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\",  got '{}'", obj_paths))?;
-            serialize_into_vec(&usp_generator::usp_get_instances_request(
-                v.as_slice(),
-                first_level_only,
-            ))
-        }
+            serialize_into_vec(&usp_builder::GetInstancesBuilder::new().with_first_level_only(first_level_only).with_obj_paths(v).build()?
+        )}
         MsgType::USPGetSupportedDM {
             first_level_only,
             return_commands,
@@ -626,15 +623,45 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
-            let getresp_json: usp_generator::GetResp = serde_json::from_str(&result)?;
-            serialize_into_vec(&usp_generator::usp_get_response_from_json(&getresp_json))
+            let getresp_json: Vec<(String, u32, String, Vec<(String, HashMap<String, String>)>)> = serde_json::from_str(&result)?;
+
+            let mut getrespb = usp_builder::GetRespBuilder::new();
+            for req_path_result in getresp_json.into_iter() {
+                let mut reqpathbuilder = usp_builder::GetReqPathResultBuilder::new(req_path_result.0);
+                if req_path_result.1 != 0
+                {
+                    reqpathbuilder.err_code = req_path_result.1;
+                }
+                for res_path_result in req_path_result.3.into_iter() {
+                    let respathbuilder = usp_builder::ResolvedPathResultBuilder::new(res_path_result.0).with_result_params(res_path_result.1.into_iter().collect());
+                    reqpathbuilder = reqpathbuilder.with_res_path_results(vec![respathbuilder]);
+                }
+                getrespb = getrespb.with_req_path_results(vec![reqpathbuilder])
+            }
+
+            serialize_into_vec(&getrespb.build()?)
         }
         MsgType::USPNotify {
             sub_id,
             send_resp,
             typ,
-        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp,
-                &typ.try_into()?) ),
+        } => {
+            let mut notify = usp_builder::NotifyBuilder::new(sub_id).with_send_resp(send_resp);
+            notify = match typ {
+                NotifyType::OnBoardRequest { oui, product_class, serial_number, agent_supported_protocol_versions } => notify.with_onboard_request(oui, product_class, serial_number, agent_supported_protocol_versions),
+                NotifyType::ValueChange { param_path, param_value } => notify.with_value_change(param_path, param_value),
+                NotifyType::Event { obj_path, event_name, params } => notify.with_event(obj_path, event_name, params),
+                NotifyType::ObjectCreation { obj_path, unique_keys } => notify.with_object_creation(obj_path, unique_keys),
+                NotifyType::ObjectDeletion { obj_path } => notify.with_object_deletion(obj_path),
+                NotifyType::OperationComplete { obj_path, command_name, command_key, operation_resp } => match operation_resp {
+                    OperateResponse::OutputArgs(output_args) => notify.with_operation_complete_output_args(obj_path, command_name, command_key, output_args),
+                    OperateResponse::CommandFailure(err_code, err_msg) => notify.with_operation_complete_cmd_failure(obj_path, command_name, command_key, err_code, err_msg),
+                }
+            };
+
+            serialize_into_vec(&notify.build()?)
+        }
+        ,
         MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
         }
@@ -646,17 +673,12 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let args = args.join(" ");
             let v = if !args.is_empty() {
-                serde_json::from_str::<Vec<(&str, &str)>>(&args)
+                serde_json::from_str::<Vec<(String, String)>>(&args)
                 .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\",  got '{}'", args))?
             } else {
                 Vec::new()
             };
-            serialize_into_vec(&usp_generator::usp_operate_request(
-                &command,
-                &command_key,
-                send_resp,
-                v.into_iter().collect::<Vec<_>>().as_slice(),
-            ))
+            serialize_into_vec(&usp_builder::OperateBuilder::new(command).with_command_key(command_key).with_send_resp(send_resp).with_input_args(v).build()?)
         }
         MsgType::USPSet {
             allow_partial,
@@ -891,7 +913,10 @@ fn encode_msg(
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body =
         deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-    let msg = usp_generator::usp_msg_by_ref(msgid, &body);
+    let msg = usp_builder::MsgBuilder::new()
+        .with_msg_id(msgid.into())
+        .with_body(body)
+        .build()?;
 
     // Open the specified file (or stdout) as output stream and write the USP Msg to it
     write_msg(msg, get_out_stream(filename)?, &format)
@@ -967,15 +992,12 @@ fn encode_no_session_record(
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
 
-    let record = usp_generator::usp_no_session_context_record(
-        &version,
-        &to,
-        &from,
-        PayloadSecurity::PLAINTEXT,
-        &[],
-        &[],
-        &msg,
-    );
+    let record = usp_builder::RecordBuilder::new()
+        .with_version(version)
+        .with_to_id(to)
+        .with_from_id(from)
+        .with_no_session_context_payload_bytes(msg)
+        .build()?;
 
     // Open output stream
     let out = get_out_stream(filename)?;

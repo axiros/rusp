@@ -1,0 +1,88 @@
+use crate::usp::mod_Body::OneOfmsg_body;
+use crate::usp::mod_Request::OneOfreq_type;
+use crate::usp::mod_Response::OneOfresp_type;
+use crate::usp::Body;
+use crate::usp::Header;
+use crate::usp::Msg;
+
+use anyhow::{Context, Result};
+
+#[derive(Clone)]
+pub struct MsgBuilder<'a> {
+    msg_id: Option<String>,
+    body: Option<Body<'a>>,
+}
+
+impl<'a> MsgBuilder<'a> {
+    pub const fn new() -> Self {
+        Self {
+            msg_id: None,
+            body: None,
+        }
+    }
+
+    pub fn with_msg_id(mut self, msg_id: String) -> Self {
+        self.msg_id = Some(msg_id);
+        self
+    }
+
+    pub fn with_body(mut self, body: Body<'a>) -> Self {
+        self.body = Some(body);
+        self
+    }
+
+    pub fn build(self) -> Result<Msg<'a>> {
+        use crate::usp::mod_Body::OneOfmsg_body::*;
+        use crate::usp::mod_Header::MsgType::*;
+        use crate::usp::mod_Request::OneOfreq_type::*;
+        use crate::usp::mod_Response::OneOfresp_type::*;
+
+        let msg_id = self
+            .msg_id
+            .with_context(|| "Cannot produce USP Msg without msg_id")?;
+        let body = self
+            .body
+            .with_context(|| "Cannot produce USP Msg without msg_body")?;
+
+        let msg_type = match &body.msg_body {
+            request(ref req) => match &req.req_type {
+                get(_) => GET,
+                get_supported_dm(_) => GET_SUPPORTED_DM,
+                get_instances(_) => GET_INSTANCES,
+                set(_) => SET,
+                add(_) => ADD,
+                delete(_) => DELETE,
+                operate(_) => OPERATE,
+                notify(_) => NOTIFY,
+                get_supported_protocol(_) => GET_SUPPORTED_PROTO,
+                register(_) => REGISTER,
+                deregister(_) => DEREGISTER,
+                OneOfreq_type::None => unreachable!(),
+            },
+            response(ref resp) => match &resp.resp_type {
+                get_resp(_) => GET_RESP,
+                get_supported_dm_resp(_) => GET_SUPPORTED_DM_RESP,
+                get_instances_resp(_) => GET_INSTANCES_RESP,
+                set_resp(_) => SET_RESP,
+                add_resp(_) => ADD_RESP,
+                delete_resp(_) => DELETE_RESP,
+                operate_resp(_) => OPERATE_RESP,
+                notify_resp(_) => NOTIFY_RESP,
+                get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
+                register_resp(_) => REGISTER_RESP,
+                deregister_resp(_) => DELETE_RESP,
+                OneOfresp_type::None => unreachable!(),
+            },
+            error(_) => ERROR,
+            OneOfmsg_body::None => unreachable!(),
+        };
+
+        Ok(Msg {
+            header: Some(Header {
+                msg_id: msg_id.into(),
+                msg_type,
+            }),
+            body: Some(body),
+        })
+    }
+}
