@@ -1,4 +1,4 @@
-use crate::usp::{self, Msg, Notify, Error};
+use crate::usp::{self, Error, Msg, Notify};
 use crate::usp_record::Record;
 use quick_protobuf::message::MessageRead;
 use quick_protobuf::BytesReader;
@@ -356,7 +356,6 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     fn is_error(&'a self) -> bool {
         self.get_error().is_some()
     }
-
 
     /// Retrieves the notify request from the Msg
     ///
