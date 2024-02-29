@@ -859,6 +859,7 @@ fn encode_no_session_record(
     write_record(record, out, &format)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn encode_session_record(
     version: String,
     from: String,
