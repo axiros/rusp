@@ -23,6 +23,7 @@ The toolkit includes:
 * A library providing:
   * Higher level access to de-/serialisation functionality
   * Convenience functions to generate messages
+  * Convenience functions to work with the native Msg types
   * Pretty printing of **USP** records and messages
   * Serde de-/serialisation of **USP** records and messages
   * Unittests and documentation (including doctests/examples)
@@ -56,7 +57,7 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 
 messages via command line tool.
 
-**NEWSFLASH**: 0.14 offers USP 1.3 support. Also, the made-up prototext encoding was removed and JSON is now the default.
+**NEWSFLASH**: 0.15 adds some missing USP 1.3 support (breaking API, hence the bump). Some long obsoleted functions have been removed and a trait with some helpers to work with `Msg` directly have been added.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -74,7 +75,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.14"
+rusp = "0.15"
 quick-protobuf = "0.8"
 
 ...
@@ -84,7 +85,7 @@ Documentation and examples for its use can be found on [docs.rs](https://docs.rs
 
 ## What else?
 
-You may use this crate however you like under the **BSD 3-Clause License**.
+You may use this crate however you like under the **BSD 3-Clause Licence**.
 
 The toolkit is still far from feature complete but already a big aid in our product development and also helped to find one or the other discrepancy in the standard.
 
@@ -92,14 +93,14 @@ Feel free to spread the word or drop us a note if you like it. Collaboration on 
 
 ## Contact us
 
-If you are in need of software for **USP** management software (agent, controller or testing) or expertise please get in touch with us via our [web form](https://www.axiros.com/contact-us/). We're also happy to solve all other your device management and monitoring needs!
+If you are in need of software for **USP** management software (agent, controller or testing) or expertise please get in touch with us via our [web form](https://www.axiros.com). We're also happy to solve all other device management and monitoring needs!
 
 [Rust]: https://www.rust-lang.org/
 [USP]: https://usp.technology/
 [BBF]: https://www.broadband-forum.org/
 [Axiros]: https://www.axiros.com/
 
-License
+Licence
 -------
 
-[BSD 3-Clause License](LICENSE).
+[BSD 3-Clause Licence](LICENSE).
