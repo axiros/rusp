@@ -30,11 +30,7 @@ mod tests {
         assert!(record.payload_security == "".into());
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(if let no_session_context(_) = record.record_type {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(record.record_type, no_session_context(_)));
 
         if let no_session_context(context) = record.record_type {
             let mut reader = BytesReader::from_bytes(&context.payload);
@@ -48,11 +44,7 @@ mod tests {
 
             if let Some(body) = msg.body {
                 if let request(req) = body.msg_body {
-                    assert!(if let notify(_) = req.req_type {
-                        true
-                    } else {
-                        false
-                    });
+                    assert!(matches!(req.req_type, notify(_)));
 
                     if let notify(a) = req.req_type {
                         assert!(a.subscription_id == "subscription_id");
@@ -99,11 +91,7 @@ mod tests {
         assert!(record.payload_security == "".into());
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(if let no_session_context(_) = record.record_type {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(record.record_type, no_session_context(_)));
 
         if let no_session_context(context) = record.record_type {
             let mut reader = BytesReader::from_bytes(&context.payload);
@@ -117,11 +105,7 @@ mod tests {
 
             if let Some(body) = msg.body {
                 if let request(req) = body.msg_body {
-                    assert!(if let add(_) = req.req_type {
-                        true
-                    } else {
-                        false
-                    });
+                    assert!(matches!(req.req_type, add(_)));
 
                     if let add(a) = req.req_type {
                         assert!(a.allow_partial);
@@ -171,11 +155,7 @@ mod tests {
         assert!(record.payload_security == "".into());
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(if let no_session_context(_) = record.record_type {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(record.record_type, no_session_context(_)));
 
         if let no_session_context(context) = record.record_type {
             let mut reader = BytesReader::from_bytes(&context.payload);
@@ -189,11 +169,7 @@ mod tests {
 
             if let Some(body) = msg.body {
                 if let request(req) = body.msg_body {
-                    assert!(if let delete(_) = req.req_type {
-                        true
-                    } else {
-                        false
-                    });
+                    assert!(matches!(req.req_type, delete(_)));
 
                     if let delete(a) = req.req_type {
                         assert!(a.allow_partial);
@@ -232,11 +208,7 @@ mod tests {
         assert!(record.payload_security == "".into());
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(if let no_session_context(_) = record.record_type {
-            true
-        } else {
-            false
-        });
+        assert!(matches!(record.record_type, no_session_context(_)));
 
         if let no_session_context(context) = record.record_type {
             let mut reader = BytesReader::from_bytes(&context.payload);
@@ -250,11 +222,7 @@ mod tests {
 
             if let Some(body) = msg.body {
                 if let request(req) = body.msg_body {
-                    assert!(if let get(_) = req.req_type {
-                        true
-                    } else {
-                        false
-                    });
+                    assert!(matches!(req.req_type, get(_)));
 
                     if let get(a) = req.req_type {
                         assert!(a.param_paths.len() == 1);
