@@ -57,7 +57,7 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 
 messages via command line tool.
 
-**NEWSFLASH**: 0.15 adds some missing USP 1.3 support (breaking API, hence the bump). Some long obsoleted functions have been removed and a trait with some helpers to work with `Msg` directly have been added.
+**NEWSFLASH**: 0.16 adds some missing USP 1.3 support (breaking API, hence the bump). Some long obsoleted functions have been removed and some helpers to work with `Msg` directly have been added.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -75,7 +75,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.15"
+rusp = "0.16"
 quick-protobuf = "0.8"
 
 ...
