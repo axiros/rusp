@@ -63,25 +63,8 @@ pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
     Msg::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Message")
 }
 
-pub trait MsgTools<'a> {
-    fn msg_id(&'a self) -> &'a str;
-
-    fn is_request(&'a self) -> bool;
-
-    fn is_notify_request(&'a self) -> bool;
-
-    fn get_notify_request(&'a self) -> Option<&Notify>;
-
-    fn is_response(&'a self) -> bool;
-
-    fn is_error(&'a self) -> bool;
-
-    fn get_error(&'a self) -> Option<&Error>;
-
-    fn to_json(&'a self) -> Option<String>;
-}
-
-impl<'a> MsgTools<'a> for Msg<'a> {
+/// Implementation of some extension methods for `Msg`s
+impl<'a> Msg<'a> {
     /// Retrieves the message ID from a Msg structure
     ///
     /// # Arguments
@@ -91,7 +74,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -106,7 +89,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]);
     /// assert_eq!(msg.unwrap().msg_id(), "AXSS-1544114045.442596");
     /// ```
-    fn msg_id(&'a self) -> &str {
+    pub fn msg_id(&'a self) -> &str {
         if let Some(header) = self.header.as_ref() {
             header.msg_id.as_ref()
         } else {
@@ -123,7 +106,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -138,7 +121,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -153,7 +136,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_request(), false);
     /// ```
-    fn is_request(&'a self) -> bool {
+    pub fn is_request(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
             return matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_));
         }
@@ -170,7 +153,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -185,7 +168,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -200,7 +183,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_notify_request(), false);
     /// ```
-    fn is_notify_request(&'a self) -> bool {
+    pub fn is_notify_request(&'a self) -> bool {
         self.get_notify_request().is_some()
     }
 
@@ -213,7 +196,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -228,7 +211,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -243,7 +226,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert!(msg.get_notify_request().is_none());
     /// ```
-    fn get_notify_request(&'a self) -> Option<&Notify> {
+    pub fn get_notify_request(&'a self) -> Option<&Notify> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::request(request) = &body.msg_body {
                 if let usp::mod_Request::OneOfreq_type::notify(notify) = &request.req_type {
@@ -264,7 +247,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -279,7 +262,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -294,7 +277,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_response(), true);
     /// ```
-    fn is_response(&'a self) -> bool {
+    pub fn is_response(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
             return matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_));
         }
@@ -311,7 +294,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -326,7 +309,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -343,7 +326,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x05, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x12,
@@ -353,7 +336,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_error(), true);
     /// ```
-    fn is_error(&'a self) -> bool {
+    pub fn is_error(&'a self) -> bool {
         self.get_error().is_some()
     }
 
@@ -366,7 +349,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -381,7 +364,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -398,7 +381,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x05, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x12,
@@ -408,7 +391,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert!(msg.get_error().is_some());
     /// ```
-    fn get_error(&'a self) -> Option<&Error> {
+    pub fn get_error(&'a self) -> Option<&Error> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::error(error) = &body.msg_body {
                 return Some(error);
@@ -427,7 +410,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::{try_decode_msg, MsgTools};
+    /// use rusp::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -440,7 +423,7 @@ impl<'a> MsgTools<'a> for Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.to_json().unwrap(), "{\"Header\":{\"msg_id\":\"test\",\"msg_type\":\"NOTIFY\"},\"Body\":{\"Request\":{\"Notify\":{\"subscription_id\":\"notif\",\"send_resp\":true,\"on_board_req\":{\"oui\":\"0044FF\",\"product_class\":\"Foo\",\"serial_number\":\"01234\",\"agent_supported_protocol_versions\":\"1.3\"}}}}}");
     /// ```
-    fn to_json(&'a self) -> Option<String> {
+    pub fn to_json(&'a self) -> Option<String> {
         serde_json::to_string(self).ok()
     }
 }
