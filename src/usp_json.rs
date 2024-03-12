@@ -31,10 +31,11 @@ impl Serialize for Record<'_> {
                 if let Ok(msg) = msg {
                     state.serialize_field("payload", &msg)?;
                 } else {
-                    return Err(serde::ser::Error::custom(
-                        msg.context("parsing of the protobuf USP Message failed")
-                            .unwrap_err(),
-                    ));
+                    Err(serde::ser::Error::custom(format!(
+                        "{:?}",
+                        msg.context("Interpreting USP Record payload as USP Msg")
+                            .unwrap_err()
+                    )))?
                 }
             }
             session_context(context) => {
@@ -44,11 +45,9 @@ impl Serialize for Record<'_> {
             mqtt_connect(mqtt) => state.serialize_field("mqtt_connect", mqtt)?,
             stomp_connect(stomp) => state.serialize_field("stomp_connect", stomp)?,
             disconnect(disc) => state.serialize_field("disconnect", disc)?,
-            _ => {
-                return Err(serde::ser::Error::custom(
-                    "Unknown/Unsupported record type!",
-                ));
-            }
+            _ => Err(serde::ser::Error::custom(
+                "Unknown/Unsupported record type!",
+            ))?,
         }
 
         state.end()
@@ -269,7 +268,7 @@ impl Serialize for Body<'_> {
             request(ref m) => state.serialize_field("Request", m)?,
             response(ref m) => state.serialize_field("Response", m)?,
             error(ref m) => state.serialize_field("Error", m)?,
-            None => return Err(serde::ser::Error::custom("USP Msg without body?!?")),
+            None => Err(serde::ser::Error::custom("USP Msg without body?!?"))?,
         }
         state.end()
     }
@@ -295,7 +294,7 @@ impl Serialize for Request<'_> {
             get_supported_protocol(ref m) => state.serialize_field("GetSupportedProtocol", &m)?,
             register(ref m) => state.serialize_field("Register", &m)?,
             deregister(ref m) => state.serialize_field("Deregister", &m)?,
-            None => return Err(serde::ser::Error::custom("USP Request Msg without type?!?")),
+            None => Err(serde::ser::Error::custom("USP Request Msg without type?!?"))?,
         }
         state.end()
     }
@@ -323,11 +322,9 @@ impl Serialize for Response<'_> {
             }
             register_resp(ref m) => state.serialize_field("RegisterResp", &m)?,
             deregister_resp(ref m) => state.serialize_field("DeregisterResp", &m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Response Msg without type?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Response Msg without type?!?",
+            ))?,
         }
         state.end()
     }
@@ -443,7 +440,7 @@ impl Serialize for Notify<'_> {
             obj_deletion(ref m) => state.serialize_field("obj_deletion", &m)?,
             oper_complete(ref m) => state.serialize_field("oper_complete", &m)?,
             on_board_req(ref m) => state.serialize_field("on_board_req", &m)?,
-            None => return Err(serde::ser::Error::custom("Unknown USP Notify type")),
+            None => Err(serde::ser::Error::custom("Unknown USP Notify type"))?,
         }
 
         state.end()
@@ -547,11 +544,9 @@ impl Serialize for mod_Notify::OperationComplete<'_> {
         match self.operation_resp {
             req_output_args(ref m) => state.serialize_field("req_output_args", m)?,
             cmd_failure(ref m) => state.serialize_field("cmd_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -957,11 +952,9 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
         match &self.oper_status {
             oper_success(ref m) => state.serialize_field("oper_success", m)?,
             oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -1053,11 +1046,9 @@ impl Serialize for mod_OperateResp::OperationResult<'_> {
             req_obj_path(ref m) => state.serialize_field("req_obj_path", m)?,
             req_output_args(ref m) => state.serialize_field("req_output_args", m)?,
             cmd_failure(ref m) => state.serialize_field("cmd_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -1145,11 +1136,9 @@ impl Serialize for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'
         match &self.oper_status {
             oper_success(ref m) => state.serialize_field("oper_success", m)?,
             oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -1216,11 +1205,9 @@ impl Serialize for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStat
         match &self.oper_status {
             oper_success(ref m) => state.serialize_field("oper_success", m)?,
             oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -1276,11 +1263,9 @@ impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus<'_> 
         match &self.oper_status {
             oper_success(ref m) => state.serialize_field("oper_success", m)?,
             oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }
@@ -1386,11 +1371,9 @@ impl Serialize for mod_AddResp::mod_CreatedObjectResult::OperationStatus<'_> {
         match self.oper_status {
             oper_success(ref m) => state.serialize_field("oper_success", m)?,
             oper_failure(ref m) => state.serialize_field("oper_failure", m)?,
-            None => {
-                return Err(serde::ser::Error::custom(
-                    "USP Msg OperationStatus is unknown?!?",
-                ))
-            }
+            None => Err(serde::ser::Error::custom(
+                "USP Msg OperationStatus is unknown?!?",
+            ))?,
         }
         state.end()
     }

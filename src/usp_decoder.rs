@@ -138,10 +138,10 @@ impl<'a> Msg<'a> {
     /// ```
     pub fn is_request(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
-            return matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_));
+            matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_))
+        } else {
+            false
         }
-
-        false
     }
 
     /// Checks whether the body contains a message of type notify (request)
@@ -279,10 +279,10 @@ impl<'a> Msg<'a> {
     /// ```
     pub fn is_response(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
-            return matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_));
+            matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_))
+        } else {
+            false
         }
-
-        false
     }
 
     /// Checks whether the body contains a message of type response
