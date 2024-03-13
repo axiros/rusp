@@ -542,14 +542,17 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
 }
 
 fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
-    Ok(if let Some(filename) = filename {
-        Box::new(File::create(filename)?)
-    } else {
-        Box::new(stdout())
-    })
+    if let Some(filename) = filename {
+        return Ok(Box::new(File::create(filename)?));
+    }
+
+    Ok(Box::new(stdout()))
 }
 
-fn write_c_array(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
+fn write_c_array<W>(mut out: W, buf: &[u8]) -> Result<()>
+where
+    W: Write,
+{
     fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
@@ -589,7 +592,7 @@ fn write_c_array(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-fn write_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
+fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
     fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
@@ -614,7 +617,7 @@ fn write_c_str(mut out: Box<dyn Write>, buf: &[u8]) -> Result<()> {
 }
 
 /// Write the given USP Msg to the output stream in the specified format
-fn write_msg(msg: rusp::usp::Msg, mut out: Box<dyn Write>, format: &OutputFormat) -> Result<()> {
+fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -645,9 +648,9 @@ fn write_msg(msg: rusp::usp::Msg, mut out: Box<dyn Write>, format: &OutputFormat
 }
 
 /// Write the given USP Record to the output stream in the specified format
-fn write_record(
+fn write_record<W: Write>(
     record: rusp::usp_record::Record,
-    mut out: Box<dyn Write>,
+    mut out: W,
     format: &OutputFormat,
 ) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
@@ -681,7 +684,7 @@ fn write_record(
 }
 
 /// Write the given USP Msg Bodyto the output stream in the specified format
-fn write_body(msg: rusp::usp::Body, mut out: Box<dyn Write>, format: &OutputFormat) -> Result<()> {
+fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
     use quick_protobuf::{message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -779,11 +782,8 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
     match record.record_type {
         OneOfrecord_type::no_session_context(context) => {
             let msg = try_decode_msg(&context.payload)?;
-            let out = if let Some("-") = out_file.to_str() {
-                get_out_stream(None)?
-            } else {
-                get_out_stream(Some(out_file.to_path_buf()))?
-            };
+            // Open output stream
+            let out = get_out_stream(Some(out_file.to_path_buf()))?;
             write_msg(msg, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
@@ -813,12 +813,8 @@ fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Re
             let msg = try_decode_msg(&context.payload)?;
             let body = msg.body.context("Failed extracting USP Msg body")?;
 
-            let out = if let Some("-") = out_file.to_str() {
-                get_out_stream(None)?
-            } else {
-                get_out_stream(Some(out_file.to_path_buf()))?
-            };
-
+            // Open output stream
+            let out = get_out_stream(Some(out_file.to_path_buf()))?;
             write_body(body, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
