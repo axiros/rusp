@@ -618,12 +618,7 @@ fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
 
 /// Write the given USP Msg to the output stream in the specified format
 fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
-    use quick_protobuf::{message::MessageWrite, Writer};
-
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
-    msg.write_message(&mut writer)
-        .context("Failed encoding USP Msg")?;
+    let buf = msg.to_vec()?;
 
     match format {
         OutputFormat::Json => {
