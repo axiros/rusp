@@ -628,15 +628,7 @@ fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
         }
-        OutputFormat::CStr => {
-            write_c_str(out, buf.as_slice())?;
-        }
-        OutputFormat::CArray => {
-            write_c_array(out, buf.as_slice())?;
-        }
-        OutputFormat::Protobuf => {
-            out.write_all(buf.as_slice())?;
-        }
+        _ => write_buf(buf, out, format)?,
     }
 
     Ok(())
@@ -662,6 +654,22 @@ fn write_record<W: Write>(
                 out,
                 "{}",
                 serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
+            )?;
+        }
+        _ => write_buf(buf, out, format)?,
+    }
+
+    Ok(())
+}
+
+/// Serialize the binary output to the output stream according to the chosen OutputFormat
+fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Result<()> {
+    match format {
+        OutputFormat::Json => {
+            writeln!(
+                out,
+                "{}",
+                serde_json::to_string_pretty(&buf).context("Failed to serialize JSON")?
             )?;
         }
         OutputFormat::CStr => {
@@ -695,21 +703,13 @@ fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat)
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
         }
-        OutputFormat::CStr => {
-            write_c_str(out, buf.as_slice())?;
-        }
-        OutputFormat::CArray => {
-            write_c_array(out, buf.as_slice())?;
-        }
-        OutputFormat::Protobuf => {
-            out.write_all(buf.as_slice())?;
-        }
+        _ => write_buf(buf, out, format)?,
     }
 
     Ok(())
 }
 
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat) -> Result<()> {
+fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputFormat) -> Result<()> {
     use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
 
     let mut buf = Vec::new();
@@ -733,15 +733,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: OutputFormat
                 serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
             )?;
         }
-        OutputFormat::CStr => {
-            write_c_str(out, buf.as_slice())?;
-        }
-        OutputFormat::CArray => {
-            write_c_array(out, buf.as_slice())?;
-        }
-        OutputFormat::Protobuf => {
-            out.write_all(buf.as_slice())?;
-        }
+        _ => write_buf(buf, out, format)?,
     }
 
     Ok(())
@@ -951,7 +943,7 @@ fn main() -> Result<()> {
             } else {
                 format
             };
-            encode_msg_body(filename, typ, format)
+            encode_msg_body(filename, typ, &format)
         }
         RuspAction::EncodeMsg {
             msgid,
