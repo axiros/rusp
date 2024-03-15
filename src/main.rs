@@ -616,52 +616,6 @@ fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-/// Write the given USP Msg to the output stream in the specified format
-fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
-    let buf = msg.to_vec()?;
-
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
-            )?;
-        }
-        _ => write_buf(buf, out, format)?,
-    }
-
-    Ok(())
-}
-
-/// Write the given USP Record to the output stream in the specified format
-fn write_record<W: Write>(
-    record: rusp::usp_record::Record,
-    mut out: W,
-    format: &OutputFormat,
-) -> Result<()> {
-    use quick_protobuf::{message::MessageWrite, Writer};
-
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
-    record
-        .write_message(&mut writer)
-        .context("Failed encoding USP Record")?;
-
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
-            )?;
-        }
-        _ => write_buf(buf, out, format)?,
-    }
-
-    Ok(())
-}
-
 /// Serialize the binary output to the output stream according to the chosen OutputFormat
 fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
@@ -686,15 +640,8 @@ fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Resul
     Ok(())
 }
 
-/// Write the given USP Msg Bodyto the output stream in the specified format
-fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
-    use quick_protobuf::{message::MessageWrite, Writer};
-
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
-    msg.write_message(&mut writer)
-        .context("Failed encoding USP Msg Body")?;
-
+/// Write the given USP Msg to the output stream in the specified format
+fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
             writeln!(
@@ -703,27 +650,76 @@ fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat)
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
         }
-        _ => write_buf(buf, out, format)?,
+        _ => write_buf(msg.to_vec()?, out, format)?,
+    }
+
+    Ok(())
+}
+
+/// Write the given USP Record to the output stream in the specified format
+fn write_record<W: Write>(
+    record: rusp::usp_record::Record,
+    mut out: W,
+    format: &OutputFormat,
+) -> Result<()> {
+    match format {
+        OutputFormat::Json => {
+            writeln!(
+                out,
+                "{}",
+                serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
+            )?;
+        }
+        _ => {
+            use quick_protobuf::{message::MessageWrite, Writer};
+
+            let mut buf = Vec::new();
+            let mut writer = Writer::new(&mut buf);
+            record
+                .write_message(&mut writer)
+                .context("Failed encoding USP Record")?;
+
+            write_buf(buf, out, format)?
+        }
+    }
+
+    Ok(())
+}
+
+/// Write the given USP Msg Bodyto the output stream in the specified format
+fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
+    match format {
+        OutputFormat::Json => {
+            writeln!(
+                out,
+                "{}",
+                serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
+            )?;
+        }
+        _ => {
+            use quick_protobuf::{message::MessageWrite, Writer};
+
+            let mut buf = Vec::new();
+            let mut writer = Writer::new(&mut buf);
+            msg.write_message(&mut writer)
+                .context("Failed encoding USP Msg Body")?;
+
+            write_buf(buf, out, format)?
+        }
     }
 
     Ok(())
 }
 
 fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputFormat) -> Result<()> {
-    use quick_protobuf::{deserialize_from_slice, message::MessageWrite, Writer};
+    use quick_protobuf::{deserialize_from_slice, Writer};
 
-    let mut buf = Vec::new();
-    let mut writer = Writer::new(&mut buf);
+    // Open output stream
+    let mut out = get_out_stream(filename)?;
 
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body =
         deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-
-    body.write_message(&mut writer)
-        .context("Failed encoding USP Msg Body")?;
-
-    // Open output stream
-    let mut out = get_out_stream(filename)?;
 
     match format {
         OutputFormat::Json => {
@@ -733,7 +729,17 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputForma
                 serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
             )?;
         }
-        _ => write_buf(buf, out, format)?,
+        _ => {
+            use quick_protobuf::message::MessageWrite;
+
+            let mut buf = Vec::new();
+            let mut writer = Writer::new(&mut buf);
+
+            body.write_message(&mut writer)
+                .context("Failed encoding USP Msg Body")?;
+
+            write_buf(buf, out, format)?
+        }
     }
 
     Ok(())
