@@ -89,9 +89,6 @@ enum RuspAction {
     /// Encode command line input into a single raw USP message
     #[clap(name = "encode_msg")]
     EncodeMsg {
-        /// Output the serialised protobuf as C char array
-        #[clap(short = 'c')]
-        as_c_array: bool,
         /// The message ID to use in the USP Msg header
         msgid: String,
         /// Filename (will output to standard output if omitted)
@@ -105,9 +102,6 @@ enum RuspAction {
     /// Encode command line input into a single raw USP message body
     #[clap(name = "encode_msg_body")]
     EncodeMsgBody {
-        /// Output the serialised protobuf as C char array
-        #[clap(short = 'c')]
-        as_c_array: bool,
         /// Filename (will output to standard output if omitted)
         #[clap(short = 'f', long = "file")]
         /// Output filename of file to encode USP protobuf message to
@@ -136,10 +130,7 @@ enum RuspAction {
     /// and will be removed in a future version, use `encode_no_session_record` instead)
     #[clap(name = "wrap_msg_raw")]
     WrapMsgRaw {
-        /// Output the serialised protobuf as C char array
-        #[clap(short = 'c')]
-        as_c_array: bool,
-        #[clap(long = "version", default_value = "1.1")]
+        #[clap(long = "version", default_value = "1.3")]
         /// USP specification version
         version: String,
         #[clap(long = "from", default_value = "doc::from")]
@@ -941,29 +932,14 @@ fn main() -> Result<()> {
         RuspAction::EncodeMsgBody {
             filename,
             typ,
-            as_c_array,
         } => {
-            let format = if as_c_array {
-                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
-                OutputFormat::CArray
-            } else {
-                format
-            };
             encode_msg_body(filename, typ, &format)
         }
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
-            as_c_array,
         } => {
-            let format = if as_c_array {
-                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
-                OutputFormat::CArray
-            } else {
-                format
-            };
-
             encode_msg(msgid, filename, typ, format)
         }
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, format),
@@ -975,15 +951,7 @@ fn main() -> Result<()> {
             from,
             to,
             filename,
-            as_c_array,
         } => {
-            let format = if as_c_array {
-                eprintln!("Warning: The '-c' option is deprecated and will be removed in a future version, use the global '--carray' option instead.");
-                OutputFormat::CArray
-            } else {
-                format
-            };
-
             encode_no_session_record(version, from, to, filename, format)
         }
         RuspAction::EncodeNoSessionRecord {
