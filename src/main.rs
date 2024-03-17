@@ -929,19 +929,12 @@ fn main() -> Result<()> {
         RuspAction::DecodeRecord {} => decode_record_stdin(format),
         RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, format),
         RuspAction::DecodeMsg {} => decode_msg_stdin(format),
-        RuspAction::EncodeMsgBody {
-            filename,
-            typ,
-        } => {
-            encode_msg_body(filename, typ, &format)
-        }
+        RuspAction::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ, &format),
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
-        } => {
-            encode_msg(msgid, filename, typ, format)
-        }
+        } => encode_msg(msgid, filename, typ, format),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, format),
         RuspAction::ExtractMsgBody { in_file, out_file } => {
             extract_msg_body(&in_file, &out_file, format)
@@ -951,9 +944,7 @@ fn main() -> Result<()> {
             from,
             to,
             filename,
-        } => {
-            encode_no_session_record(version, from, to, filename, format)
-        }
+        } => encode_no_session_record(version, from, to, filename, format),
         RuspAction::EncodeNoSessionRecord {
             version,
             from,
