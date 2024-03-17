@@ -49,7 +49,7 @@ pub enum NotifyType {
         /// The name of the event
         event_name: String,
         /// A stringified JSON object containing the output arguments of the USP Event
-        #[clap(value_parser = parse_key_val_json)]
+        #[arg(value_parser = parse_key_val_json)]
         params: HashMap<String, String>,
     },
     /// USP ObjectCreation notification
@@ -57,7 +57,7 @@ pub enum NotifyType {
         /// The path of the created object
         obj_path: String,
         /// A stringified JSON object containing the unique_keys and values of the created Object
-        #[clap(value_parser = parse_key_val_json)]
+        #[arg(value_parser = parse_key_val_json)]
         unique_keys: HashMap<String, String>,
     },
     /// USP ObjectDeletion notification
