@@ -60,7 +60,7 @@ struct Rusp {
     )]
     /// Output binary as native Protobuf binary
     protobuf: bool,
-    #[clap(subcommand)]
+    #[command(subcommand)]
     action: RuspAction,
 }
 
@@ -96,7 +96,7 @@ enum RuspAction {
         /// Output filename of file to encode USP protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
-        #[clap(subcommand)]
+        #[command(subcommand)]
         typ: MsgType,
     },
     /// Encode command line input into a single raw USP message body
@@ -107,7 +107,7 @@ enum RuspAction {
         /// Output filename of file to encode USP protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
-        #[clap(subcommand)]
+        #[command(subcommand)]
         typ: MsgType,
     },
     /// Extract the USP message from an USP record
@@ -315,7 +315,7 @@ enum MsgType {
         #[arg(action = clap::ArgAction::Set)]
         send_resp: bool,
         /// Type of notification
-        #[clap(subcommand)]
+        #[command(subcommand)]
         typ: NotifyType,
     },
     /// Generate an USP Notify response message
@@ -903,28 +903,22 @@ fn create_mqtt_connect_record(
 }
 
 fn main() -> Result<()> {
-    let Rusp {
-        action,
-        json: _,
-        cstr,
-        carray,
-        protobuf,
-    } = Rusp::parse();
+    let args = Rusp::parse();
 
     // Pass on the user chosen format to use for the output
     let format = {
-        if carray {
+        if args.carray {
             OutputFormat::CArray
-        } else if cstr {
+        } else if args.cstr {
             OutputFormat::CStr
-        } else if protobuf {
+        } else if args.protobuf {
             OutputFormat::Protobuf
         } else {
             OutputFormat::Json
         }
     };
 
-    match action {
+    match args.action {
         RuspAction::DecodeRecordFiles { files } => decode_record_files(files, format),
         RuspAction::DecodeRecord {} => decode_record_stdin(format),
         RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, format),
