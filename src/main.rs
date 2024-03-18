@@ -1,4 +1,6 @@
 use clap::{Parser, Subcommand};
+use std::collections::HashMap;
+use std::convert::Infallible;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
@@ -8,7 +10,9 @@ use anyhow::{Context, Result};
 use rusp::{
     usp_decoder::{try_decode_msg, try_decode_record},
     usp_generator,
-    usp_types::{NotifyType, PayloadSecurity},
+    usp_types::{
+        NotifyType as RuspNotifyType, OperateResponse as RuspOperateResponse, PayloadSecurity,
+    },
 };
 
 #[derive(PartialEq)]
@@ -215,7 +219,146 @@ enum RuspAction {
     },
 }
 
-#[derive(Parser, Debug)]
+/// Parse a JSON object into a Rust HashMap
+fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
+    serde_json::from_str::<HashMap<String, String>>(s).map_err(|e| e.to_string())
+}
+
+#[allow(dead_code)]
+#[derive(PartialEq, Eq)]
+enum OperateResponse {
+    OutputArgs(HashMap<String, String>),
+    CommandFailure(u32, String),
+}
+
+impl Default for OperateResponse {
+    fn default() -> Self {
+        Self::OutputArgs(HashMap::new())
+    }
+}
+
+#[derive(Parser, PartialEq, Eq)]
+enum NotifyType {
+    /// USP OnBoardRequest notification
+    OnBoardRequest {
+        /// The OUI associated with the manufacturer of the device
+        oui: String,
+
+        /// The product class associated with the device
+        product_class: String,
+
+        /// The serial number of the device
+        serial_number: String,
+
+        /// A comma separated list of supported USP versions
+        agent_supported_protocol_versions: String,
+    },
+    /// USP ValueChange notification
+    ValueChange {
+        /// The path of the changed parameter
+        param_path: String,
+        /// The new value of the changed parameter
+        param_value: String,
+    },
+    /// USP Event notification
+    Event {
+        /// The path of the event
+        obj_path: String,
+        /// The name of the event
+        event_name: String,
+        /// A stringified JSON object containing the output arguments of the USP Event
+        #[arg(value_parser = parse_key_val_json)]
+        params: HashMap<String, String>,
+    },
+    /// USP ObjectCreation notification
+    ObjectCreation {
+        /// The path of the created object
+        obj_path: String,
+        /// A stringified JSON object containing the unique_keys and values of the created Object
+        #[arg(value_parser = parse_key_val_json)]
+        unique_keys: HashMap<String, String>,
+    },
+    /// USP ObjectDeletion notification
+    ObjectDeletion {
+        /// The path of the deleted object
+        obj_path: String,
+    },
+
+    /// USP OperationComplete notification
+    OperationComplete {
+        /// The path of the operation object
+        obj_path: String,
+        /// The name of the operated command
+        command_name: String,
+        /// The command key associated with the operation
+        command_key: String,
+        /// The result of the operation
+        #[structopt(skip)]
+        operation_resp: OperateResponse,
+    },
+}
+
+impl TryFrom<NotifyType> for RuspNotifyType {
+    type Error = Infallible;
+
+    fn try_from(notify: NotifyType) -> Result<Self, Self::Error> {
+        Ok(match notify {
+            NotifyType::OnBoardRequest {
+                oui,
+                product_class,
+                serial_number,
+                agent_supported_protocol_versions,
+            } => RuspNotifyType::OnBoardRequest {
+                oui,
+                product_class,
+                serial_number,
+                agent_supported_protocol_versions,
+            },
+            NotifyType::ValueChange {
+                param_path,
+                param_value,
+            } => RuspNotifyType::ValueChange {
+                param_path,
+                param_value,
+            },
+            NotifyType::Event {
+                obj_path,
+                event_name,
+                params,
+            } => RuspNotifyType::Event {
+                obj_path,
+                event_name,
+                params,
+            },
+            NotifyType::ObjectCreation {
+                obj_path,
+                unique_keys,
+            } => RuspNotifyType::ObjectCreation {
+                obj_path,
+                unique_keys,
+            },
+            NotifyType::ObjectDeletion { obj_path } => RuspNotifyType::ObjectDeletion { obj_path },
+            NotifyType::OperationComplete {
+                obj_path,
+                command_name,
+                command_key,
+                operation_resp,
+            } => RuspNotifyType::OperationComplete {
+                obj_path,
+                command_name,
+                command_key,
+                operation_resp: match operation_resp {
+                    OperateResponse::OutputArgs(a) => RuspOperateResponse::OutputArgs(a),
+                    OperateResponse::CommandFailure(code, msg) => {
+                        RuspOperateResponse::CommandFailure(code, msg)
+                    }
+                },
+            },
+        })
+    }
+}
+
+#[derive(Parser)]
 #[command(rename_all = "verbatim")]
 enum MsgType {
     /// Generate an USP Add request message
@@ -490,7 +633,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             sub_id,
             send_resp,
             typ,
-        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp, &typ)),
+        } => serialize_into_vec(&usp_generator::usp_notify_request(&sub_id, send_resp,
+                &typ.try_into()?) ),
         MsgType::USPNotifyResp { sub_id } => {
             serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
         }

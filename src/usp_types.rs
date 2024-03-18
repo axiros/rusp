@@ -1,11 +1,5 @@
 pub use crate::usp_record::mod_Record::PayloadSecurity;
-use clap::Parser;
 use std::collections::HashMap;
-
-/// Parse a JSON object into a Rust HashMap
-fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
-    serde_json::from_str::<HashMap<String, String>>(s).map_err(|e| e.to_string())
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OperateResponse {
@@ -19,7 +13,7 @@ impl Default for OperateResponse {
     }
 }
 
-#[derive(Parser, Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NotifyType {
     /// USP OnBoardRequest notification
     OnBoardRequest {
@@ -49,7 +43,6 @@ pub enum NotifyType {
         /// The name of the event
         event_name: String,
         /// A stringified JSON object containing the output arguments of the USP Event
-        #[arg(value_parser = parse_key_val_json)]
         params: HashMap<String, String>,
     },
     /// USP ObjectCreation notification
@@ -57,7 +50,6 @@ pub enum NotifyType {
         /// The path of the created object
         obj_path: String,
         /// A stringified JSON object containing the unique_keys and values of the created Object
-        #[arg(value_parser = parse_key_val_json)]
         unique_keys: HashMap<String, String>,
     },
     /// USP ObjectDeletion notification
@@ -75,12 +67,11 @@ pub enum NotifyType {
         /// The command key associated with the operation
         command_key: String,
         /// The result of the operation
-        #[structopt(skip)]
         operation_resp: OperateResponse,
     },
 }
 
-#[derive(Parser, Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum PayloadSARState {
     /// No segmentation
     NONE = 0,
