@@ -881,7 +881,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputForma
 }
 
 fn encode_msg(
-    msgid: String,
+    msgid: &str,
     filename: Option<PathBuf>,
     typ: MsgType,
     format: OutputFormat,
@@ -891,7 +891,7 @@ fn encode_msg(
     let encoded_body = encode_msg_body_buf(typ)?;
     let body: rusp::usp::Body =
         deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-    let msg = usp_generator::usp_msg(msgid, body);
+    let msg = usp_generator::usp_msg_by_ref(msgid, &body);
 
     // Open the specified file (or stdout) as output stream and write the USP Msg to it
     write_msg(msg, get_out_stream(filename)?, &format)
@@ -1072,7 +1072,7 @@ fn main() -> Result<()> {
             msgid,
             filename,
             typ,
-        } => encode_msg(msgid, filename, typ, format),
+        } => encode_msg(&msgid, filename, typ, format),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, format),
         RuspAction::ExtractMsgBody { in_file, out_file } => {
             extract_msg_body(&in_file, &out_file, format)

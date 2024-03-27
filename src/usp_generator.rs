@@ -77,6 +77,70 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
     }
 }
 
+/// Wraps the body of a USP Msg into a USP Msg with the specified message ID
+///
+/// # Arguments
+///
+/// * `msg_id` - The message ID to put into the USP Msg
+/// * `body` - The message body USP Msg
+///
+/// # Example
+///
+/// ```
+/// use rusp::usp_generator::{usp_msg_by_ref, usp_get_request};
+/// let newmsg = usp_msg_by_ref(
+///     "fancymsgid",
+///     &usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
+/// );
+/// ```
+pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Header::MsgType::*;
+    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::*;
+
+    let msg_type = match body.msg_body {
+        request(ref req) => match &req.req_type {
+            get(_) => GET,
+            get_supported_dm(_) => GET_SUPPORTED_DM,
+            get_instances(_) => GET_INSTANCES,
+            set(_) => SET,
+            add(_) => ADD,
+            delete(_) => DELETE,
+            operate(_) => OPERATE,
+            notify(_) => NOTIFY,
+            get_supported_protocol(_) => GET_SUPPORTED_PROTO,
+            register(_) => REGISTER,
+            deregister(_) => DEREGISTER,
+            _ => unreachable!(),
+        },
+        response(ref resp) => match &resp.resp_type {
+            get_resp(_) => GET_RESP,
+            get_supported_dm_resp(_) => GET_SUPPORTED_DM_RESP,
+            get_instances_resp(_) => GET_INSTANCES_RESP,
+            set_resp(_) => SET_RESP,
+            add_resp(_) => ADD_RESP,
+            delete_resp(_) => DELETE_RESP,
+            operate_resp(_) => OPERATE_RESP,
+            notify_resp(_) => NOTIFY_RESP,
+            get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
+            register_resp(_) => REGISTER_RESP,
+            deregister_resp(_) => DEREGISTER_RESP,
+            _ => unreachable!(),
+        },
+        error(_) => ERROR,
+        _ => ERROR,
+    };
+
+    Msg {
+        header: Some(Header {
+            msg_id: Cow::from(msg_id),
+            msg_type,
+        }),
+        body: Some(body.clone()),
+    }
+}
+
 /// Creates a body for a USP Msg with an USP Error
 ///
 /// # Arguments
