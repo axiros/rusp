@@ -399,7 +399,7 @@ pub fn usp_delete_request<S: AsRef<str>>(allow_partial: bool, obj_paths: &'_ [S]
 /// # Arguments
 ///
 /// * `allow_partial` - A boolean indicating whether partial execution of the Set command is permitted
-/// * `args` - An array of tuples consisting of an object path and a arrow of tuples consisting of parametername, value and required flag to put into the Set request
+/// * `args` - An array of tuples consisting of an object path and a arrow of tuples consisting of parameter name, value and required flag to put into the Set request
 ///
 /// # Example
 ///

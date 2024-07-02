@@ -20,12 +20,12 @@ use rusp::{
 enum OutputFormat {
     /// Valid JSON format
     Json,
-    /// Protobuf output as C strings or Rust byarrays where non-ascii characters are replaced with
+    /// Protobuf output as C strings or Rust byte arrays where non-ASCII characters are replaced with
     /// backslashed escaped hex codes
     CStr,
     /// Protobuf output as C array with preview comments for inclusion in source code
     CArray,
-    /// Naktive Protobuf binary output
+    /// Native Protobuf binary output
     Protobuf,
 }
 
@@ -54,7 +54,7 @@ struct Rusp {
         conflicts_with = "carray",
         conflicts_with = "protobuf"
     )]
-    /// Output binary as Protobuf in a C string / Rust bytearray representation
+    /// Output binary as Protobuf in a C string / Rust byte array representation
     cstr: bool,
     #[arg(
         long = "protobuf",
@@ -77,7 +77,7 @@ enum RuspAction {
     #[command(name = "decode_msg_files")]
     DecodeMsgFiles {
         #[arg(required = true)]
-        /// Filenames of USP protobuf messages to decode
+        /// Filenames of USP Protobuf messages to decode
         files: Vec<PathBuf>,
     },
     /// Decode a single raw USP record from standard input and print to standard output
@@ -87,7 +87,7 @@ enum RuspAction {
     #[command(name = "decode_record_files")]
     DecodeRecordFiles {
         #[arg(required = true)]
-        /// Filenames of USP protobuf records to decode
+        /// Filenames of USP Protobuf records to decode
         files: Vec<PathBuf>,
     },
     /// Encode command line input into a single raw USP message
@@ -97,7 +97,7 @@ enum RuspAction {
         msgid: String,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf message to
+        /// Output filename of file to encode USP Protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
         #[command(subcommand)]
@@ -108,7 +108,7 @@ enum RuspAction {
     EncodeMsgBody {
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf message to
+        /// Output filename of file to encode USP Protobuf message to
         filename: Option<PathBuf>,
         /// Type of message
         #[command(subcommand)]
@@ -117,17 +117,17 @@ enum RuspAction {
     /// Extract the USP message from an USP record
     #[command(name = "extract_msg")]
     ExtractMsg {
-        /// Input filename of USP protobuf record to decode
+        /// Input filename of USP Protobuf record to decode
         in_file: PathBuf,
-        /// Output filename of USP protobuf message to write into, use `-` for stdout
+        /// Output filename of USP Protobuf message to write into, use `-` for stdout
         out_file: PathBuf,
     },
     /// Extract the USP message body from an USP record
     #[command(name = "extract_msg_body")]
     ExtractMsgBody {
-        /// Input filename of USP protobuf record to decode
+        /// Input filename of USP Protobuf record to decode
         in_file: PathBuf,
-        /// Output filename of USP protobuf message body to write into, use `-` for stdout
+        /// Output filename of USP Protobuf message body to write into, use `-` for stdout
         out_file: PathBuf,
     },
     /// Wrap msg from stdin into a single no-session context USP record (this option is deprecated
@@ -145,7 +145,7 @@ enum RuspAction {
         to: String,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf record to
+        /// Output filename of file to encode USP Protobuf record to
         filename: Option<PathBuf>,
     },
     /// Encode Msg payload provided via stdin into a single no-session context USP Record
@@ -162,7 +162,7 @@ enum RuspAction {
         to: String,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf record to
+        /// Output filename of file to encode USP Protobuf record to
         filename: Option<PathBuf>,
     },
     /// Encode Msg payload provided via stdin into a single session context USP Record
@@ -191,7 +191,7 @@ enum RuspAction {
         retransmit_id: u64,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf record to
+        /// Output filename of file to encode USP Protobuf record to
         filename: Option<PathBuf>,
     },
     /// Encode a USP Record of type MQTT Connect
@@ -214,7 +214,7 @@ enum RuspAction {
         subscribed_topic: String,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP protobuf record to
+        /// Output filename of file to encode USP Protobuf record to
         filename: Option<PathBuf>,
     },
 }
@@ -367,7 +367,7 @@ enum MsgType {
         /// Do we allow partial execution?
         #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
-        /// A JSON structure resesembling the input for a Add operation
+        /// A JSON structure resembling the input for a Add operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
         #[arg(num_args(1..))]
@@ -379,7 +379,7 @@ enum MsgType {
         /// Do we allow partial execution?
         #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
-        /// A JSON structure resesembling the input for a Delete operation
+        /// A JSON structure resembling the input for a Delete operation
         ///
         /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
         #[arg(num_args(1..))]
@@ -416,7 +416,7 @@ enum MsgType {
         /// Only return the first level of recursive structures?
         #[arg(action = clap::ArgAction::Set)]
         first_level_only: bool,
-        /// A JSON array ressembling the object paths we're interested in
+        /// A JSON array resembling the object paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
         #[arg(num_args(1..))]
@@ -437,7 +437,7 @@ enum MsgType {
         /// Return parameters?
         #[arg(action = clap::ArgAction::Set)]
         return_params: bool,
-        /// A JSON array ressembling the paths we're interested in
+        /// A JSON array resembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
         #[arg(num_args(1..))]
@@ -487,7 +487,7 @@ enum MsgType {
         /// Do we allow partial execution?
         #[arg(action = clap::ArgAction::Set)]
         allow_partial: bool,
-        /// A JSON structure resesembling the input for a Set operation
+        /// A JSON structure resembling the input for a Set operation
         ///
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
         #[arg(num_args(1..))]
@@ -502,7 +502,7 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
         let mut contents = Vec::new();
         buf_reader.read_to_end(&mut contents)?;
 
-        // Try to parse bytes as a protobuf encoded USP Message
+        // Try to parse bytes as a Protobuf encoded USP Message
         let decoded = try_decode_msg(&contents)?;
 
         // Open stdout as output stream and write the USP Msg to it
@@ -516,7 +516,7 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    // Try to parse bytes as a protobuf encoded USP Message
+    // Try to parse bytes as a Protobuf encoded USP Message
     let decoded = try_decode_msg(&contents)?;
 
     // Open stdout as output stream and write the USP Msg to it
@@ -530,7 +530,7 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
         let mut contents = Vec::new();
         buf_reader.read_to_end(&mut contents)?;
 
-        // Try to parse bytes as a protobuf encoded USP Record
+        // Try to parse bytes as a Protobuf encoded USP Record
         let decoded = try_decode_record(&contents)?;
 
         // Open stdout as output stream and write the USP Record to it
@@ -544,7 +544,7 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
-    // Try to parse bytes as a protobuf encoded USP Record
+    // Try to parse bytes as a Protobuf encoded USP Record
     let decoded = try_decode_record(&contents)?;
 
     // Open stdout as output stream and write the USP Record to it
@@ -751,7 +751,7 @@ fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
     Ok(())
 }
 
-/// Serialize the binary output to the output stream according to the chosen OutputFormat
+/// Serialize the binary output to the output stream according to the chosen output format
 fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
@@ -821,7 +821,7 @@ fn write_record<W: Write>(
     Ok(())
 }
 
-/// Write the given USP Msg Bodyto the output stream in the specified format
+/// Write the given USP Msg Body to the output stream in the specified format
 fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {

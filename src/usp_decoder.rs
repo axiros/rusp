@@ -5,12 +5,12 @@ use quick_protobuf::BytesReader;
 
 use anyhow::{Context, Result};
 
-/// Decodes a slice of bytes containing a protobuf encoded USP Record into a Record structure for
+/// Decodes a slice of bytes containing a Protobuf encoded USP Record into a Record structure for
 /// further processing
 ///
 /// # Arguments
 ///
-/// * `bytes` - A slice of bytes containing the protobuf encoded USP Record
+/// * `bytes` - A slice of bytes containing the Protobuf encoded USP Record
 ///
 /// # Example
 ///
@@ -34,12 +34,12 @@ pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
     Record::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Record")
 }
 
-/// Decodes a slice of bytes containing a protobuf encoded USP Msg into a Msg structure for further
+/// Decodes a slice of bytes containing a Protobuf encoded USP Msg into a Msg structure for further
 /// processing
 ///
 /// # Arguments
 ///
-/// * `bytes` - A slice of bytes containing the protobuf encoded USP Message
+/// * `bytes` - A slice of bytes containing the Protobuf encoded USP Message
 ///
 /// # Example
 ///
@@ -427,7 +427,7 @@ impl<'a> Msg<'a> {
         serde_json::to_string(self).ok()
     }
 
-    /// Encode the Msg into a Protobuf bytestream returned as `Vec<[u8]>`
+    /// Encode the Msg into a Protobuf byte stream returned as `Vec<[u8]>`
     ///
     /// # Arguments
     ///
