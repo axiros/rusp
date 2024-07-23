@@ -1706,6 +1706,7 @@ pub fn usp_get_supported_dm_response<'a>(
                                             .into_iter()
                                             .map(Cow::Borrowed)
                                             .collect(),
+                                        unique_key_sets: vec![],
                                     });
                                 }
                                 RequestedObjectResult {

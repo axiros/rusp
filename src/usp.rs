@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-msg-1-3.proto' file
+// Automatically generated rust module for 'usp-msg-1-4.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -690,6 +690,7 @@ pub struct GetSupportedDM<'a> {
     pub return_commands: bool,
     pub return_events: bool,
     pub return_params: bool,
+    pub return_unique_key_sets: bool,
 }
 
 impl<'a> MessageRead<'a> for GetSupportedDM<'a> {
@@ -702,6 +703,7 @@ impl<'a> MessageRead<'a> for GetSupportedDM<'a> {
                 Ok(24) => msg.return_commands = r.read_bool(bytes)?,
                 Ok(32) => msg.return_events = r.read_bool(bytes)?,
                 Ok(40) => msg.return_params = r.read_bool(bytes)?,
+                Ok(48) => msg.return_unique_key_sets = r.read_bool(bytes)?,
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -718,6 +720,7 @@ impl<'a> MessageWrite for GetSupportedDM<'a> {
         + if self.return_commands == false { 0 } else { 1 + sizeof_varint(*(&self.return_commands) as u64) }
         + if self.return_events == false { 0 } else { 1 + sizeof_varint(*(&self.return_events) as u64) }
         + if self.return_params == false { 0 } else { 1 + sizeof_varint(*(&self.return_params) as u64) }
+        + if self.return_unique_key_sets == false { 0 } else { 1 + sizeof_varint(*(&self.return_unique_key_sets) as u64) }
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
@@ -726,6 +729,7 @@ impl<'a> MessageWrite for GetSupportedDM<'a> {
         if self.return_commands != false { w.write_with_tag(24, |w| w.write_bool(*&self.return_commands))?; }
         if self.return_events != false { w.write_with_tag(32, |w| w.write_bool(*&self.return_events))?; }
         if self.return_params != false { w.write_with_tag(40, |w| w.write_bool(*&self.return_params))?; }
+        if self.return_unique_key_sets != false { w.write_with_tag(48, |w| w.write_bool(*&self.return_unique_key_sets))?; }
         Ok(())
     }
 }
@@ -825,6 +829,7 @@ pub struct SupportedObjectResult<'a> {
     pub supported_events: Vec<usp::mod_GetSupportedDMResp::SupportedEventResult<'a>>,
     pub supported_params: Vec<usp::mod_GetSupportedDMResp::SupportedParamResult<'a>>,
     pub divergent_paths: Vec<Cow<'a, str>>,
+    pub unique_key_sets: Vec<usp::mod_GetSupportedDMResp::SupportedUniqueKeySet<'a>>,
 }
 
 impl<'a> MessageRead<'a> for SupportedObjectResult<'a> {
@@ -839,6 +844,7 @@ impl<'a> MessageRead<'a> for SupportedObjectResult<'a> {
                 Ok(42) => msg.supported_events.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedEventResult>(bytes)?),
                 Ok(50) => msg.supported_params.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedParamResult>(bytes)?),
                 Ok(58) => msg.divergent_paths.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(66) => msg.unique_key_sets.push(r.read_message::<usp::mod_GetSupportedDMResp::SupportedUniqueKeySet>(bytes)?),
                 Ok(t) => { r.read_unknown(bytes, t)?; }
                 Err(e) => return Err(e),
             }
@@ -857,6 +863,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
         + self.supported_events.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.supported_params.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
         + self.divergent_paths.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+        + self.unique_key_sets.iter().map(|s| 1 + sizeof_len((s).get_size())).sum::<usize>()
     }
 
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
@@ -867,6 +874,7 @@ impl<'a> MessageWrite for SupportedObjectResult<'a> {
         for s in &self.supported_events { w.write_with_tag(42, |w| w.write_message(s))?; }
         for s in &self.supported_params { w.write_with_tag(50, |w| w.write_message(s))?; }
         for s in &self.divergent_paths { w.write_with_tag(58, |w| w.write_string(&**s))?; }
+        for s in &self.unique_key_sets { w.write_with_tag(66, |w| w.write_message(s))?; }
         Ok(())
     }
 }
@@ -991,6 +999,38 @@ impl<'a> MessageWrite for SupportedEventResult<'a> {
     fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
         if self.event_name != "" { w.write_with_tag(10, |w| w.write_string(&**&self.event_name))?; }
         for s in &self.arg_names { w.write_with_tag(18, |w| w.write_string(&**s))?; }
+        Ok(())
+    }
+}
+
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Default, PartialEq, Clone)]
+pub struct SupportedUniqueKeySet<'a> {
+    pub key_names: Vec<Cow<'a, str>>,
+}
+
+impl<'a> MessageRead<'a> for SupportedUniqueKeySet<'a> {
+    fn from_reader(r: &mut BytesReader, bytes: &'a [u8]) -> Result<Self> {
+        let mut msg = Self::default();
+        while !r.is_eof() {
+            match r.next_tag(bytes) {
+                Ok(10) => msg.key_names.push(r.read_string(bytes).map(Cow::Borrowed)?),
+                Ok(t) => { r.read_unknown(bytes, t)?; }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(msg)
+    }
+}
+
+impl<'a> MessageWrite for SupportedUniqueKeySet<'a> {
+    fn get_size(&self) -> usize {
+        0
+        + self.key_names.iter().map(|s| 1 + sizeof_len((s).len())).sum::<usize>()
+    }
+
+    fn write_message<W: WriterBackend>(&self, w: &mut Writer<W>) -> Result<()> {
+        for s in &self.key_names { w.write_with_tag(10, |w| w.write_string(&**s))?; }
         Ok(())
     }
 }

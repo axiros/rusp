@@ -384,12 +384,13 @@ impl Serialize for GetSupportedDM<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("GetSupportedDM", 5)?;
+        let mut state = serializer.serialize_struct("GetSupportedDM", 6)?;
         state.serialize_field("first_level_only", &self.first_level_only)?;
         state.serialize_field("return_commands", &self.return_commands)?;
         state.serialize_field("return_events", &self.return_events)?;
         state.serialize_field("return_params", &self.return_params)?;
         state.serialize_field("obj_paths", &self.obj_paths)?;
+        state.serialize_field("return_unique_key_sets", &self.return_unique_key_sets)?;
         state.end()
     }
 }
@@ -732,7 +733,7 @@ impl Serialize for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("SupportedObjectResult", 7)?;
+        let mut state = serializer.serialize_struct("SupportedObjectResult", 8)?;
         state.serialize_field("supported_obj_path", &self.supported_obj_path)?;
         state.serialize_field("access", &self.access)?;
         state.serialize_field("is_multi_instance", &self.is_multi_instance)?;
@@ -740,6 +741,7 @@ impl Serialize for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
         state.serialize_field("supported_events", &self.supported_events)?;
         state.serialize_field("supported_params", &self.supported_params)?;
         state.serialize_field("divergent_paths", &self.divergent_paths)?;
+        state.serialize_field("unique_key_sets", &self.unique_key_sets)?;
         state.end()
     }
 }
@@ -843,6 +845,18 @@ impl Serialize for mod_GetSupportedDMResp::ParamValueType {
         serializer.serialize_unit_variant("ParamValueType", index, value)
     }
 }
+
+impl Serialize for mod_GetSupportedDMResp::SupportedUniqueKeySet<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SupportedUniqueKeySet", 1)?;
+        state.serialize_field("key_names", &self.key_names)?;
+        state.end()
+    }
+}
+
 
 impl Serialize for mod_GetSupportedDMResp::ValueChangeType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
