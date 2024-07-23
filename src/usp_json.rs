@@ -857,7 +857,6 @@ impl Serialize for mod_GetSupportedDMResp::SupportedUniqueKeySet<'_> {
     }
 }
 
-
 impl Serialize for mod_GetSupportedDMResp::ValueChangeType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
