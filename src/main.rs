@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use rusp::usp_builder;
+use rusp::usp_record::mod_MQTTConnectRecord::MQTTVersion;
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::fs::File;
@@ -10,7 +11,6 @@ use anyhow::{Context, Result};
 
 use rusp::{
     usp_decoder::{try_decode_msg, try_decode_record},
-    usp_generator,
     usp_types::{
         NotifyType as RuspNotifyType, OperateResponse as RuspOperateResponse, PayloadSecurity,
     },
@@ -438,6 +438,9 @@ enum MsgType {
         /// Return parameters?
         #[arg(action = clap::ArgAction::Set)]
         return_params: bool,
+        /// Return unique key sets?
+        #[arg(action = clap::ArgAction::Set)]
+        return_unique_key_sets: bool,
         /// A JSON array resembling the paths we're interested in
         ///
         /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
@@ -562,7 +565,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let args = args.join(" ");
             let v = serde_json::from_str::<Vec<(String, Vec<(String, String, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got '{}'", args))?;
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {}", args))?;
 
             let builder = usp_builder::AddBuilder::new().with_allow_partial(allow_partial);
 
@@ -578,7 +581,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let obj_paths = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got '{}'", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got {}", obj_paths))?;
             serialize_into_vec(&usp_builder::DeleteBuilder::new().with_allow_partial(allow_partial).with_obj_paths(obj_paths).build()?)
         }
         MsgType::USPError { code, message } => {
@@ -588,7 +591,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         MsgType::USPGet { paths, max_depth } => {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<String>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\",  got '{}'", paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\", got {}", paths))?;
             serialize_into_vec(&usp_builder::GetBuilder::new().with_max_depth(max_depth.unwrap_or(0)).with_params(v).build()?)
         }
         MsgType::USPGetInstances {
@@ -597,7 +600,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let v = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\",  got '{}'", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {}", obj_paths))?;
             serialize_into_vec(&usp_builder::GetInstancesBuilder::new().with_first_level_only(first_level_only).with_obj_paths(v).build()?
         )}
         MsgType::USPGetSupportedDM {
@@ -605,21 +608,25 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             return_commands,
             return_events,
             return_params,
+            return_unique_key_sets,
             paths,
         } => {
-            let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<&str>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\",  got '{}'", paths))?;
-            serialize_into_vec(&usp_generator::usp_get_supported_dm_request(
-                v.as_slice(),
-                first_level_only,
-                return_commands,
-                return_events,
-                return_params,
-            ))
+            let v = serde_json::from_str::<Vec<String>>(&paths.join(" "))
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {:?}", paths))?;
+            let msg = usp_builder::GetSupportedDMBuilder::new()
+                .with_first_level_only(first_level_only)
+                .with_return_commands(return_commands)
+                .with_return_events(return_events)
+                .with_return_params(return_params)
+                .with_return_unique_key_sets(return_unique_key_sets)
+                .with_obj_paths(v)
+                .build()?;
+            serialize_into_vec(&msg)
         }
         MsgType::USPGetSupportedProtocol { cspv } => {
-            serialize_into_vec(&usp_generator::usp_get_supported_prototol_request(&cspv))
+            let msg = usp_builder::GetSupportedProtocolBuilder::new(cspv)
+                .build()?;
+            serialize_into_vec(&msg)
         }
         MsgType::USPGetResp { result } => {
             let result = result.join(" ");
@@ -663,7 +670,8 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         }
         ,
         MsgType::USPNotifyResp { sub_id } => {
-            serialize_into_vec(&usp_generator::usp_notify_response(&sub_id))
+            let msg = usp_builder::NotifyRespBuilder::new(sub_id).build()?;
+            serialize_into_vec(&msg)
         }
         MsgType::USPOperate {
             command,
@@ -674,7 +682,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             let args = args.join(" ");
             let v = if !args.is_empty() {
                 serde_json::from_str::<Vec<(String, String)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\",  got '{}'", args))?
+                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\", got {}", args))?
             } else {
                 Vec::new()
             };
@@ -685,15 +693,13 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             args,
         } => {
             let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(&str, &str, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\",  got '{}'", args))?;
-            serialize_into_vec(&usp_generator::usp_set_request(
-                allow_partial,
-                v.iter()
-                    .map(|(path, par)| (*path, par.as_slice()))
-                    .collect::<Vec<_>>()
-                    .as_slice(),
-            ))
+            let v = serde_json::from_str::<Vec<(&str, Vec<(String, String, bool)>)>>(&args)
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {}", args))?;
+            let msg = usp_builder::SetBuilder::new()
+                .with_allow_partial(allow_partial)
+                .with_update_objs(v.into_iter().map(|(path, par)| usp_builder::UpdateObjectBuilder::new(path.into()).with_param_settings(par)).collect())
+                .build()?;
+            serialize_into_vec(&msg)
         }
     }.context("While trying to encode message to ProtoBuf")
 }
@@ -940,11 +946,11 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
             write_msg(msg, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
-        OneOfrecord_type::websocket_connect(_) => unimplemented!(),
-        OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
-        OneOfrecord_type::stomp_connect(_) => unimplemented!(),
-        OneOfrecord_type::uds_connect(_) => unimplemented!(),
-        OneOfrecord_type::disconnect(_) => unimplemented!(),
+        OneOfrecord_type::websocket_connect(_) => unreachable!(),
+        OneOfrecord_type::mqtt_connect(_) => unreachable!(),
+        OneOfrecord_type::stomp_connect(_) => unreachable!(),
+        OneOfrecord_type::uds_connect(_) => unreachable!(),
+        OneOfrecord_type::disconnect(_) => unreachable!(),
         OneOfrecord_type::None => unreachable!(),
     }
 
@@ -971,11 +977,11 @@ fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Re
             write_body(body, out, &format)?;
         }
         OneOfrecord_type::session_context(_) => unreachable!(),
-        OneOfrecord_type::websocket_connect(_) => unimplemented!(),
-        OneOfrecord_type::mqtt_connect(_) => unimplemented!(),
-        OneOfrecord_type::stomp_connect(_) => unimplemented!(),
-        OneOfrecord_type::uds_connect(_) => unimplemented!(),
-        OneOfrecord_type::disconnect(_) => unimplemented!(),
+        OneOfrecord_type::websocket_connect(_) => unreachable!(),
+        OneOfrecord_type::mqtt_connect(_) => unreachable!(),
+        OneOfrecord_type::stomp_connect(_) => unreachable!(),
+        OneOfrecord_type::uds_connect(_) => unreachable!(),
+        OneOfrecord_type::disconnect(_) => unreachable!(),
         OneOfrecord_type::None => unreachable!(),
     }
 
@@ -1020,6 +1026,7 @@ fn encode_session_record(
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
 
+    use rusp::usp_generator;
     let record = usp_generator::usp_session_context_record(
         &version,
         &to,
@@ -1051,16 +1058,19 @@ fn create_mqtt_connect_record(
     subscribed_topic: String,
     format: OutputFormat,
 ) -> Result<()> {
-    let record = usp_generator::usp_mqtt_connect_record(
-        &version,
-        &to,
-        &from,
-        PayloadSecurity::PLAINTEXT,
-        &[],
-        &[],
-        mqtt311,
-        &subscribed_topic,
-    );
+    let record = usp_builder::RecordBuilder::new()
+        .with_version(version)
+        .with_to_id(to)
+        .with_from_id(from)
+        .as_mqtt_connect_record(
+            if mqtt311 {
+                MQTTVersion::V3_1_1
+            } else {
+                MQTTVersion::V5
+            },
+            subscribed_topic,
+        )
+        .build()?;
 
     // Open output stream
     let out = get_out_stream(filename)?;

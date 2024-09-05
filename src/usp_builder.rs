@@ -24,7 +24,8 @@ pub use delete::{
     DeletedObjectResultsBuilder,
 };
 pub use deregister::{
-    DeregisterBuilder, DeregisterOperationStatus, DeregisterRespBuilder, DeregisteredPathResultBuilder,
+    DeregisterBuilder, DeregisterOperationStatus, DeregisterRespBuilder,
+    DeregisteredPathResultBuilder,
 };
 pub use error::ErrorBuilder;
 pub use get::{
