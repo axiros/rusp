@@ -4,7 +4,7 @@ use crate::usp::mod_Request::OneOfreq_type::get;
 use crate::usp::mod_Response::OneOfresp_type::get_resp;
 use crate::usp::{Body, Get, GetResp, Request, Response};
 
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -117,7 +117,7 @@ impl ReqPathResultBuilder {
         let err_msg = self
             .err_msg
             .clone()
-            .unwrap_or_else(|| usp_generator::get_err_msg(self.err_code).to_string());
+            .unwrap_or_else(|| usp_errors::get_err_msg(self.err_code).to_string());
 
         let resolved_path_results = self
             .resolved_path_results

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::usp::mod_Add::{CreateObject, CreateParamSetting};
 use crate::usp::mod_AddResp::{mod_CreatedObjectResult::OperationStatus, CreatedObjectResult};
 use crate::usp::{Add, AddResp, Body, Request, Response};
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -128,7 +128,7 @@ impl AddOperationStatus {
     pub fn set_failure(self, err_code: u32, err_msg: Option<String>) -> Self {
         Self::Failure(AddOperationFailureBuilder {
             err_code,
-            err_msg: err_msg.unwrap_or_else(|| usp_generator::get_err_msg(err_code).to_string()),
+            err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
         })
     }
 
@@ -169,7 +169,7 @@ impl AddOperationStatus {
                             err_msg: if !e.err_msg.is_empty() {
                                 e.err_msg.into()
                             } else {
-                                usp_generator::get_err_msg(e.err_code).into()
+                                usp_errors::get_err_msg(e.err_code).into()
                             },
                         })
                         .collect(),

@@ -1,6 +1,6 @@
 use crate::usp::{Body, Error};
 
-use crate::usp_generator;
+use crate::usp_errors;
 
 use crate::usp::mod_Body::OneOfmsg_body::error;
 use crate::usp::mod_Error::ParamError;
@@ -38,7 +38,7 @@ impl ErrorBuilder {
         let message = self
             .message
             .clone()
-            .unwrap_or_else(|| usp_generator::get_err_msg(self.code).to_string());
+            .unwrap_or_else(|| usp_errors::get_err_msg(self.code).to_string());
 
         let param_errs = self.param_errs;
 

@@ -8,7 +8,7 @@ use crate::usp::mod_SetResp::ParameterError;
 use crate::usp::mod_SetResp::{mod_UpdatedObjectResult::OperationStatus, UpdatedObjectResult};
 use crate::usp::mod_SetResp::{UpdatedInstanceFailure, UpdatedInstanceResult};
 use crate::usp::{Body, Request, Response, Set, SetResp};
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -159,7 +159,7 @@ impl SetOperationStatus {
     ) -> Self {
         Self::Failure(SetOperationFailureBuilder {
             err_code,
-            err_msg: err_msg.unwrap_or_else(|| usp_generator::get_err_msg(err_code).to_string()),
+            err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
             updated_inst_failures,
         })
     }
@@ -188,7 +188,7 @@ impl SetOperationStatus {
                                     err_msg: if !p.err_msg.is_empty() {
                                         p.err_msg.into()
                                     } else {
-                                        usp_generator::get_err_msg(p.err_code).into()
+                                        usp_errors::get_err_msg(p.err_code).into()
                                     },
                                 })
                                 .collect(),
@@ -211,7 +211,7 @@ impl SetOperationStatus {
                                     err_msg: if !e.err_msg.is_empty() {
                                         e.err_msg.into()
                                     } else {
-                                        usp_generator::get_err_msg(e.err_code).into()
+                                        usp_errors::get_err_msg(e.err_code).into()
                                     },
                                 })
                                 .collect(),

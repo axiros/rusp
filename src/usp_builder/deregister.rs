@@ -8,7 +8,7 @@ use crate::usp::mod_Request::OneOfreq_type::deregister;
 use crate::usp::mod_Response::OneOfresp_type::deregister_resp;
 use crate::usp::{Body, Deregister, DeregisterResp, Request, Response};
 
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -66,7 +66,7 @@ impl DeregisteredPathResultBuilder {
     pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.oper_status = DeregisterOperationStatus::Failure {
             err_code,
-            err_msg: err_msg.unwrap_or_else(|| usp_generator::get_err_msg(err_code).to_string()),
+            err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
         };
         self
     }

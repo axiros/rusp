@@ -7,7 +7,7 @@ use crate::usp::mod_DeleteResp::{mod_DeletedObjectResult::OperationStatus, Delet
 use crate::usp::mod_Request::OneOfreq_type::delete;
 use crate::usp::mod_Response::OneOfresp_type::delete_resp;
 use crate::usp::{Body, Delete, DeleteResp, Request, Response};
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -88,7 +88,7 @@ impl DeletedObjectResultsBuilder {
     pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.oper_status = DeleteRespOperationStatus::Failure {
             err_code,
-            err_msg: err_msg.unwrap_or_else(|| usp_generator::get_err_msg(err_code).to_string()),
+            err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
         };
         self
     }
@@ -121,7 +121,7 @@ impl DeletedObjectResultsBuilder {
                                 err_msg: if !e.err_msg.is_empty() {
                                     e.err_msg.into()
                                 } else {
-                                    usp_generator::get_err_msg(e.err_code).into()
+                                    usp_errors::get_err_msg(e.err_code).into()
                                 },
                             })
                             .collect(),

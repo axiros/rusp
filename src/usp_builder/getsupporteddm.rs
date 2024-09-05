@@ -9,7 +9,7 @@ use crate::usp::mod_GetSupportedDMResp::{
 use crate::usp::mod_Request::OneOfreq_type::get_supported_dm;
 use crate::usp::mod_Response::OneOfresp_type::get_supported_dm_resp;
 use crate::usp::{Body, GetSupportedDM, GetSupportedDMResp, Request, Response};
-use crate::usp_generator;
+use crate::usp_errors;
 
 use anyhow::Result;
 
@@ -399,7 +399,7 @@ impl GSDMReqObjectResultBuilder {
     pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.err_code = err_code;
         self.err_msg =
-            Some(err_msg.unwrap_or_else(|| usp_generator::get_err_msg(err_code).to_string()));
+            Some(err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()));
         self
     }
 
@@ -417,7 +417,7 @@ impl GSDMReqObjectResultBuilder {
         let err_msg = self
             .err_msg
             .clone()
-            .unwrap_or_else(|| usp_generator::get_err_msg(self.err_code).to_string());
+            .unwrap_or_else(|| usp_errors::get_err_msg(self.err_code).to_string());
 
         let supported_objs = self
             .supported_objs
