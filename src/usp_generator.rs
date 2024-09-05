@@ -10,9 +10,9 @@ use crate::usp::{
     Add, Body, Delete, Error, Get, GetInstances, GetSupportedDM, GetSupportedProtocol, Header, Msg,
     Notify, Operate, Request, Response, Set,
 };
+pub use crate::usp_errors::get_err_msg;
 use crate::usp_record::Record;
 pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
-pub use crate::usp_errors::get_err_msg;
 
 /// Wraps the body of a USP Msg into a USP Msg with the specified message ID
 ///
