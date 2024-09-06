@@ -85,7 +85,6 @@ pub enum PayloadSARState {
 
 impl From<PayloadSARState> for crate::usp_record::mod_SessionContextRecord::PayloadSARState {
     fn from(s: PayloadSARState) -> Self {
-        
         match s {
             PayloadSARState::NONE => Self::NONE,
             PayloadSARState::BEGIN => Self::BEGIN,

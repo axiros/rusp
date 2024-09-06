@@ -14,14 +14,16 @@ pub struct CreateObjectBuilder {
 }
 
 impl CreateObjectBuilder {
-    #[must_use] pub const fn new(obj_path: String) -> Self {
+    #[must_use]
+    pub const fn new(obj_path: String) -> Self {
         Self {
             obj_path,
             param_settings: vec![],
         }
     }
 
-    #[must_use] pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
+    #[must_use]
+    pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
         self.param_settings = param_settings;
         self
     }
@@ -51,19 +53,22 @@ pub struct AddBuilder {
 }
 
 impl AddBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             allow_partial: false,
             create_objs: vec![],
         }
     }
 
-    #[must_use] pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
+    #[must_use]
+    pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
         self.allow_partial = allow_partial;
         self
     }
 
-    #[must_use] pub fn with_create_objs(mut self, create_objs: Vec<CreateObjectBuilder>) -> Self {
+    #[must_use]
+    pub fn with_create_objs(mut self, create_objs: Vec<CreateObjectBuilder>) -> Self {
         self.create_objs = create_objs;
         self
     }
@@ -121,18 +126,21 @@ pub enum AddOperationStatus {
 }
 
 impl AddOperationStatus {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self::None
     }
 
-    #[must_use] pub fn set_failure(self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use]
+    pub fn set_failure(self, err_code: u32, err_msg: Option<String>) -> Self {
         Self::Failure(AddOperationFailureBuilder {
             err_code,
             err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
         })
     }
 
-    #[must_use] pub fn set_success(
+    #[must_use]
+    pub fn set_success(
         self,
         instantiated_path: String,
         param_errs: Vec<AddRespParameterError>,
@@ -147,7 +155,8 @@ impl AddOperationStatus {
 
     pub fn build(self) -> Result<OperationStatus<'static>> {
         use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
-            OneOfoper_status::{oper_failure, oper_success}, OperationFailure, OperationSuccess,
+            OneOfoper_status::{oper_failure, oper_success},
+            OperationFailure, OperationSuccess,
         };
         use crate::usp::mod_AddResp::ParameterError;
         match self {
@@ -166,10 +175,10 @@ impl AddOperationStatus {
                         .map(|e| ParameterError {
                             param: e.param.into(),
                             err_code: e.err_code,
-                            err_msg: if !e.err_msg.is_empty() {
-                                e.err_msg.into()
-                            } else {
+                            err_msg: if e.err_msg.is_empty() {
                                 usp_errors::get_err_msg(e.err_code).into()
+                            } else {
+                                e.err_msg.into()
                             },
                         })
                         .collect(),
@@ -192,7 +201,8 @@ pub struct CreatedObjectResultsBuilder {
 }
 
 impl CreatedObjectResultsBuilder {
-    #[must_use] pub const fn new(requested_path: String, oper_status: AddOperationStatus) -> Self {
+    #[must_use]
+    pub const fn new(requested_path: String, oper_status: AddOperationStatus) -> Self {
         Self {
             requested_path,
             oper_status,
@@ -213,13 +223,15 @@ pub struct AddRespBuilder {
 }
 
 impl AddRespBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             created_obj_results: vec![],
         }
     }
 
-    #[must_use] pub fn with_created_obj_results(
+    #[must_use]
+    pub fn with_created_obj_results(
         mut self,
         created_obj_results: Vec<CreatedObjectResultsBuilder>,
     ) -> Self {

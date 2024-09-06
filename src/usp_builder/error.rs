@@ -15,7 +15,8 @@ pub struct ErrorBuilder {
 }
 
 impl ErrorBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             code: 0,
             message: None,
@@ -23,13 +24,15 @@ impl ErrorBuilder {
         }
     }
 
-    #[must_use] pub fn set_err(mut self, code: u32, message: Option<String>) -> Self {
+    #[must_use]
+    pub fn set_err(mut self, code: u32, message: Option<String>) -> Self {
         self.code = code;
         self.message = message;
         self
     }
 
-    #[must_use] pub fn with_param_errs(mut self, errs: Vec<(String, u32, String)>) -> Self {
+    #[must_use]
+    pub fn with_param_errs(mut self, errs: Vec<(String, u32, String)>) -> Self {
         self.param_errs = errs;
         self
     }

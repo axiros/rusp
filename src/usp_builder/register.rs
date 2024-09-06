@@ -20,19 +20,22 @@ pub struct RegisterBuilder {
 }
 
 impl RegisterBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             allow_partial: false,
             reg_paths: vec![],
         }
     }
 
-    #[must_use] pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
+    #[must_use]
+    pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
         self.allow_partial = allow_partial;
         self
     }
 
-    #[must_use] pub fn with_reg_paths(mut self, reg_paths: Vec<String>) -> Self {
+    #[must_use]
+    pub fn with_reg_paths(mut self, reg_paths: Vec<String>) -> Self {
         self.reg_paths = reg_paths;
         self
     }
@@ -71,14 +74,16 @@ pub struct RegisteredPathResultBuilder {
 }
 
 impl RegisteredPathResultBuilder {
-    #[must_use] pub const fn new(requested_path: String) -> Self {
+    #[must_use]
+    pub const fn new(requested_path: String) -> Self {
         Self {
             requested_path,
             oper_status: RegisterOperationStatus::None,
         }
     }
 
-    #[must_use] pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use]
+    pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.oper_status = RegisterOperationStatus::Failure {
             err_code,
             err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
@@ -86,7 +91,8 @@ impl RegisteredPathResultBuilder {
         self
     }
 
-    #[must_use] pub fn set_success(mut self, registered_path: String) -> Self {
+    #[must_use]
+    pub fn set_success(mut self, registered_path: String) -> Self {
         self.oper_status = RegisterOperationStatus::Success(registered_path);
         self
     }
@@ -118,13 +124,15 @@ pub struct RegisterRespBuilder {
 }
 
 impl RegisterRespBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             registered_path_results: vec![],
         }
     }
 
-    #[must_use] pub fn with_registered_path_results(
+    #[must_use]
+    pub fn with_registered_path_results(
         mut self,
         registered_path_results: Vec<RegisteredPathResultBuilder>,
     ) -> Self {

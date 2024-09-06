@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use clap::{Parser, Subcommand};
 use rusp::usp_builder;
 use rusp::usp_record::mod_MQTTConnectRecord::MQTTVersion;
@@ -497,7 +499,7 @@ enum MsgType {
     },
 }
 
-fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
+fn decode_msg_files(files: Vec<PathBuf>, format: &OutputFormat) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
@@ -508,13 +510,13 @@ fn decode_msg_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
         let decoded = try_decode_msg(&contents)?;
 
         // Open stdout as output stream and write the USP Msg to it
-        write_msg(decoded, get_out_stream(None)?, &format)?;
+        write_msg(&decoded, get_out_stream(None)?, format)?;
     }
 
     Ok(())
 }
 
-fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
+fn decode_msg_stdin(format: &OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
@@ -522,10 +524,10 @@ fn decode_msg_stdin(format: OutputFormat) -> Result<()> {
     let decoded = try_decode_msg(&contents)?;
 
     // Open stdout as output stream and write the USP Msg to it
-    write_msg(decoded, get_out_stream(None)?, &format)
+    write_msg(&decoded, get_out_stream(None)?, format)
 }
 
-fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> {
+fn decode_record_files(files: Vec<PathBuf>, format: &OutputFormat) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
         let mut buf_reader = BufReader::new(fp);
@@ -536,13 +538,13 @@ fn decode_record_files(files: Vec<PathBuf>, format: OutputFormat) -> Result<()> 
         let decoded = try_decode_record(&contents)?;
 
         // Open stdout as output stream and write the USP Record to it
-        write_record(decoded, get_out_stream(None)?, &format)?;
+        write_record(&decoded, get_out_stream(None)?, format)?;
     }
 
     Ok(())
 }
 
-fn decode_record_stdin(format: OutputFormat) -> Result<()> {
+fn decode_record_stdin(format: &OutputFormat) -> Result<()> {
     let mut contents = Vec::new();
     stdin().read_to_end(&mut contents)?;
 
@@ -550,9 +552,10 @@ fn decode_record_stdin(format: OutputFormat) -> Result<()> {
     let decoded = try_decode_record(&contents)?;
 
     // Open stdout as output stream and write the USP Record to it
-    write_record(decoded, get_out_stream(None)?, &format)
+    write_record(&decoded, get_out_stream(None)?, format)
 }
 
+#[allow(clippy::too_many_lines)]
 fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
     use quick_protobuf::serialize_into_vec;
 
@@ -677,12 +680,12 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             send_resp,
             args,
         } => {
-            let args = args.join(" ");
-            let v = if !args.is_empty() {
+            let v = if args.is_empty() {
+                Vec::new()
+            } else {
+                let args = args.join(" ");
                 serde_json::from_str::<Vec<(String, String)>>(&args)
                 .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\", got {args}"))?
-            } else {
-                Vec::new()
             };
             serialize_into_vec(&usp_builder::OperateBuilder::new(command).with_command_key(command_key).with_send_resp(send_resp).with_input_args(v).build()?)
         }
@@ -778,7 +781,7 @@ fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
 }
 
 /// Serialize the binary output to the output stream according to the chosen output format
-fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Result<()> {
+fn write_buf<W: Write>(buf: &[u8], mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
             writeln!(
@@ -788,13 +791,13 @@ fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Resul
             )?;
         }
         OutputFormat::CStr => {
-            write_c_str(out, buf.as_slice())?;
+            write_c_str(out, buf)?;
         }
         OutputFormat::CArray => {
-            write_c_array(out, buf.as_slice())?;
+            write_c_array(out, buf)?;
         }
         OutputFormat::Protobuf => {
-            out.write_all(buf.as_slice())?;
+            out.write_all(buf)?;
         }
     }
 
@@ -802,7 +805,7 @@ fn write_buf<W: Write>(buf: Vec<u8>, mut out: W, format: &OutputFormat) -> Resul
 }
 
 /// Write the given USP Msg to the output stream in the specified format
-fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
+fn write_msg<W: Write>(msg: &rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
             writeln!(
@@ -811,7 +814,7 @@ fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -
                 serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
             )?;
         }
-        _ => write_buf(msg.to_vec()?, out, format)?,
+        _ => write_buf(&msg.to_vec()?, out, format)?,
     }
 
     Ok(())
@@ -819,7 +822,7 @@ fn write_msg<W: Write>(msg: rusp::usp::Msg, mut out: W, format: &OutputFormat) -
 
 /// Write the given USP Record to the output stream in the specified format
 fn write_record<W: Write>(
-    record: rusp::usp_record::Record,
+    record: &rusp::usp_record::Record,
     mut out: W,
     format: &OutputFormat,
 ) -> Result<()> {
@@ -838,14 +841,14 @@ fn write_record<W: Write>(
             .write_message(&mut writer)
             .context("Failed encoding USP Record")?;
 
-        write_buf(buf, out, format)?;
+        write_buf(&buf, out, format)?;
     }
 
     Ok(())
 }
 
 /// Write the given USP Msg Body to the output stream in the specified format
-fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
+fn write_body<W: Write>(msg: &rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
     if format == &OutputFormat::Json {
         writeln!(
             out,
@@ -860,7 +863,7 @@ fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat)
         msg.write_message(&mut writer)
             .context("Failed encoding USP Msg Body")?;
 
-        write_buf(buf, out, format)?;
+        write_buf(&buf, out, format)?;
     }
 
     Ok(())
@@ -891,7 +894,7 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputForma
         body.write_message(&mut writer)
             .context("Failed encoding USP Msg Body")?;
 
-        write_buf(buf, out, format)?;
+        write_buf(&buf, out, format)?;
     }
 
     Ok(())
@@ -901,7 +904,7 @@ fn encode_msg(
     msgid: &str,
     filename: Option<PathBuf>,
     typ: MsgType,
-    format: OutputFormat,
+    format: &OutputFormat,
 ) -> Result<()> {
     use quick_protobuf::deserialize_from_slice;
 
@@ -914,10 +917,10 @@ fn encode_msg(
         .build()?;
 
     // Open the specified file (or stdout) as output stream and write the USP Msg to it
-    write_msg(msg, get_out_stream(filename)?, &format)
+    write_msg(&msg, get_out_stream(filename)?, format)
 }
 
-fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
+fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(in_file)?;
@@ -932,21 +935,21 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<
             let msg = try_decode_msg(&context.payload)?;
             // Open output stream
             let out = get_out_stream(Some(out_file.to_path_buf()))?;
-            write_msg(msg, out, &format)?;
+            write_msg(&msg, out, format)?;
         }
-        OneOfrecord_type::session_context(_) => unreachable!(),
-        OneOfrecord_type::websocket_connect(_) => unreachable!(),
-        OneOfrecord_type::mqtt_connect(_) => unreachable!(),
-        OneOfrecord_type::stomp_connect(_) => unreachable!(),
-        OneOfrecord_type::uds_connect(_) => unreachable!(),
-        OneOfrecord_type::disconnect(_) => unreachable!(),
-        OneOfrecord_type::None => unreachable!(),
+        OneOfrecord_type::session_context(_)
+        | OneOfrecord_type::websocket_connect(_)
+        | OneOfrecord_type::mqtt_connect(_)
+        | OneOfrecord_type::stomp_connect(_)
+        | OneOfrecord_type::uds_connect(_)
+        | OneOfrecord_type::disconnect(_)
+        | OneOfrecord_type::None => unreachable!(),
     }
 
     Ok(())
 }
 
-fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Result<()> {
+fn extract_msg_body(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result<()> {
     use rusp::usp_record::mod_Record::OneOfrecord_type;
 
     let fp = File::open(in_file)?;
@@ -963,15 +966,15 @@ fn extract_msg_body(in_file: &Path, out_file: &Path, format: OutputFormat) -> Re
 
             // Open output stream
             let out = get_out_stream(Some(out_file.to_path_buf()))?;
-            write_body(body, out, &format)?;
+            write_body(&body, out, format)?;
         }
-        OneOfrecord_type::session_context(_) => unreachable!(),
-        OneOfrecord_type::websocket_connect(_) => unreachable!(),
-        OneOfrecord_type::mqtt_connect(_) => unreachable!(),
-        OneOfrecord_type::stomp_connect(_) => unreachable!(),
-        OneOfrecord_type::uds_connect(_) => unreachable!(),
-        OneOfrecord_type::disconnect(_) => unreachable!(),
-        OneOfrecord_type::None => unreachable!(),
+        OneOfrecord_type::session_context(_)
+        | OneOfrecord_type::websocket_connect(_)
+        | OneOfrecord_type::mqtt_connect(_)
+        | OneOfrecord_type::stomp_connect(_)
+        | OneOfrecord_type::uds_connect(_)
+        | OneOfrecord_type::disconnect(_)
+        | OneOfrecord_type::None => unreachable!(),
     }
 
     Ok(())
@@ -982,7 +985,7 @@ fn encode_no_session_record(
     from: String,
     to: String,
     filename: Option<PathBuf>,
-    format: OutputFormat,
+    format: &OutputFormat,
 ) -> Result<()> {
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
@@ -997,7 +1000,7 @@ fn encode_no_session_record(
     // Open output stream
     let out = get_out_stream(filename)?;
 
-    write_record(record, out, &format)
+    write_record(&record, out, format)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1010,7 +1013,7 @@ fn encode_session_record(
     expected_id: u64,
     retransmit_id: u64,
     filename: Option<PathBuf>,
-    format: OutputFormat,
+    format: &OutputFormat,
 ) -> Result<()> {
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
@@ -1032,7 +1035,7 @@ fn encode_session_record(
     // Open output stream
     let out = get_out_stream(filename)?;
 
-    write_record(record, out, &format)
+    write_record(&record, out, format)
 }
 
 fn create_mqtt_connect_record(
@@ -1042,7 +1045,7 @@ fn create_mqtt_connect_record(
     filename: Option<PathBuf>,
     mqtt311: bool,
     subscribed_topic: String,
-    format: OutputFormat,
+    format: &OutputFormat,
 ) -> Result<()> {
     let record = usp_builder::RecordBuilder::new()
         .with_version(version)
@@ -1061,7 +1064,7 @@ fn create_mqtt_connect_record(
     // Open output stream
     let out = get_out_stream(filename)?;
 
-    write_record(record, out, &format)
+    write_record(&record, out, format)
 }
 
 fn main() -> Result<()> {
@@ -1081,32 +1084,32 @@ fn main() -> Result<()> {
     };
 
     match args.action {
-        RuspAction::DecodeRecordFiles { files } => decode_record_files(files, format),
-        RuspAction::DecodeRecord {} => decode_record_stdin(format),
-        RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, format),
-        RuspAction::DecodeMsg {} => decode_msg_stdin(format),
+        RuspAction::DecodeRecordFiles { files } => decode_record_files(files, &format),
+        RuspAction::DecodeRecord {} => decode_record_stdin(&format),
+        RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, &format),
+        RuspAction::DecodeMsg {} => decode_msg_stdin(&format),
         RuspAction::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ, &format),
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
-        } => encode_msg(&msgid, filename, typ, format),
-        RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, format),
+        } => encode_msg(&msgid, filename, typ, &format),
+        RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, &format),
         RuspAction::ExtractMsgBody { in_file, out_file } => {
-            extract_msg_body(&in_file, &out_file, format)
+            extract_msg_body(&in_file, &out_file, &format)
         }
         RuspAction::WrapMsgRaw {
             version,
             from,
             to,
             filename,
-        } => encode_no_session_record(version, from, to, filename, format),
-        RuspAction::EncodeNoSessionRecord {
+        }
+        | RuspAction::EncodeNoSessionRecord {
             version,
             from,
             to,
             filename,
-        } => encode_no_session_record(version, from, to, filename, format),
+        } => encode_no_session_record(version, from, to, filename, &format),
         RuspAction::EncodeSessionRecord {
             version,
             from,
@@ -1125,7 +1128,7 @@ fn main() -> Result<()> {
             expected_id,
             retransmit_id,
             filename,
-            format,
+            &format,
         ),
         RuspAction::CreateMQTTConnectRecord {
             version,
@@ -1141,7 +1144,7 @@ fn main() -> Result<()> {
             filename,
             mqtt311,
             subscribed_topic,
-            format,
+            &format,
         ),
     }?;
 

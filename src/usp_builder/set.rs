@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::usp::mod_Set::{UpdateObject, UpdateParamSetting};
 use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
-    OneOfoper_status::{oper_failure, oper_success}, OperationFailure, OperationSuccess,
+    OneOfoper_status::{oper_failure, oper_success},
+    OperationFailure, OperationSuccess,
 };
 use crate::usp::mod_SetResp::ParameterError;
 use crate::usp::mod_SetResp::{mod_UpdatedObjectResult::OperationStatus, UpdatedObjectResult};
@@ -19,14 +20,16 @@ pub struct UpdateObjectBuilder {
 }
 
 impl UpdateObjectBuilder {
-    #[must_use] pub const fn new(obj_path: String) -> Self {
+    #[must_use]
+    pub const fn new(obj_path: String) -> Self {
         Self {
             obj_path,
             param_settings: vec![],
         }
     }
 
-    #[must_use] pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
+    #[must_use]
+    pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
         self.param_settings = param_settings;
         self
     }
@@ -56,19 +59,22 @@ pub struct SetBuilder {
 }
 
 impl SetBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             allow_partial: false,
             update_objs: vec![],
         }
     }
 
-    #[must_use] pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
+    #[must_use]
+    pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
         self.allow_partial = allow_partial;
         self
     }
 
-    #[must_use] pub fn with_update_objs(mut self, update_objs: Vec<UpdateObjectBuilder>) -> Self {
+    #[must_use]
+    pub fn with_update_objs(mut self, update_objs: Vec<UpdateObjectBuilder>) -> Self {
         self.update_objs = update_objs;
         self
     }
@@ -119,14 +125,16 @@ pub struct UpdatedInstanceFailureBuilder {
 }
 
 impl UpdatedInstanceFailureBuilder {
-    #[must_use] pub const fn new(affected_path: String) -> Self {
+    #[must_use]
+    pub const fn new(affected_path: String) -> Self {
         Self {
             affected_path,
             param_errs: vec![],
         }
     }
 
-    #[must_use] pub fn with_param_errs(mut self, param_errs: Vec<SetRespParameterError>) -> Self {
+    #[must_use]
+    pub fn with_param_errs(mut self, param_errs: Vec<SetRespParameterError>) -> Self {
         self.param_errs = param_errs;
         self
     }
@@ -147,11 +155,13 @@ pub enum SetOperationStatus {
 }
 
 impl SetOperationStatus {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self::None
     }
 
-    #[must_use] pub fn set_failure(
+    #[must_use]
+    pub fn set_failure(
         self,
         err_code: u32,
         err_msg: Option<String>,
@@ -164,7 +174,8 @@ impl SetOperationStatus {
         })
     }
 
-    #[must_use] pub fn set_success(self, updated_inst_results: Vec<SetOperationSuccessBuilder>) -> Self {
+    #[must_use]
+    pub fn set_success(self, updated_inst_results: Vec<SetOperationSuccessBuilder>) -> Self {
         Self::Success(updated_inst_results)
     }
 
@@ -185,10 +196,10 @@ impl SetOperationStatus {
                                 .map(|p| ParameterError {
                                     param: p.param.into(),
                                     err_code: p.err_code,
-                                    err_msg: if !p.err_msg.is_empty() {
-                                        p.err_msg.into()
-                                    } else {
+                                    err_msg: if p.err_msg.is_empty() {
                                         usp_errors::get_err_msg(p.err_code).into()
+                                    } else {
+                                        p.err_msg.into()
                                     },
                                 })
                                 .collect(),
@@ -208,10 +219,10 @@ impl SetOperationStatus {
                                 .map(|e| ParameterError {
                                     param: e.param.into(),
                                     err_code: e.err_code,
-                                    err_msg: if !e.err_msg.is_empty() {
-                                        e.err_msg.into()
-                                    } else {
+                                    err_msg: if e.err_msg.is_empty() {
                                         usp_errors::get_err_msg(e.err_code).into()
+                                    } else {
+                                        e.err_msg.into()
                                     },
                                 })
                                 .collect(),
@@ -236,7 +247,8 @@ pub struct UpdatedObjectResultsBuilder {
 }
 
 impl UpdatedObjectResultsBuilder {
-    #[must_use] pub const fn new(requested_path: String, oper_status: SetOperationStatus) -> Self {
+    #[must_use]
+    pub const fn new(requested_path: String, oper_status: SetOperationStatus) -> Self {
         Self {
             requested_path,
             oper_status,
@@ -257,13 +269,15 @@ pub struct SetRespBuilder {
 }
 
 impl SetRespBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             updated_obj_results: vec![],
         }
     }
 
-    #[must_use] pub fn with_updated_obj_results(
+    #[must_use]
+    pub fn with_updated_obj_results(
         mut self,
         updated_obj_results: Vec<UpdatedObjectResultsBuilder>,
     ) -> Self {

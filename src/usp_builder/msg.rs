@@ -14,28 +14,43 @@ pub struct MsgBuilder<'a> {
 }
 
 impl<'a> MsgBuilder<'a> {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             msg_id: None,
             body: None,
         }
     }
 
-    #[must_use] pub fn with_msg_id(mut self, msg_id: String) -> Self {
+    #[must_use]
+    pub fn with_msg_id(mut self, msg_id: String) -> Self {
         self.msg_id = Some(msg_id);
         self
     }
 
-    #[must_use] pub fn with_body(mut self, body: Body<'a>) -> Self {
+    #[must_use]
+    pub fn with_body(mut self, body: Body<'a>) -> Self {
         self.body = Some(body);
         self
     }
 
     pub fn build(self) -> Result<Msg<'a>> {
         use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
-        use crate::usp::mod_Header::MsgType::{ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, ERROR, GET, GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP};
-        use crate::usp::mod_Request::OneOfreq_type::{add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol, notify, operate, register, set};
-        use crate::usp::mod_Response::OneOfresp_type::{add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp, get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp, register_resp, set_resp};
+        use crate::usp::mod_Header::MsgType::{
+            ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET,
+            GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP,
+            GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE,
+            OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP,
+        };
+        use crate::usp::mod_Request::OneOfreq_type::{
+            add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol,
+            notify, operate, register, set,
+        };
+        use crate::usp::mod_Response::OneOfresp_type::{
+            add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp,
+            get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp,
+            register_resp, set_resp,
+        };
 
         let msg_id = self
             .msg_id
@@ -70,7 +85,7 @@ impl<'a> MsgBuilder<'a> {
                 notify_resp(_) => NOTIFY_RESP,
                 get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
                 register_resp(_) => REGISTER_RESP,
-                deregister_resp(_) => DELETE_RESP,
+                deregister_resp(_) => DEREGISTER_RESP,
                 OneOfresp_type::None => unreachable!(),
             },
             error(_) => ERROR,

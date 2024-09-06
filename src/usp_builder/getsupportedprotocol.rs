@@ -11,7 +11,8 @@ pub struct GetSupportedProtocolBuilder {
 }
 
 impl GetSupportedProtocolBuilder {
-    #[must_use] pub const fn new(controller_supported_protocol_versions: String) -> Self {
+    #[must_use]
+    pub const fn new(controller_supported_protocol_versions: String) -> Self {
         Self {
             controller_supported_protocol_versions,
         }
@@ -40,7 +41,8 @@ pub struct GetSupportedProtocolRespBuilder {
 }
 
 impl GetSupportedProtocolRespBuilder {
-    #[must_use] pub const fn new(agent_supported_protocol_versions: String) -> Self {
+    #[must_use]
+    pub const fn new(agent_supported_protocol_versions: String) -> Self {
         Self {
             agent_supported_protocol_versions,
         }

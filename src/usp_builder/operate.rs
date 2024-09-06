@@ -22,7 +22,8 @@ pub struct OperateBuilder {
 }
 
 impl OperateBuilder {
-    #[must_use] pub const fn new(command: String) -> Self {
+    #[must_use]
+    pub const fn new(command: String) -> Self {
         Self {
             command,
             command_key: String::new(),
@@ -31,17 +32,20 @@ impl OperateBuilder {
         }
     }
 
-    #[must_use] pub fn with_command_key(mut self, command_key: String) -> Self {
+    #[must_use]
+    pub fn with_command_key(mut self, command_key: String) -> Self {
         self.command_key = command_key;
         self
     }
 
-    #[must_use] pub const fn with_send_resp(mut self, send_resp: bool) -> Self {
+    #[must_use]
+    pub const fn with_send_resp(mut self, send_resp: bool) -> Self {
         self.send_resp = send_resp;
         self
     }
 
-    #[must_use] pub fn with_input_args(mut self, input_args: Vec<(String, String)>) -> Self {
+    #[must_use]
+    pub fn with_input_args(mut self, input_args: Vec<(String, String)>) -> Self {
         self.input_args = input_args;
         self
     }
@@ -90,14 +94,16 @@ pub struct OperateRespResultBuilder {
 }
 
 impl OperateRespResultBuilder {
-    #[must_use] pub const fn new(executed_command: String) -> Self {
+    #[must_use]
+    pub const fn new(executed_command: String) -> Self {
         Self {
             operation_result: OperateRespOperationResult::None,
             executed_command,
         }
     }
 
-    #[must_use] pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use]
+    pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.operation_result = OperateRespOperationResult::Failure {
             err_code,
             err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
@@ -105,12 +111,14 @@ impl OperateRespResultBuilder {
         self
     }
 
-    #[must_use] pub fn set_path(mut self, req_obj_path: String) -> Self {
+    #[must_use]
+    pub fn set_path(mut self, req_obj_path: String) -> Self {
         self.operation_result = OperateRespOperationResult::Path { req_obj_path };
         self
     }
 
-    #[must_use] pub fn set_output_args(mut self, output_args: Vec<(String, String)>) -> Self {
+    #[must_use]
+    pub fn set_output_args(mut self, output_args: Vec<(String, String)>) -> Self {
         self.operation_result = OperateRespOperationResult::OutputArgs {
             output_args: output_args.into_iter().collect(),
         };
@@ -152,13 +160,15 @@ pub struct OperateRespBuilder {
 }
 
 impl OperateRespBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             operation_results: vec![],
         }
     }
 
-    #[must_use] pub fn with_operation_results(
+    #[must_use]
+    pub fn with_operation_results(
         mut self,
         operation_results: Vec<OperateRespResultBuilder>,
     ) -> Self {

@@ -15,19 +15,22 @@ pub struct GetBuilder {
 }
 
 impl GetBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             max_depth: 0,
             params: vec![],
         }
     }
 
-    #[must_use] pub const fn with_max_depth(mut self, max_depth: u32) -> Self {
+    #[must_use]
+    pub const fn with_max_depth(mut self, max_depth: u32) -> Self {
         self.max_depth = max_depth;
         self
     }
 
-    #[must_use] pub fn with_params(mut self, params: Vec<String>) -> Self {
+    #[must_use]
+    pub fn with_params(mut self, params: Vec<String>) -> Self {
         self.params = params;
         self
     }
@@ -55,14 +58,16 @@ pub struct ResolvedPathResultBuilder {
 }
 
 impl ResolvedPathResultBuilder {
-    #[must_use] pub const fn new(resolved_path: String) -> Self {
+    #[must_use]
+    pub const fn new(resolved_path: String) -> Self {
         Self {
             resolved_path,
             result_params: vec![],
         }
     }
 
-    #[must_use] pub fn with_result_params(mut self, result_params: Vec<(String, String)>) -> Self {
+    #[must_use]
+    pub fn with_result_params(mut self, result_params: Vec<(String, String)>) -> Self {
         self.result_params = result_params;
         self
     }
@@ -90,7 +95,8 @@ pub struct ReqPathResultBuilder {
 }
 
 impl ReqPathResultBuilder {
-    #[must_use] pub const fn new(requested_path: String) -> Self {
+    #[must_use]
+    pub const fn new(requested_path: String) -> Self {
         Self {
             requested_path,
             err_code: 0,
@@ -99,13 +105,15 @@ impl ReqPathResultBuilder {
         }
     }
 
-    #[must_use] pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use]
+    pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.err_code = err_code;
         self.err_msg = err_msg;
         self
     }
 
-    #[must_use] pub fn with_res_path_results(
+    #[must_use]
+    pub fn with_res_path_results(
         mut self,
         resolved_path_results: Vec<ResolvedPathResultBuilder>,
     ) -> Self {
@@ -140,13 +148,15 @@ pub struct GetRespBuilder {
 }
 
 impl GetRespBuilder {
-    #[must_use] pub const fn new() -> Self {
+    #[must_use]
+    pub const fn new() -> Self {
         Self {
             req_path_results: vec![],
         }
     }
 
-    #[must_use] pub fn with_req_path_results(mut self, req_path_results: Vec<ReqPathResultBuilder>) -> Self {
+    #[must_use]
+    pub fn with_req_path_results(mut self, req_path_results: Vec<ReqPathResultBuilder>) -> Self {
         self.req_path_results = req_path_results;
         self
     }

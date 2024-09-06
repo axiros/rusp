@@ -87,7 +87,8 @@ pub struct NotifyBuilder {
 }
 
 impl NotifyBuilder {
-    #[must_use] pub const fn new(subscription_id: String) -> Self {
+    #[must_use]
+    pub const fn new(subscription_id: String) -> Self {
         Self {
             subscription_id,
             send_resp: false,
@@ -95,12 +96,14 @@ impl NotifyBuilder {
         }
     }
 
-    #[must_use] pub const fn with_send_resp(mut self, send_resp: bool) -> Self {
+    #[must_use]
+    pub const fn with_send_resp(mut self, send_resp: bool) -> Self {
         self.send_resp = send_resp;
         self
     }
 
-    #[must_use] pub fn with_onboard_request(
+    #[must_use]
+    pub fn with_onboard_request(
         mut self,
         oui: String,
         product_class: String,
@@ -116,7 +119,8 @@ impl NotifyBuilder {
         self
     }
 
-    #[must_use] pub fn with_value_change(mut self, param_path: String, param_value: String) -> Self {
+    #[must_use]
+    pub fn with_value_change(mut self, param_path: String, param_value: String) -> Self {
         self.notify_type = Some(NotifyType::ValueChange {
             param_path,
             param_value,
@@ -124,7 +128,8 @@ impl NotifyBuilder {
         self
     }
 
-    #[must_use] pub fn with_event(
+    #[must_use]
+    pub fn with_event(
         mut self,
         obj_path: String,
         event_name: String,
@@ -138,7 +143,8 @@ impl NotifyBuilder {
         self
     }
 
-    #[must_use] pub fn with_object_creation(
+    #[must_use]
+    pub fn with_object_creation(
         mut self,
         obj_path: String,
         unique_keys: HashMap<String, String>,
@@ -150,12 +156,14 @@ impl NotifyBuilder {
         self
     }
 
-    #[must_use] pub fn with_object_deletion(mut self, obj_path: String) -> Self {
+    #[must_use]
+    pub fn with_object_deletion(mut self, obj_path: String) -> Self {
         self.notify_type = Some(NotifyType::ObjectDeletion { obj_path });
         self
     }
 
-    #[must_use] pub fn with_operation_complete_output_args(
+    #[must_use]
+    pub fn with_operation_complete_output_args(
         mut self,
         obj_path: String,
         command_name: String,
@@ -171,7 +179,8 @@ impl NotifyBuilder {
         self
     }
 
-    #[must_use] pub fn with_operation_complete_cmd_failure(
+    #[must_use]
+    pub fn with_operation_complete_cmd_failure(
         mut self,
         obj_path: String,
         command_name: String,
@@ -289,7 +298,8 @@ pub struct NotifyRespBuilder {
 }
 
 impl NotifyRespBuilder {
-    #[must_use] pub const fn new(subscription_id: String) -> Self {
+    #[must_use]
+    pub const fn new(subscription_id: String) -> Self {
         Self { subscription_id }
     }
 

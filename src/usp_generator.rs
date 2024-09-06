@@ -30,11 +30,24 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 ///     usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
 /// );
 /// ```
-#[must_use] pub fn usp_msg(msg_id: String, body: Body) -> Msg {
+#[must_use]
+pub fn usp_msg(msg_id: String, body: Body) -> Msg {
     use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
-    use crate::usp::mod_Header::MsgType::{ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP};
-    use crate::usp::mod_Request::OneOfreq_type::{add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol, notify, operate, register, set};
-    use crate::usp::mod_Response::OneOfresp_type::{add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp, get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp, register_resp, set_resp};
+    use crate::usp::mod_Header::MsgType::{
+        ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES,
+        GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO,
+        GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER,
+        REGISTER_RESP, SET, SET_RESP,
+    };
+    use crate::usp::mod_Request::OneOfreq_type::{
+        add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol,
+        notify, operate, register, set,
+    };
+    use crate::usp::mod_Response::OneOfresp_type::{
+        add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp,
+        get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp,
+        register_resp, set_resp,
+    };
 
     let msg_type = match &body.msg_body {
         request(ref req) => match &req.req_type {
@@ -94,11 +107,24 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 ///     &usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
 /// );
 /// ```
-#[must_use] pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
+#[must_use]
+pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
-    use crate::usp::mod_Header::MsgType::{ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP};
-    use crate::usp::mod_Request::OneOfreq_type::{add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol, notify, operate, register, set};
-    use crate::usp::mod_Response::OneOfresp_type::{add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp, get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp, register_resp, set_resp};
+    use crate::usp::mod_Header::MsgType::{
+        ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES,
+        GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO,
+        GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER,
+        REGISTER_RESP, SET, SET_RESP,
+    };
+    use crate::usp::mod_Request::OneOfreq_type::{
+        add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol,
+        notify, operate, register, set,
+    };
+    use crate::usp::mod_Response::OneOfresp_type::{
+        add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp,
+        get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp,
+        register_resp, set_resp,
+    };
 
     let msg_type = match body.msg_body {
         request(ref req) => match &req.req_type {
@@ -162,7 +188,8 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 /// use rusp::usp_generator::usp_simple_error;
 /// let err = usp_simple_error(7803, Some("Funny custom vendor error"));
 /// ```
-#[must_use] pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
+#[must_use]
+pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
     use crate::usp::mod_Body::OneOfmsg_body::error;
 
     let err_msg = message.unwrap_or_else(|| get_err_msg(code));
@@ -203,7 +230,8 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 ///     &[("Some.Path", 7804, "Funny error related to path")],
 /// );
 /// ```
-#[must_use] pub fn usp_error<'a>(
+#[must_use]
+pub fn usp_error<'a>(
     code: u32,
     message: Option<&'a str>,
     param_errs: &[(&'a str, u32, &'a str)],
@@ -417,10 +445,13 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 ///     agent_supported_protocol_versions: "1.0".to_string()
 /// });
 /// ```
-#[must_use] pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyType) -> Body<'a> {
+#[must_use]
+pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyType) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::request;
     use crate::usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp;
-    use crate::usp::mod_Notify::OneOfnotification::{event, obj_creation, obj_deletion, on_board_req, oper_complete, value_change};
+    use crate::usp::mod_Notify::OneOfnotification::{
+        event, obj_creation, obj_deletion, on_board_req, oper_complete, value_change,
+    };
     use crate::usp::mod_Notify::{
         Event, ObjectCreation, ObjectDeletion, OnBoardRequest, OperationComplete, ValueChange,
     };
@@ -665,7 +696,8 @@ pub fn usp_get_supported_dm_request<S: AsRef<str>>(
 /// use rusp::usp_generator::usp_get_supported_prototol_request;
 /// let req = usp_get_supported_prototol_request("1.1");
 /// ```
-#[must_use] pub const fn usp_get_supported_prototol_request(cspv: &str) -> Body {
+#[must_use]
+pub const fn usp_get_supported_prototol_request(cspv: &str) -> Body {
     use crate::usp::mod_Body::OneOfmsg_body::request;
     use crate::usp::mod_Request::OneOfreq_type::get_supported_protocol;
 
@@ -697,7 +729,8 @@ pub fn usp_get_supported_dm_request<S: AsRef<str>>(
 ///         ("Dev.", Err((7000, "Message failed"))),
 ///     ]);
 /// ```
-#[must_use] pub fn usp_get_response<'a>(
+#[must_use]
+pub fn usp_get_response<'a>(
     result: Vec<(
         &'a str,
         Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
@@ -779,7 +812,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 /// let deserialised : GetResp = serde_json::from_str(&json).unwrap();
 /// let resp = usp_get_response_from_json(&deserialised);
 /// ```
-#[must_use] pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Body<'a> {
+#[must_use]
+pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Body<'a> {
     let mut d: Vec<(&str, Result<Vec<(&str, Vec<(&str, &str)>)>, (u32, &str)>)> =
         Default::default();
     for req_path_result in getresp {
@@ -840,7 +874,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 ///     &[],
 /// );
 /// ```
-#[must_use] pub fn usp_no_session_context_record<'a>(
+#[must_use]
+pub fn usp_no_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -905,7 +940,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 /// );
 /// ```
 #[allow(clippy::too_many_arguments)]
-#[must_use] pub fn usp_session_context_record<'a>(
+#[must_use]
+pub fn usp_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -965,7 +1001,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 ///
 /// let newrecord = usp_mqtt_connect_record("1.3", "doc::to", "doc::from", PayloadSecurity::PLAINTEXT, &[], &[], false, "/topic/doc::from");
 /// ```
-#[must_use] pub fn usp_mqtt_connect_record<'a>(
+#[must_use]
+pub fn usp_mqtt_connect_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -1009,7 +1046,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 /// use rusp::usp_generator::usp_notify_response;
 /// let resp = usp_notify_response("fancy_sub_id");
 /// ```
-#[must_use] pub const fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
+#[must_use]
+pub const fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
     use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_Response::OneOfresp_type::notify_resp;
     use crate::usp::NotifyResp;
@@ -1043,7 +1081,8 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-#[must_use] pub fn usp_add_response<'a>(
+#[must_use]
+pub fn usp_add_response<'a>(
     result: Vec<(
         &'a str,
         Result<
@@ -1222,7 +1261,8 @@ pub fn usp_delete_response<'a>(
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-#[must_use] pub fn usp_get_instances_response<'a>(
+#[must_use]
+pub fn usp_get_instances_response<'a>(
     result: Vec<(
         &'a str,
         Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
@@ -1290,7 +1330,8 @@ pub fn usp_delete_response<'a>(
 /// use rusp::usp_generator::usp_get_supported_protocol_response;
 /// let resp = usp_get_supported_protocol_response("1.1");
 /// ```
-#[must_use] pub const fn usp_get_supported_protocol_response(result: &str) -> Body {
+#[must_use]
+pub const fn usp_get_supported_protocol_response(result: &str) -> Body {
     use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_Response::OneOfresp_type::get_supported_protocol_resp;
     use crate::usp::GetSupportedProtocolResp;
@@ -1338,7 +1379,8 @@ pub enum OperationResponse<'a> {
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-#[must_use] pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
+#[must_use]
+pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
     use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_OperateResp::mod_OperationResult::{
         CommandFailure, OneOfoperation_resp, OutputArgs,
@@ -1409,7 +1451,8 @@ pub enum OperationResponse<'a> {
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-#[must_use] pub fn usp_set_response<'a>(
+#[must_use]
+pub fn usp_set_response<'a>(
     result: Vec<(
         &'a str,
         Result<
