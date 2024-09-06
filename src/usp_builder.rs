@@ -44,7 +44,7 @@ pub use getsupportedprotocol::{GetSupportedProtocolBuilder, GetSupportedProtocol
 pub use msg::MsgBuilder;
 pub use notify::{NotifyBuilder, NotifyRespBuilder};
 pub use operate::{OperateBuilder, OperateRespBuilder, OperateRespResultBuilder};
-pub use record::RecordBuilder;
+pub use record::{RecordBuilder, SessionContextBuilder};
 pub use register::{
     RegisterBuilder, RegisterOperationStatus, RegisterRespBuilder, RegisteredPathResultBuilder,
 };

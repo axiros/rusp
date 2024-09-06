@@ -11,9 +11,7 @@ use anyhow::{Context, Result};
 
 use rusp::{
     usp_decoder::{try_decode_msg, try_decode_record},
-    usp_types::{
-        NotifyType as RuspNotifyType, OperateResponse as RuspOperateResponse, PayloadSecurity,
-    },
+    usp_types::{NotifyType as RuspNotifyType, OperateResponse as RuspOperateResponse},
 };
 
 #[derive(PartialEq)]
@@ -1026,22 +1024,19 @@ fn encode_session_record(
     let mut msg = Vec::new();
     stdin().read_to_end(&mut msg)?;
 
-    use rusp::usp_generator;
-    let record = usp_generator::usp_session_context_record(
-        &version,
-        &to,
-        &from,
-        PayloadSecurity::PLAINTEXT,
-        &[],
-        &[],
-        session_id,
-        sequence_id,
-        expected_id,
-        retransmit_id,
-        usp_generator::PayloadSARState::NONE,
-        usp_generator::PayloadSARState::NONE,
-        &msg,
-    );
+    let sc = usp_builder::SessionContextBuilder::new()
+        .with_session_id(session_id)
+        .with_sequence_id(sequence_id)
+        .with_expected_id(expected_id)
+        .with_retransmit_id(retransmit_id)
+        .with_payload(msg);
+
+    let record = usp_builder::RecordBuilder::new()
+        .with_version(version)
+        .with_to_id(to)
+        .with_from_id(from)
+        .with_session_context_builder(sc)
+        .build()?;
 
     // Open output stream
     let out = get_out_stream(filename)?;

@@ -1,8 +1,10 @@
 use crate::usp::Msg;
 use crate::usp_record::mod_MQTTConnectRecord::MQTTVersion;
 use crate::usp_record::mod_Record::OneOfrecord_type;
+use crate::usp_record::mod_SessionContextRecord::PayloadSARState;
 use crate::usp_record::NoSessionContextRecord;
 use crate::usp_record::Record;
+use crate::usp_record::SessionContextRecord;
 use crate::usp_record::{
     DisconnectRecord, MQTTConnectRecord, STOMPConnectRecord, UDSConnectRecord,
     WebSocketConnectRecord,
@@ -16,7 +18,9 @@ use anyhow::{Context, Result};
 enum RecordType {
     None,
     NoSessionContext,
-    _SessionContext,
+    SessionContext {
+        session_context: SessionContextBuilder,
+    },
     WebSocketConnect,
     MQTTConnect {
         version: MQTTVersion,
@@ -31,6 +35,78 @@ enum RecordType {
         reason_code: u32,
     },
     UDSConnect,
+}
+
+#[derive(Clone)]
+pub struct SessionContextBuilder {
+    session_id: Option<u64>,
+    sequence_id: Option<u64>,
+    expected_id: Option<u64>,
+    retransmit_id: u64,
+    payload: Option<Vec<u8>>,
+}
+
+impl SessionContextBuilder {
+    pub const fn new() -> Self {
+        Self {
+            session_id: None,
+            sequence_id: None,
+            expected_id: None,
+            retransmit_id: 0,
+            payload: None,
+        }
+    }
+
+    pub fn with_session_id(mut self, session_id: u64) -> Self {
+        self.session_id = Some(session_id);
+        self
+    }
+
+    pub fn with_sequence_id(mut self, sequence_id: u64) -> Self {
+        self.sequence_id = Some(sequence_id);
+        self
+    }
+
+    pub fn with_expected_id(mut self, expected_id: u64) -> Self {
+        self.expected_id = Some(expected_id);
+        self
+    }
+
+    pub fn with_retransmit_id(mut self, retransmit_id: u64) -> Self {
+        self.retransmit_id = retransmit_id;
+        self
+    }
+
+    pub fn with_payload(mut self, payload: Vec<u8>) -> Self {
+        self.payload = Some(payload);
+        self
+    }
+
+    pub fn build(self) -> Result<SessionContextRecord<'static>> {
+        let scr = SessionContextRecord {
+            session_id: self
+                .session_id
+                .ok_or_else(|| anyhow!("Need to supply a session ID for a session context"))?,
+            sequence_id: self
+                .sequence_id
+                .ok_or_else(|| anyhow!("Need to supply a sequence ID for a session context"))?,
+            expected_id: self
+                .expected_id
+                .ok_or_else(|| anyhow!("Need to supply a expected ID for a session context"))?,
+            retransmit_id: self.retransmit_id,
+            // FIXME
+            payload_sar_state: PayloadSARState::NONE,
+            // FIXME
+            payloadrec_sar_state: PayloadSARState::NONE,
+            payload: if let Some(payload) = self.payload {
+                vec![payload.into()]
+            } else {
+                vec![]
+            },
+        };
+
+        Ok(scr)
+    }
 }
 
 #[derive(Clone)]
@@ -71,6 +147,11 @@ impl RecordBuilder {
 
     pub fn with_from_id(mut self, id: String) -> Self {
         self.from_id = Some(id);
+        self
+    }
+
+    pub fn with_session_context_builder(mut self, session_context: SessionContextBuilder) -> Self {
+        self.typ = RecordType::SessionContext { session_context };
         self
     }
 
@@ -162,7 +243,9 @@ impl RecordBuilder {
                 record.record_type =
                     OneOfrecord_type::no_session_context(NoSessionContextRecord { payload });
             }
-            RecordType::_SessionContext => todo!(),
+            RecordType::SessionContext { session_context } => {
+                record.record_type = OneOfrecord_type::session_context(session_context.build()?);
+            }
             RecordType::WebSocketConnect => {
                 record.record_type = OneOfrecord_type::websocket_connect(WebSocketConnectRecord {});
             }
