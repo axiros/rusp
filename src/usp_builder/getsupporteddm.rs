@@ -2,7 +2,7 @@ use crate::usp::mod_Body::OneOfmsg_body::{request, response};
 use crate::usp::mod_GetSupportedDMResp::SupportedUniqueKeySet;
 use crate::usp::mod_GetSupportedDMResp::{
     CmdType,
-    ObjAccessType::{self, *},
+    ObjAccessType::{self, OBJ_ADD_ONLY},
     ParamAccessType, ParamValueType, RequestedObjectResult, SupportedCommandResult,
     SupportedEventResult, SupportedObjectResult, SupportedParamResult, ValueChangeType,
 };
@@ -24,7 +24,7 @@ pub struct GetSupportedDMBuilder {
 }
 
 impl GetSupportedDMBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             obj_paths: vec![],
             first_level_only: false,
@@ -35,32 +35,32 @@ impl GetSupportedDMBuilder {
         }
     }
 
-    pub fn with_obj_paths(mut self, obj_paths: Vec<String>) -> Self {
+    #[must_use] pub fn with_obj_paths(mut self, obj_paths: Vec<String>) -> Self {
         self.obj_paths = obj_paths;
         self
     }
 
-    pub fn with_first_level_only(mut self, first_level_only: bool) -> Self {
+    #[must_use] pub const fn with_first_level_only(mut self, first_level_only: bool) -> Self {
         self.first_level_only = first_level_only;
         self
     }
 
-    pub fn with_return_commands(mut self, return_commands: bool) -> Self {
+    #[must_use] pub const fn with_return_commands(mut self, return_commands: bool) -> Self {
         self.return_commands = return_commands;
         self
     }
 
-    pub fn with_return_events(mut self, return_events: bool) -> Self {
+    #[must_use] pub const fn with_return_events(mut self, return_events: bool) -> Self {
         self.return_events = return_events;
         self
     }
 
-    pub fn with_return_params(mut self, return_params: bool) -> Self {
+    #[must_use] pub const fn with_return_params(mut self, return_params: bool) -> Self {
         self.return_params = return_params;
         self
     }
 
-    pub fn with_return_unique_key_sets(mut self, return_unique_key_sets: bool) -> Self {
+    #[must_use] pub const fn with_return_unique_key_sets(mut self, return_unique_key_sets: bool) -> Self {
         self.return_unique_key_sets = return_unique_key_sets;
         self
     }
@@ -71,7 +71,7 @@ impl GetSupportedDMBuilder {
                 Request {
                     req_type: get_supported_dm({
                         GetSupportedDM {
-                            obj_paths: self.obj_paths.into_iter().map(|e| e.into()).collect(),
+                            obj_paths: self.obj_paths.into_iter().map(std::convert::Into::into).collect(),
                             first_level_only: self.first_level_only,
                             return_commands: self.return_commands,
                             return_events: self.return_events,
@@ -94,7 +94,7 @@ pub struct GSDMCommandResult {
 }
 
 impl GSDMCommandResult {
-    pub const fn new(command_name: String) -> Self {
+    #[must_use] pub const fn new(command_name: String) -> Self {
         Self {
             command_name,
             input_arg_names: vec![],
@@ -103,22 +103,22 @@ impl GSDMCommandResult {
         }
     }
 
-    pub fn with_input_arg_names(mut self, input_arg_names: Vec<String>) -> Self {
+    #[must_use] pub fn with_input_arg_names(mut self, input_arg_names: Vec<String>) -> Self {
         self.input_arg_names = input_arg_names;
         self
     }
 
-    pub fn with_output_arg_names(mut self, output_arg_names: Vec<String>) -> Self {
+    #[must_use] pub fn with_output_arg_names(mut self, output_arg_names: Vec<String>) -> Self {
         self.output_arg_names = output_arg_names;
         self
     }
 
-    pub fn set_sync(mut self) -> Self {
+    #[must_use] pub const fn set_sync(mut self) -> Self {
         self.command_type = CmdType::CMD_SYNC;
         self
     }
 
-    pub fn set_async(mut self) -> Self {
+    #[must_use] pub const fn set_async(mut self) -> Self {
         self.command_type = CmdType::CMD_ASYNC;
         self
     }
@@ -131,11 +131,11 @@ impl GSDMCommandResult {
         }
         Ok(SupportedCommandResult {
             command_name: self.command_name.into(),
-            input_arg_names: self.input_arg_names.into_iter().map(|e| e.into()).collect(),
+            input_arg_names: self.input_arg_names.into_iter().map(std::convert::Into::into).collect(),
             output_arg_names: self
                 .output_arg_names
                 .into_iter()
-                .map(|e| e.into())
+                .map(std::convert::Into::into)
                 .collect(),
             command_type: self.command_type,
         })
@@ -149,14 +149,14 @@ pub struct GSDMEventResult {
 }
 
 impl GSDMEventResult {
-    pub const fn new(event_name: String) -> Self {
+    #[must_use] pub const fn new(event_name: String) -> Self {
         Self {
             event_name,
             arg_names: vec![],
         }
     }
 
-    pub fn with_arg_names(mut self, arg_names: Vec<String>) -> Self {
+    #[must_use] pub fn with_arg_names(mut self, arg_names: Vec<String>) -> Self {
         self.arg_names = arg_names;
         self
     }
@@ -164,7 +164,7 @@ impl GSDMEventResult {
     pub fn build(self) -> Result<SupportedEventResult<'static>> {
         Ok(SupportedEventResult {
             event_name: self.event_name.into(),
-            arg_names: self.arg_names.into_iter().map(|e| e.into()).collect(),
+            arg_names: self.arg_names.into_iter().map(std::convert::Into::into).collect(),
         })
     }
 }
@@ -178,7 +178,7 @@ pub struct GSDMParamResult {
 }
 
 impl GSDMParamResult {
-    pub const fn new(param_name: String) -> Self {
+    #[must_use] pub const fn new(param_name: String) -> Self {
         Self {
             param_name,
             access: ParamAccessType::PARAM_READ_ONLY,
@@ -187,77 +187,77 @@ impl GSDMParamResult {
         }
     }
 
-    pub fn set_access_read_only(mut self) -> Self {
+    #[must_use] pub const fn set_access_read_only(mut self) -> Self {
         self.access = ParamAccessType::PARAM_READ_ONLY;
         self
     }
 
-    pub fn set_access_write_only(mut self) -> Self {
+    #[must_use] pub const fn set_access_write_only(mut self) -> Self {
         self.access = ParamAccessType::PARAM_WRITE_ONLY;
         self
     }
 
-    pub fn set_access_read_write(mut self) -> Self {
+    #[must_use] pub const fn set_access_read_write(mut self) -> Self {
         self.access = ParamAccessType::PARAM_READ_WRITE;
         self
     }
 
-    pub fn set_type_int(mut self) -> Self {
+    #[must_use] pub const fn set_type_int(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_INT;
         self
     }
 
-    pub fn set_type_unsigned_int(mut self) -> Self {
+    #[must_use] pub const fn set_type_unsigned_int(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_UNSIGNED_INT;
         self
     }
 
-    pub fn set_type_long(mut self) -> Self {
+    #[must_use] pub const fn set_type_long(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_LONG;
         self
     }
 
-    pub fn set_type_unsigned_long(mut self) -> Self {
+    #[must_use] pub const fn set_type_unsigned_long(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_UNSIGNED_LONG;
         self
     }
 
-    pub fn set_type_string(mut self) -> Self {
+    #[must_use] pub const fn set_type_string(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_STRING;
         self
     }
 
-    pub fn set_type_base64(mut self) -> Self {
+    #[must_use] pub const fn set_type_base64(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_BASE_64;
         self
     }
 
-    pub fn set_type_hexbinary(mut self) -> Self {
+    #[must_use] pub const fn set_type_hexbinary(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_HEX_BINARY;
         self
     }
 
-    pub fn set_type_datetime(mut self) -> Self {
+    #[must_use] pub const fn set_type_datetime(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_DATE_TIME;
         self
     }
 
-    pub fn set_type_decimal(mut self) -> Self {
+    #[must_use] pub const fn set_type_decimal(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_DECIMAL;
         self
     }
 
-    pub fn set_type_boolean(mut self) -> Self {
+    #[must_use] pub const fn set_type_boolean(mut self) -> Self {
         self.value_type = ParamValueType::PARAM_BOOLEAN;
         self
     }
 
-    pub fn set_value_change_allowed(mut self) -> Self {
+    #[must_use] pub const fn set_value_change_allowed(mut self) -> Self {
         self.value_change = ValueChangeType::VALUE_CHANGE_ALLOWED;
         self
     }
 
-    pub fn set_value_change_will_ignore(mut self) -> Self {
+    #[must_use] pub const fn set_value_change_will_ignore(mut self) -> Self {
         self.value_change = ValueChangeType::VALUE_CHANGE_WILL_IGNORE;
         self
     }
@@ -293,7 +293,7 @@ pub struct GSDMSupportedObjectResult {
 }
 
 impl GSDMSupportedObjectResult {
-    pub const fn new(supported_obj_path: String) -> Self {
+    #[must_use] pub const fn new(supported_obj_path: String) -> Self {
         Self {
             supported_obj_path,
             access: OBJ_ADD_ONLY,
@@ -306,32 +306,32 @@ impl GSDMSupportedObjectResult {
         }
     }
 
-    pub fn with_is_multi_instance(mut self, is_multi_instance: bool) -> Self {
+    #[must_use] pub const fn with_is_multi_instance(mut self, is_multi_instance: bool) -> Self {
         self.is_multi_instance = is_multi_instance;
         self
     }
 
-    pub fn with_supported_commands(mut self, supported_commands: Vec<GSDMCommandResult>) -> Self {
+    #[must_use] pub fn with_supported_commands(mut self, supported_commands: Vec<GSDMCommandResult>) -> Self {
         self.supported_commands = supported_commands;
         self
     }
 
-    pub fn with_supported_events(mut self, supported_events: Vec<GSDMEventResult>) -> Self {
+    #[must_use] pub fn with_supported_events(mut self, supported_events: Vec<GSDMEventResult>) -> Self {
         self.supported_events = supported_events;
         self
     }
 
-    pub fn with_supported_params(mut self, supported_params: Vec<GSDMParamResult>) -> Self {
+    #[must_use] pub fn with_supported_params(mut self, supported_params: Vec<GSDMParamResult>) -> Self {
         self.supported_params = supported_params;
         self
     }
 
-    pub fn with_divergent_paths(mut self, divergent_paths: Vec<String>) -> Self {
+    #[must_use] pub fn with_divergent_paths(mut self, divergent_paths: Vec<String>) -> Self {
         self.divergent_paths = divergent_paths;
         self
     }
 
-    pub fn with_unique_key_sets(mut self, unique_key_sets: Vec<Vec<String>>) -> Self {
+    #[must_use] pub fn with_unique_key_sets(mut self, unique_key_sets: Vec<Vec<String>>) -> Self {
         self.unique_key_sets = unique_key_sets;
         self
     }
@@ -340,19 +340,19 @@ impl GSDMSupportedObjectResult {
         let supported_commands = self
             .supported_commands
             .into_iter()
-            .map(|i| i.build())
+            .map(GSDMCommandResult::build)
             .collect::<Result<Vec<_>>>()?;
 
         let supported_events = self
             .supported_events
             .into_iter()
-            .map(|i| i.build())
+            .map(GSDMEventResult::build)
             .collect::<Result<Vec<_>>>()?;
 
         let supported_params = self
             .supported_params
             .into_iter()
-            .map(|i| i.build())
+            .map(GSDMParamResult::build)
             .collect::<Result<Vec<_>>>()?;
 
         let unique_key_sets: Vec<SupportedUniqueKeySet<'_>> = self
@@ -370,7 +370,7 @@ impl GSDMSupportedObjectResult {
             supported_commands,
             supported_events,
             supported_params,
-            divergent_paths: self.divergent_paths.into_iter().map(|e| e.into()).collect(),
+            divergent_paths: self.divergent_paths.into_iter().map(std::convert::Into::into).collect(),
             unique_key_sets,
         })
     }
@@ -386,7 +386,7 @@ pub struct GSDMReqObjectResultBuilder {
 }
 
 impl GSDMReqObjectResultBuilder {
-    pub const fn new(req_obj_path: String) -> Self {
+    #[must_use] pub const fn new(req_obj_path: String) -> Self {
         Self {
             req_obj_path,
             err_code: 0,
@@ -396,19 +396,19 @@ impl GSDMReqObjectResultBuilder {
         }
     }
 
-    pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use] pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.err_code = err_code;
         self.err_msg =
             Some(err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()));
         self
     }
 
-    pub fn with_data_model_inst_uri(mut self, data_model_inst_uri: String) -> Self {
+    #[must_use] pub fn with_data_model_inst_uri(mut self, data_model_inst_uri: String) -> Self {
         self.data_model_inst_uri = data_model_inst_uri;
         self
     }
 
-    pub fn with_supported_objs(mut self, supported_objs: Vec<GSDMSupportedObjectResult>) -> Self {
+    #[must_use] pub fn with_supported_objs(mut self, supported_objs: Vec<GSDMSupportedObjectResult>) -> Self {
         self.supported_objs = supported_objs;
         self
     }
@@ -422,7 +422,7 @@ impl GSDMReqObjectResultBuilder {
         let supported_objs = self
             .supported_objs
             .into_iter()
-            .map(|c| c.build())
+            .map(GSDMSupportedObjectResult::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedObjectResult {
@@ -441,13 +441,13 @@ pub struct GetSupportedDMRespBuilder {
 }
 
 impl GetSupportedDMRespBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             req_obj_results: vec![],
         }
     }
 
-    pub fn with_req_obj_results(
+    #[must_use] pub fn with_req_obj_results(
         mut self,
         req_obj_results: Vec<GSDMReqObjectResultBuilder>,
     ) -> Self {
@@ -459,7 +459,7 @@ impl GetSupportedDMRespBuilder {
         let req_obj_results = self
             .req_obj_results
             .into_iter()
-            .map(|r| r.build())
+            .map(GSDMReqObjectResultBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {

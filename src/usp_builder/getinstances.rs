@@ -15,19 +15,19 @@ pub struct GetInstancesBuilder {
 }
 
 impl GetInstancesBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             obj_paths: vec![],
             first_level_only: false,
         }
     }
 
-    pub fn with_first_level_only(mut self, first_level_only: bool) -> Self {
+    #[must_use] pub const fn with_first_level_only(mut self, first_level_only: bool) -> Self {
         self.first_level_only = first_level_only;
         self
     }
 
-    pub fn with_obj_paths(mut self, obj_paths: Vec<String>) -> Self {
+    #[must_use] pub fn with_obj_paths(mut self, obj_paths: Vec<String>) -> Self {
         self.obj_paths = obj_paths;
         self
     }
@@ -55,14 +55,14 @@ pub struct CurrInstanceBuilder {
 }
 
 impl CurrInstanceBuilder {
-    pub const fn new(instantiated_obj_path: String) -> Self {
+    #[must_use] pub const fn new(instantiated_obj_path: String) -> Self {
         Self {
             instantiated_obj_path,
             unique_keys: vec![],
         }
     }
 
-    pub fn with_unique_keys(mut self, unique_keys: Vec<(String, String)>) -> Self {
+    #[must_use] pub fn with_unique_keys(mut self, unique_keys: Vec<(String, String)>) -> Self {
         self.unique_keys = unique_keys;
         self
     }
@@ -90,7 +90,7 @@ pub struct ReqPathResultBuilder {
 }
 
 impl ReqPathResultBuilder {
-    pub const fn new(requested_path: String) -> Self {
+    #[must_use] pub const fn new(requested_path: String) -> Self {
         Self {
             requested_path,
             err_code: 0,
@@ -99,13 +99,13 @@ impl ReqPathResultBuilder {
         }
     }
 
-    pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use] pub fn set_err(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.err_code = err_code;
         self.err_msg = err_msg;
         self
     }
 
-    pub fn with_curr_insts(mut self, curr_insts: Vec<CurrInstanceBuilder>) -> Self {
+    #[must_use] pub fn with_curr_insts(mut self, curr_insts: Vec<CurrInstanceBuilder>) -> Self {
         self.curr_insts = curr_insts;
         self
     }
@@ -119,7 +119,7 @@ impl ReqPathResultBuilder {
         let curr_insts = self
             .curr_insts
             .into_iter()
-            .map(|c| c.build())
+            .map(CurrInstanceBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedPathResult {
@@ -137,13 +137,13 @@ pub struct GetInstancesRespBuilder {
 }
 
 impl GetInstancesRespBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             req_path_results: vec![],
         }
     }
 
-    pub fn with_req_path_results(mut self, req_path_results: Vec<ReqPathResultBuilder>) -> Self {
+    #[must_use] pub fn with_req_path_results(mut self, req_path_results: Vec<ReqPathResultBuilder>) -> Self {
         self.req_path_results = req_path_results;
         self
     }
@@ -152,7 +152,7 @@ impl GetInstancesRespBuilder {
         let req_path_results = self
             .req_path_results
             .into_iter()
-            .map(|r| r.build())
+            .map(ReqPathResultBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {

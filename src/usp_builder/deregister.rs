@@ -18,11 +18,11 @@ pub struct DeregisterBuilder {
 }
 
 impl DeregisterBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self { paths: vec![] }
     }
 
-    pub fn with_paths(mut self, paths: Vec<String>) -> Self {
+    #[must_use] pub fn with_paths(mut self, paths: Vec<String>) -> Self {
         self.paths = paths;
         self
     }
@@ -33,7 +33,7 @@ impl DeregisterBuilder {
                 Request {
                     req_type: deregister({
                         Deregister {
-                            paths: self.paths.into_iter().map(|p| p.into()).collect(),
+                            paths: self.paths.into_iter().map(std::convert::Into::into).collect(),
                         }
                     }),
                 }
@@ -56,14 +56,14 @@ pub struct DeregisteredPathResultBuilder {
 }
 
 impl DeregisteredPathResultBuilder {
-    pub const fn new(requested_path: String) -> Self {
+    #[must_use] pub const fn new(requested_path: String) -> Self {
         Self {
             requested_path,
             oper_status: DeregisterOperationStatus::None,
         }
     }
 
-    pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use] pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.oper_status = DeregisterOperationStatus::Failure {
             err_code,
             err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
@@ -71,7 +71,7 @@ impl DeregisteredPathResultBuilder {
         self
     }
 
-    pub fn set_success(mut self, deregistered_path: Vec<String>) -> Self {
+    #[must_use] pub fn set_success(mut self, deregistered_path: Vec<String>) -> Self {
         self.oper_status = DeregisterOperationStatus::Success(deregistered_path);
         self
     }
@@ -88,7 +88,7 @@ impl DeregisteredPathResultBuilder {
                 }),
                 DeregisterOperationStatus::Success(s) => Ok(OperationStatus {
                     oper_status: OneOfoper_status::oper_success(OperationSuccess {
-                        deregistered_path: s.into_iter().map(|r| r.into()).collect::<Vec<_>>(),
+                        deregistered_path: s.into_iter().map(std::convert::Into::into).collect::<Vec<_>>(),
                     }),
                 }),
                 DeregisterOperationStatus::None => Err(anyhow::anyhow!("")),
@@ -103,13 +103,13 @@ pub struct DeregisterRespBuilder {
 }
 
 impl DeregisterRespBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             deregistered_path_results: vec![],
         }
     }
 
-    pub fn with_deregistered_path_results(
+    #[must_use] pub fn with_deregistered_path_results(
         mut self,
         deregistered_path_results: Vec<DeregisteredPathResultBuilder>,
     ) -> Self {
@@ -121,7 +121,7 @@ impl DeregisterRespBuilder {
         let deregistered_path_results = self
             .deregistered_path_results
             .into_iter()
-            .map(|r| r.build())
+            .map(DeregisteredPathResultBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {

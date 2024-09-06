@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::usp::mod_Set::{UpdateObject, UpdateParamSetting};
 use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
-    OneOfoper_status::*, OperationFailure, OperationSuccess,
+    OneOfoper_status::{oper_failure, oper_success}, OperationFailure, OperationSuccess,
 };
 use crate::usp::mod_SetResp::ParameterError;
 use crate::usp::mod_SetResp::{mod_UpdatedObjectResult::OperationStatus, UpdatedObjectResult};
@@ -19,14 +19,14 @@ pub struct UpdateObjectBuilder {
 }
 
 impl UpdateObjectBuilder {
-    pub const fn new(obj_path: String) -> Self {
+    #[must_use] pub const fn new(obj_path: String) -> Self {
         Self {
             obj_path,
             param_settings: vec![],
         }
     }
 
-    pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
+    #[must_use] pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
         self.param_settings = param_settings;
         self
     }
@@ -56,31 +56,31 @@ pub struct SetBuilder {
 }
 
 impl SetBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             allow_partial: false,
             update_objs: vec![],
         }
     }
 
-    pub fn with_allow_partial(mut self, allow_partial: bool) -> Self {
+    #[must_use] pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
         self.allow_partial = allow_partial;
         self
     }
 
-    pub fn with_update_objs(mut self, update_objs: Vec<UpdateObjectBuilder>) -> Self {
+    #[must_use] pub fn with_update_objs(mut self, update_objs: Vec<UpdateObjectBuilder>) -> Self {
         self.update_objs = update_objs;
         self
     }
 
     pub fn build(self) -> Result<Body<'static>> {
-        use crate::usp::mod_Body::OneOfmsg_body::*;
-        use crate::usp::mod_Request::OneOfreq_type::*;
+        use crate::usp::mod_Body::OneOfmsg_body::request;
+        use crate::usp::mod_Request::OneOfreq_type::set;
 
         let update_objs = self
             .update_objs
             .into_iter()
-            .map(|b| b.build())
+            .map(UpdateObjectBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
@@ -119,14 +119,14 @@ pub struct UpdatedInstanceFailureBuilder {
 }
 
 impl UpdatedInstanceFailureBuilder {
-    pub const fn new(affected_path: String) -> Self {
+    #[must_use] pub const fn new(affected_path: String) -> Self {
         Self {
             affected_path,
             param_errs: vec![],
         }
     }
 
-    pub fn with_param_errs(mut self, param_errs: Vec<SetRespParameterError>) -> Self {
+    #[must_use] pub fn with_param_errs(mut self, param_errs: Vec<SetRespParameterError>) -> Self {
         self.param_errs = param_errs;
         self
     }
@@ -147,11 +147,11 @@ pub enum SetOperationStatus {
 }
 
 impl SetOperationStatus {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self::None
     }
 
-    pub fn set_failure(
+    #[must_use] pub fn set_failure(
         self,
         err_code: u32,
         err_msg: Option<String>,
@@ -164,13 +164,13 @@ impl SetOperationStatus {
         })
     }
 
-    pub fn set_success(self, updated_inst_results: Vec<SetOperationSuccessBuilder>) -> Self {
+    #[must_use] pub fn set_success(self, updated_inst_results: Vec<SetOperationSuccessBuilder>) -> Self {
         Self::Success(updated_inst_results)
     }
 
     pub fn build(self) -> Result<OperationStatus<'static>> {
         match self {
-            SetOperationStatus::Failure(f) => Ok(OperationStatus {
+            Self::Failure(f) => Ok(OperationStatus {
                 oper_status: oper_failure(OperationFailure {
                     err_code: f.err_code,
                     err_msg: f.err_msg.into(),
@@ -196,7 +196,7 @@ impl SetOperationStatus {
                         .collect(),
                 }),
             }),
-            SetOperationStatus::Success(s) => Ok(OperationStatus {
+            Self::Success(s) => Ok(OperationStatus {
                 oper_status: oper_success(OperationSuccess {
                     updated_inst_results: s
                         .into_iter()
@@ -224,7 +224,7 @@ impl SetOperationStatus {
                         .collect(),
                 }),
             }),
-            SetOperationStatus::None => Err(anyhow::anyhow!("")),
+            Self::None => Err(anyhow::anyhow!("")),
         }
     }
 }
@@ -236,7 +236,7 @@ pub struct UpdatedObjectResultsBuilder {
 }
 
 impl UpdatedObjectResultsBuilder {
-    pub const fn new(requested_path: String, oper_status: SetOperationStatus) -> Self {
+    #[must_use] pub const fn new(requested_path: String, oper_status: SetOperationStatus) -> Self {
         Self {
             requested_path,
             oper_status,
@@ -257,13 +257,13 @@ pub struct SetRespBuilder {
 }
 
 impl SetRespBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             updated_obj_results: vec![],
         }
     }
 
-    pub fn with_updated_obj_results(
+    #[must_use] pub fn with_updated_obj_results(
         mut self,
         updated_obj_results: Vec<UpdatedObjectResultsBuilder>,
     ) -> Self {
@@ -272,13 +272,13 @@ impl SetRespBuilder {
     }
 
     pub fn build(self) -> Result<Body<'static>> {
-        use crate::usp::mod_Body::OneOfmsg_body::*;
-        use crate::usp::mod_Response::OneOfresp_type::*;
+        use crate::usp::mod_Body::OneOfmsg_body::response;
+        use crate::usp::mod_Response::OneOfresp_type::set_resp;
 
         let updated_obj_results = self
             .updated_obj_results
             .into_iter()
-            .map(|b| b.build())
+            .map(UpdatedObjectResultsBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {

@@ -23,7 +23,7 @@ pub enum OperationCompleteType {
 
 #[derive(Clone)]
 pub enum NotifyType {
-    /// USP OnBoardRequest notification
+    /// USP `OnBoardRequest` notification
     OnBoardRequest {
         /// The OUI associated with the manufacturer of the device
         oui: String,
@@ -37,7 +37,7 @@ pub enum NotifyType {
         /// A comma separated list of supported USP versions
         agent_supported_protocol_versions: String,
     },
-    /// USP ValueChange notification
+    /// USP `ValueChange` notification
     ValueChange {
         /// The path of the changed parameter
         param_path: String,
@@ -53,20 +53,20 @@ pub enum NotifyType {
         /// A stringified JSON object containing the output arguments of the USP Event
         params: HashMap<String, String>,
     },
-    /// USP ObjectCreation notification
+    /// USP `ObjectCreation` notification
     ObjectCreation {
         /// The path of the created object
         obj_path: String,
-        /// A stringified JSON object containing the unique_keys and values of the created Object
+        /// A stringified JSON object containing the `unique_keys` and values of the created Object
         unique_keys: HashMap<String, String>,
     },
-    /// USP ObjectDeletion notification
+    /// USP `ObjectDeletion` notification
     ObjectDeletion {
         /// The path of the deleted object
         obj_path: String,
     },
 
-    /// USP OperationComplete notification
+    /// USP `OperationComplete` notification
     OperationComplete {
         /// The path of the operation object
         obj_path: String,
@@ -87,7 +87,7 @@ pub struct NotifyBuilder {
 }
 
 impl NotifyBuilder {
-    pub const fn new(subscription_id: String) -> Self {
+    #[must_use] pub const fn new(subscription_id: String) -> Self {
         Self {
             subscription_id,
             send_resp: false,
@@ -95,12 +95,12 @@ impl NotifyBuilder {
         }
     }
 
-    pub fn with_send_resp(mut self, send_resp: bool) -> Self {
+    #[must_use] pub const fn with_send_resp(mut self, send_resp: bool) -> Self {
         self.send_resp = send_resp;
         self
     }
 
-    pub fn with_onboard_request(
+    #[must_use] pub fn with_onboard_request(
         mut self,
         oui: String,
         product_class: String,
@@ -116,7 +116,7 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn with_value_change(mut self, param_path: String, param_value: String) -> Self {
+    #[must_use] pub fn with_value_change(mut self, param_path: String, param_value: String) -> Self {
         self.notify_type = Some(NotifyType::ValueChange {
             param_path,
             param_value,
@@ -124,7 +124,7 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn with_event(
+    #[must_use] pub fn with_event(
         mut self,
         obj_path: String,
         event_name: String,
@@ -138,7 +138,7 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn with_object_creation(
+    #[must_use] pub fn with_object_creation(
         mut self,
         obj_path: String,
         unique_keys: HashMap<String, String>,
@@ -150,12 +150,12 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn with_object_deletion(mut self, obj_path: String) -> Self {
+    #[must_use] pub fn with_object_deletion(mut self, obj_path: String) -> Self {
         self.notify_type = Some(NotifyType::ObjectDeletion { obj_path });
         self
     }
 
-    pub fn with_operation_complete_output_args(
+    #[must_use] pub fn with_operation_complete_output_args(
         mut self,
         obj_path: String,
         command_name: String,
@@ -171,7 +171,7 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn with_operation_complete_cmd_failure(
+    #[must_use] pub fn with_operation_complete_cmd_failure(
         mut self,
         obj_path: String,
         command_name: String,
@@ -289,7 +289,7 @@ pub struct NotifyRespBuilder {
 }
 
 impl NotifyRespBuilder {
-    pub const fn new(subscription_id: String) -> Self {
+    #[must_use] pub const fn new(subscription_id: String) -> Self {
         Self { subscription_id }
     }
 

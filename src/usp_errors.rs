@@ -1,5 +1,5 @@
 /// Gets an USP error message from the error code, returning an empty str for unknown codes
-pub const fn get_err_msg(code: u32) -> &'static str {
+#[must_use] pub const fn get_err_msg(code: u32) -> &'static str {
     match code {
         7000 => "Message failed",
         7001 => "Message not supported",

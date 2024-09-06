@@ -15,7 +15,7 @@ impl Default for OperateResponse {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NotifyType {
-    /// USP OnBoardRequest notification
+    /// USP `OnBoardRequest` notification
     OnBoardRequest {
         /// The OUI associated with the manufacturer of the device
         oui: String,
@@ -29,7 +29,7 @@ pub enum NotifyType {
         /// A comma separated list of supported USP versions
         agent_supported_protocol_versions: String,
     },
-    /// USP ValueChange notification
+    /// USP `ValueChange` notification
     ValueChange {
         /// The path of the changed parameter
         param_path: String,
@@ -45,20 +45,20 @@ pub enum NotifyType {
         /// A stringified JSON object containing the output arguments of the USP Event
         params: HashMap<String, String>,
     },
-    /// USP ObjectCreation notification
+    /// USP `ObjectCreation` notification
     ObjectCreation {
         /// The path of the created object
         obj_path: String,
-        /// A stringified JSON object containing the unique_keys and values of the created Object
+        /// A stringified JSON object containing the `unique_keys` and values of the created Object
         unique_keys: HashMap<String, String>,
     },
-    /// USP ObjectDeletion notification
+    /// USP `ObjectDeletion` notification
     ObjectDeletion {
         /// The path of the deleted object
         obj_path: String,
     },
 
-    /// USP OperationComplete notification
+    /// USP `OperationComplete` notification
     OperationComplete {
         /// The path of the operation object
         obj_path: String,
@@ -85,12 +85,12 @@ pub enum PayloadSARState {
 
 impl From<PayloadSARState> for crate::usp_record::mod_SessionContextRecord::PayloadSARState {
     fn from(s: PayloadSARState) -> Self {
-        use crate::usp_record::mod_SessionContextRecord::PayloadSARState as PBPayloadSARState;
+        
         match s {
-            PayloadSARState::NONE => PBPayloadSARState::NONE,
-            PayloadSARState::BEGIN => PBPayloadSARState::BEGIN,
-            PayloadSARState::INPROCESS => PBPayloadSARState::INPROCESS,
-            PayloadSARState::COMPLETE => PBPayloadSARState::COMPLETE,
+            PayloadSARState::NONE => Self::NONE,
+            PayloadSARState::BEGIN => Self::BEGIN,
+            PayloadSARState::INPROCESS => Self::INPROCESS,
+            PayloadSARState::COMPLETE => Self::COMPLETE,
         }
     }
 }

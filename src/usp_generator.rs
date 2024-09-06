@@ -30,11 +30,11 @@ pub use crate::usp_types::{NotifyType, PayloadSARState, PayloadSecurity};
 ///     usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
 /// );
 /// ```
-pub fn usp_msg(msg_id: String, body: Body) -> Msg {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Header::MsgType::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+#[must_use] pub fn usp_msg(msg_id: String, body: Body) -> Msg {
+    use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
+    use crate::usp::mod_Header::MsgType::{ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP};
+    use crate::usp::mod_Request::OneOfreq_type::{add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol, notify, operate, register, set};
+    use crate::usp::mod_Response::OneOfresp_type::{add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp, get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp, register_resp, set_resp};
 
     let msg_type = match &body.msg_body {
         request(ref req) => match &req.req_type {
@@ -94,11 +94,11 @@ pub fn usp_msg(msg_id: String, body: Body) -> Msg {
 ///     &usp_get_request(&["Device.", "Device.DeviceInfo."], 0),
 /// );
 /// ```
-pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Header::MsgType::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+#[must_use] pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
+    use crate::usp::mod_Header::MsgType::{ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET, GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP, GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE, OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP};
+    use crate::usp::mod_Request::OneOfreq_type::{add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol, notify, operate, register, set};
+    use crate::usp::mod_Response::OneOfresp_type::{add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp, get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp, register_resp, set_resp};
 
     let msg_type = match body.msg_body {
         request(ref req) => match &req.req_type {
@@ -162,8 +162,8 @@ pub fn usp_msg_by_ref<'a>(msg_id: &'a str, body: &Body<'a>) -> Msg<'a> {
 /// use rusp::usp_generator::usp_simple_error;
 /// let err = usp_simple_error(7803, Some("Funny custom vendor error"));
 /// ```
-pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+#[must_use] pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
+    use crate::usp::mod_Body::OneOfmsg_body::error;
 
     let err_msg = message.unwrap_or_else(|| get_err_msg(code));
 
@@ -203,12 +203,12 @@ pub fn usp_simple_error(code: u32, message: Option<&str>) -> Body {
 ///     &[("Some.Path", 7804, "Funny error related to path")],
 /// );
 /// ```
-pub fn usp_error<'a>(
+#[must_use] pub fn usp_error<'a>(
     code: u32,
     message: Option<&'a str>,
     param_errs: &[(&'a str, u32, &'a str)],
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Body::OneOfmsg_body::error;
     use crate::usp::mod_Error::ParamError;
 
     let err_msg = message.unwrap_or_else(|| get_err_msg(code));
@@ -246,8 +246,8 @@ pub fn usp_error<'a>(
 /// let req = usp_get_request(&["Device.", "Device.DeviceInfo."], 0);
 /// ```
 pub fn usp_get_request<S: AsRef<str>>(params: &'_ [S], max_depth: u32) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::get;
 
     Body {
         msg_body: request({
@@ -280,8 +280,8 @@ pub fn usp_add_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
     args: &'_ [(S, V)],
 ) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::add;
 
     Body {
         msg_body: request({
@@ -327,8 +327,8 @@ pub fn usp_add_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 /// let req = usp_delete_request(true, &["Device.XMPP.Connection.1."]);
 /// ```
 pub fn usp_delete_request<S: AsRef<str>>(allow_partial: bool, obj_paths: &'_ [S]) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::delete;
 
     Body {
         msg_body: request({
@@ -364,8 +364,8 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
     allow_partial: bool,
     args: &'_ [(S, V)],
 ) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::set;
 
     Body {
         msg_body: request({
@@ -401,7 +401,7 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 ///
 /// # Arguments
 ///
-/// * `sub_id` - The subscription_id for the Notify
+/// * `sub_id` - The `subscription_id` for the Notify
 /// * `send_resp` - Whether this requests expects a response to be sent
 /// * `typ` - A filled out `NotifyType` structure
 ///
@@ -417,14 +417,14 @@ pub fn usp_set_request<S: AsRef<str>, V: AsRef<[(S, S, bool)]>>(
 ///     agent_supported_protocol_versions: "1.0".to_string()
 /// });
 /// ```
-pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyType) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+#[must_use] pub fn usp_notify_request<'a>(sub_id: &'a str, send_resp: bool, typ: &'a NotifyType) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::request;
     use crate::usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp;
-    use crate::usp::mod_Notify::OneOfnotification::*;
+    use crate::usp::mod_Notify::OneOfnotification::{event, obj_creation, obj_deletion, on_board_req, oper_complete, value_change};
     use crate::usp::mod_Notify::{
         Event, ObjectCreation, ObjectDeletion, OnBoardRequest, OperationComplete, ValueChange,
     };
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Request::OneOfreq_type::notify;
     use crate::usp_types::OperateResponse;
 
     Body {
@@ -545,8 +545,8 @@ pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
     send_resp: bool,
     args: V,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::operate;
 
     Body {
         msg_body: request({
@@ -568,11 +568,11 @@ pub fn usp_operate_request<'a, V: AsRef<[(&'a str, &'a str)]>>(
     }
 }
 
-/// Generates a body of a USP Msg with a USP GetInstances request
+/// Generates a body of a USP Msg with a USP `GetInstances` request
 ///
 /// # Arguments
 ///
-/// * `obj_paths` - An array of parameter/object names to put into the GetInstances request
+/// * `obj_paths` - An array of parameter/object names to put into the `GetInstances` request
 /// * `first_level_only` - Whether to just return information for the requested path or recursively
 ///
 /// # Example
@@ -585,8 +585,8 @@ pub fn usp_get_instances_request<S: AsRef<str>>(
     obj_paths: &'_ [S],
     first_level_only: bool,
 ) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::get_instances;
 
     Body {
         msg_body: request({
@@ -606,11 +606,11 @@ pub fn usp_get_instances_request<S: AsRef<str>>(
     }
 }
 
-/// Generates a body of a USP Msg with a USP GetSupportedDM request
+/// Generates a body of a USP Msg with a USP `GetSupportedDM` request
 ///
 /// # Arguments
 ///
-/// * `paths` - An array of parameter/object names to put into the GetSupportedDM request
+/// * `paths` - An array of parameter/object names to put into the `GetSupportedDM` request
 /// * `first_level_only` - Whether to just return information for the requested path or recursively
 /// * `return_commands` - Return commands in response
 /// * `return_events` - Return events in response
@@ -629,8 +629,8 @@ pub fn usp_get_supported_dm_request<S: AsRef<str>>(
     return_events: bool,
     return_params: bool,
 ) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::get_supported_dm;
 
     Body {
         msg_body: request({
@@ -653,7 +653,7 @@ pub fn usp_get_supported_dm_request<S: AsRef<str>>(
     }
 }
 
-/// Generates a body of a USP Msg with a USP GetSupportedProtocol request
+/// Generates a body of a USP Msg with a USP `GetSupportedProtocol` request
 ///
 /// # Arguments
 ///
@@ -665,9 +665,9 @@ pub fn usp_get_supported_dm_request<S: AsRef<str>>(
 /// use rusp::usp_generator::usp_get_supported_prototol_request;
 /// let req = usp_get_supported_prototol_request("1.1");
 /// ```
-pub fn usp_get_supported_prototol_request(cspv: &str) -> Body {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Request::OneOfreq_type::*;
+#[must_use] pub const fn usp_get_supported_prototol_request(cspv: &str) -> Body {
+    use crate::usp::mod_Body::OneOfmsg_body::request;
+    use crate::usp::mod_Request::OneOfreq_type::get_supported_protocol;
 
     Body {
         msg_body: request({
@@ -682,11 +682,11 @@ pub fn usp_get_supported_prototol_request(cspv: &str) -> Body {
     }
 }
 
-/// Creates a body for a USP Msg with a USP GetResp response
+/// Creates a body for a USP Msg with a USP `GetResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the GetResp response
+/// * `result` - A vector of Result tuples to put into the `GetResp` response
 ///
 /// # Example
 ///
@@ -697,15 +697,15 @@ pub fn usp_get_supported_prototol_request(cspv: &str) -> Body {
 ///         ("Dev.", Err((7000, "Message failed"))),
 ///     ]);
 /// ```
-pub fn usp_get_response<'a>(
+#[must_use] pub fn usp_get_response<'a>(
     result: Vec<(
         &'a str,
         Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
     )>,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_GetResp::{RequestedPathResult, ResolvedPathResult};
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::get_resp;
     use crate::usp::GetResp;
 
     Body {
@@ -765,11 +765,11 @@ pub struct RequestedPathResult<'a> {
 
 pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 
-/// Creates a body for a USP Msg with a USP GetResp response
+/// Creates a body for a USP Msg with a USP `GetResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the GetResp response
+/// * `result` - A vector of Result tuples to put into the `GetResp` response
 ///
 /// # Example
 ///
@@ -779,7 +779,7 @@ pub type GetResp<'a> = Vec<RequestedPathResult<'a>>;
 /// let deserialised : GetResp = serde_json::from_str(&json).unwrap();
 /// let resp = usp_get_response_from_json(&deserialised);
 /// ```
-pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Body<'a> {
+#[must_use] pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Body<'a> {
     let mut d: Vec<(&str, Result<Vec<(&str, Vec<(&str, &str)>)>, (u32, &str)>)> =
         Default::default();
     for req_path_result in getresp {
@@ -798,7 +798,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
                             .collect(),
                     ));
                 }
-                d.push((req_path_result.requested_path, Ok(resolved_path_result)))
+                d.push((req_path_result.requested_path, Ok(resolved_path_result)));
             }
 
             _ => d.push((
@@ -811,7 +811,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
     usp_get_response(d)
 }
 
-/// Wraps a Usp Msg into an "no_session_context" USP Record with the specified record information
+/// Wraps a Usp Msg into an "`no_session_context`" USP Record with the specified record information
 ///
 /// # Arguments
 ///
@@ -823,7 +823,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 ///   non-payload fields, when integrity protection of non-payload fields is performed
 /// * `sender_cert` - PEM encoded certificate used to provide the signature in the `mac_signature`
 ///   field, when the payload security mechanism does not provide the mechanism to do so
-/// * `msg` - The ProtoBuf encoded USP Msg
+/// * `msg` - The `ProtoBuf` encoded USP Msg
 ///
 /// # Example
 ///
@@ -840,7 +840,7 @@ pub fn usp_get_response_from_json<'a>(getresp: &[RequestedPathResult<'a>]) -> Bo
 ///     &[],
 /// );
 /// ```
-pub fn usp_no_session_context_record<'a>(
+#[must_use] pub fn usp_no_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -865,7 +865,7 @@ pub fn usp_no_session_context_record<'a>(
     }
 }
 
-/// Wraps a Usp Msg into an "session_context" USP Record with the specified record information
+/// Wraps a Usp Msg into an "`session_context`" USP Record with the specified record information
 ///
 /// # Arguments
 ///
@@ -881,7 +881,7 @@ pub fn usp_no_session_context_record<'a>(
 /// * `sequence_id` - The sequence number within the context session
 /// * `expected_id` - The expected next sequence number within the context session
 /// * `retransmit_id` - The sequence number of the part which is being retransmitted
-/// * `msg` - The ProtoBuf encoded USP Msg
+/// * `msg` - The `ProtoBuf` encoded USP Msg
 ///
 /// # Example
 ///
@@ -905,7 +905,7 @@ pub fn usp_no_session_context_record<'a>(
 /// );
 /// ```
 #[allow(clippy::too_many_arguments)]
-pub fn usp_session_context_record<'a>(
+#[must_use] pub fn usp_session_context_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -965,7 +965,7 @@ pub fn usp_session_context_record<'a>(
 ///
 /// let newrecord = usp_mqtt_connect_record("1.3", "doc::to", "doc::from", PayloadSecurity::PLAINTEXT, &[], &[], false, "/topic/doc::from");
 /// ```
-pub fn usp_mqtt_connect_record<'a>(
+#[must_use] pub fn usp_mqtt_connect_record<'a>(
     version: &'a str,
     to_id: &'a str,
     from_id: &'a str,
@@ -997,11 +997,11 @@ pub fn usp_mqtt_connect_record<'a>(
     }
 }
 
-/// Creates a body for a USP Msg with a USP NotifyResp response
+/// Creates a body for a USP Msg with a USP `NotifyResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the NotifyResp response
+/// * `result` - A vector of Result tuples to put into the `NotifyResp` response
 ///
 /// # Example
 ///
@@ -1009,9 +1009,9 @@ pub fn usp_mqtt_connect_record<'a>(
 /// use rusp::usp_generator::usp_notify_response;
 /// let resp = usp_notify_response("fancy_sub_id");
 /// ```
-pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+#[must_use] pub const fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
+    use crate::usp::mod_Body::OneOfmsg_body::response;
+    use crate::usp::mod_Response::OneOfresp_type::notify_resp;
     use crate::usp::NotifyResp;
 
     Body {
@@ -1027,11 +1027,11 @@ pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
     }
 }
 
-/// Creates a body for a USP Msg with a USP AddResp response
+/// Creates a body for a USP Msg with a USP `AddResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the AddResp response
+/// * `result` - A vector of Result tuples to put into the `AddResp` response
 ///
 /// # Example
 ///
@@ -1043,7 +1043,7 @@ pub fn usp_notify_response(subscription_id: &'_ str) -> Body<'_> {
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn usp_add_response<'a>(
+#[must_use] pub fn usp_add_response<'a>(
     result: Vec<(
         &'a str,
         Result<
@@ -1062,8 +1062,8 @@ pub fn usp_add_response<'a>(
     use crate::usp::mod_AddResp::mod_CreatedObjectResult::OperationStatus;
     use crate::usp::mod_AddResp::CreatedObjectResult;
     use crate::usp::mod_AddResp::ParameterError;
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
+    use crate::usp::mod_Response::OneOfresp_type::add_resp;
     use crate::usp::AddResp;
 
     Body {
@@ -1112,7 +1112,7 @@ pub fn usp_add_response<'a>(
                                     }),
                                 }
                             }
-                        })
+                        });
                     }
                     addrsp
                 }),
@@ -1121,11 +1121,11 @@ pub fn usp_add_response<'a>(
     }
 }
 
-/// Creates a body for a USP Msg with a USP DeleteResp response
+/// Creates a body for a USP Msg with a USP `DeleteResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the DeleteResp response
+/// * `result` - A vector of Result tuples to put into the `DeleteResp` response
 ///
 /// # Example
 ///
@@ -1143,13 +1143,13 @@ pub fn usp_delete_response<'a>(
         Result<(Vec<&'a str>, Vec<(&'a str, u32, &'a str)>), (u32, &'a str)>,
     )>,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::{
         OneOfoper_status, OperationFailure, OperationSuccess,
     };
     use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::OperationStatus;
     use crate::usp::mod_DeleteResp::{DeletedObjectResult, UnaffectedPathError};
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::delete_resp;
     use crate::usp::DeleteResp;
 
     Body {
@@ -1197,7 +1197,7 @@ pub fn usp_delete_response<'a>(
                                     }),
                                 }
                             }
-                        })
+                        });
                     }
                     del_rsp
                 }),
@@ -1206,11 +1206,11 @@ pub fn usp_delete_response<'a>(
     }
 }
 
-/// Creates a body for a USP Msg with a USP GetInstancesResp response
+/// Creates a body for a USP Msg with a USP `GetInstancesResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the GetInstancesResp response
+/// * `result` - A vector of Result tuples to put into the `GetInstancesResp` response
 ///
 /// # Example
 ///
@@ -1222,15 +1222,15 @@ pub fn usp_delete_response<'a>(
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn usp_get_instances_response<'a>(
+#[must_use] pub fn usp_get_instances_response<'a>(
     result: Vec<(
         &'a str,
         Result<Vec<(&'a str, Vec<(&'a str, &'a str)>)>, (u32, &'a str)>,
     )>,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_GetInstancesResp::{CurrInstance, RequestedPathResult};
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::get_instances_resp;
     use crate::usp::GetInstancesResp;
 
     Body {
@@ -1269,7 +1269,7 @@ pub fn usp_get_instances_response<'a>(
                                 err_msg: Cow::Borrowed(err_msg),
                                 curr_insts: Vec::default(),
                             },
-                        })
+                        });
                     }
                     get_instances_rsp
                 }),
@@ -1278,7 +1278,7 @@ pub fn usp_get_instances_response<'a>(
     }
 }
 
-/// Creates a body for a USP Msg with a USP GetSupportedProtocolResp response
+/// Creates a body for a USP Msg with a USP `GetSupportedProtocolResp` response
 ///
 /// # Arguments
 ///
@@ -1290,9 +1290,9 @@ pub fn usp_get_instances_response<'a>(
 /// use rusp::usp_generator::usp_get_supported_protocol_response;
 /// let resp = usp_get_supported_protocol_response("1.1");
 /// ```
-pub fn usp_get_supported_protocol_response(result: &str) -> Body {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+#[must_use] pub const fn usp_get_supported_protocol_response(result: &str) -> Body {
+    use crate::usp::mod_Body::OneOfmsg_body::response;
+    use crate::usp::mod_Response::OneOfresp_type::get_supported_protocol_resp;
     use crate::usp::GetSupportedProtocolResp;
 
     Body {
@@ -1319,7 +1319,7 @@ pub enum OperationResponse<'a> {
     Error(u32, &'a str),
 }
 
-/// Creates a body for a USP Msg with a USP OperateResp response
+/// Creates a body for a USP Msg with a USP `OperateResp` response
 ///
 /// # Arguments
 ///
@@ -1338,13 +1338,13 @@ pub enum OperationResponse<'a> {
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+#[must_use] pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -> Body<'a> {
+    use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_OperateResp::mod_OperationResult::{
         CommandFailure, OneOfoperation_resp, OutputArgs,
     };
     use crate::usp::mod_OperateResp::OperationResult;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::operate_resp;
     use crate::usp::OperateResp;
 
     Body {
@@ -1384,7 +1384,7 @@ pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -
                                     operation_resp: OneOfoperation_resp::cmd_failure(cmd_fail),
                                 }
                             }
-                        })
+                        });
                     }
                     operate_rsp
                 }),
@@ -1393,11 +1393,11 @@ pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -
     }
 }
 
-/// Creates a body for a USP Msg with a USP SetResp response
+/// Creates a body for a USP Msg with a USP `SetResp` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the SetResp response
+/// * `result` - A vector of Result tuples to put into the `SetResp` response
 ///
 /// # Example
 ///
@@ -1409,7 +1409,7 @@ pub fn usp_operate_response<'a>(result: Vec<(&'a str, OperationResponse<'a>)>) -
 ///     ]);
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn usp_set_response<'a>(
+#[must_use] pub fn usp_set_response<'a>(
     result: Vec<(
         &'a str,
         Result<
@@ -1422,8 +1422,8 @@ pub fn usp_set_response<'a>(
         >,
     )>,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
+    use crate::usp::mod_Response::OneOfresp_type::set_resp;
     use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
         OneOfoper_status, OperationFailure, OperationSuccess,
     };
@@ -1503,7 +1503,7 @@ pub fn usp_set_response<'a>(
                                     oper_status: Some(op_status),
                                 }
                             }
-                        })
+                        });
                     }
                     setrsp
                 }),
@@ -1512,11 +1512,11 @@ pub fn usp_set_response<'a>(
     }
 }
 
-/// Creates a body for a USP Msg with a USP GetSupportedDM response
+/// Creates a body for a USP Msg with a USP `GetSupportedDM` response
 ///
 /// # Arguments
 ///
-/// * `result` - A vector of Result tuples to put into the GetSupportedDM response
+/// * `result` - A vector of Result tuples to put into the `GetSupportedDM` response
 ///
 /// # Example
 ///
@@ -1566,12 +1566,12 @@ pub fn usp_get_supported_dm_response<'a>(
         >,
     )>,
 ) -> Body<'a> {
-    use crate::usp::mod_Body::OneOfmsg_body::*;
+    use crate::usp::mod_Body::OneOfmsg_body::response;
     use crate::usp::mod_GetSupportedDMResp::{
         RequestedObjectResult, SupportedCommandResult, SupportedEventResult, SupportedObjectResult,
         SupportedParamResult,
     };
-    use crate::usp::mod_Response::OneOfresp_type::*;
+    use crate::usp::mod_Response::OneOfresp_type::get_supported_dm_resp;
     use crate::usp::GetSupportedDMResp;
 
     Body {
@@ -1677,7 +1677,7 @@ pub fn usp_get_supported_dm_response<'a>(
                                 data_model_inst_uri: Cow::Borrowed(uri),
                                 supported_objs: Vec::default(),
                             },
-                        })
+                        });
                     }
                     supported_dm_rsp
                 }),

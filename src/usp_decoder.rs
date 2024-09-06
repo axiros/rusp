@@ -89,7 +89,7 @@ impl<'a> Msg<'a> {
     ///     ]);
     /// assert_eq!(msg.unwrap().msg_id(), "AXSS-1544114045.442596");
     /// ```
-    pub fn msg_id(&'a self) -> &str {
+    #[must_use] pub fn msg_id(&'a self) -> &str {
         if let Some(header) = self.header.as_ref() {
             header.msg_id.as_ref()
         } else {
@@ -136,7 +136,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_request(), false);
     /// ```
-    pub fn is_request(&'a self) -> bool {
+    #[must_use] pub const fn is_request(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
             matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_))
         } else {
@@ -183,7 +183,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_notify_request(), false);
     /// ```
-    pub fn is_notify_request(&'a self) -> bool {
+    #[must_use] pub const fn is_notify_request(&'a self) -> bool {
         self.get_notify_request().is_some()
     }
 
@@ -226,7 +226,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert!(msg.get_notify_request().is_none());
     /// ```
-    pub fn get_notify_request(&'a self) -> Option<&Notify> {
+    #[must_use] pub const fn get_notify_request(&'a self) -> Option<&Notify> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::request(request) = &body.msg_body {
                 if let usp::mod_Request::OneOfreq_type::notify(notify) = &request.req_type {
@@ -277,7 +277,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_response(), true);
     /// ```
-    pub fn is_response(&'a self) -> bool {
+    #[must_use] pub const fn is_response(&'a self) -> bool {
         if let Some(body) = self.body.as_ref() {
             matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_))
         } else {
@@ -336,7 +336,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.is_error(), true);
     /// ```
-    pub fn is_error(&'a self) -> bool {
+    #[must_use] pub const fn is_error(&'a self) -> bool {
         self.get_error().is_some()
     }
 
@@ -391,7 +391,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert!(msg.get_error().is_some());
     /// ```
-    pub fn get_error(&'a self) -> Option<&Error> {
+    #[must_use] pub const fn get_error(&'a self) -> Option<&Error> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::error(error) = &body.msg_body {
                 return Some(error);
@@ -423,7 +423,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.to_json().unwrap(), "{\"Header\":{\"msg_id\":\"test\",\"msg_type\":\"NOTIFY\"},\"Body\":{\"Request\":{\"Notify\":{\"subscription_id\":\"notif\",\"send_resp\":true,\"on_board_req\":{\"oui\":\"0044FF\",\"product_class\":\"Foo\",\"serial_number\":\"01234\",\"agent_supported_protocol_versions\":\"1.3\"}}}}}");
     /// ```
-    pub fn to_json(&'a self) -> Option<String> {
+    #[must_use] pub fn to_json(&'a self) -> Option<String> {
         serde_json::to_string(self).ok()
     }
 

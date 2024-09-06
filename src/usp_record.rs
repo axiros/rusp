@@ -11,8 +11,8 @@
 
 use std::borrow::Cow;
 use quick_protobuf::{MessageInfo, MessageRead, MessageWrite, BytesReader, Writer, WriterBackend, Result};
-use quick_protobuf::sizeofs::*;
-use super::*;
+use quick_protobuf::sizeofs::{sizeof_len, sizeof_varint};
+use super::usp_record;
 
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Debug, Default, PartialEq, Clone)]
@@ -93,7 +93,7 @@ impl<'a> MessageWrite for Record<'a> {
 
 pub mod mod_Record {
 
-use super::*;
+use super::usp_record;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PayloadSecurity {
@@ -103,15 +103,15 @@ pub enum PayloadSecurity {
 
 impl Default for PayloadSecurity {
     fn default() -> Self {
-        PayloadSecurity::PLAINTEXT
+        Self::PLAINTEXT
     }
 }
 
 impl From<i32> for PayloadSecurity {
     fn from(i: i32) -> Self {
         match i {
-            0 => PayloadSecurity::PLAINTEXT,
-            1 => PayloadSecurity::TLS12,
+            0 => Self::PLAINTEXT,
+            1 => Self::TLS12,
             _ => Self::default(),
         }
     }
@@ -120,8 +120,8 @@ impl From<i32> for PayloadSecurity {
 impl<'a> From<&'a str> for PayloadSecurity {
     fn from(s: &'a str) -> Self {
         match s {
-            "PLAINTEXT" => PayloadSecurity::PLAINTEXT,
-            "TLS12" => PayloadSecurity::TLS12,
+            "PLAINTEXT" => Self::PLAINTEXT,
+            "TLS12" => Self::TLS12,
             _ => Self::default(),
         }
     }
@@ -248,17 +248,17 @@ pub enum PayloadSARState {
 
 impl Default for PayloadSARState {
     fn default() -> Self {
-        PayloadSARState::NONE
+        Self::NONE
     }
 }
 
 impl From<i32> for PayloadSARState {
     fn from(i: i32) -> Self {
         match i {
-            0 => PayloadSARState::NONE,
-            1 => PayloadSARState::BEGIN,
-            2 => PayloadSARState::INPROCESS,
-            3 => PayloadSARState::COMPLETE,
+            0 => Self::NONE,
+            1 => Self::BEGIN,
+            2 => Self::INPROCESS,
+            3 => Self::COMPLETE,
             _ => Self::default(),
         }
     }
@@ -267,10 +267,10 @@ impl From<i32> for PayloadSARState {
 impl<'a> From<&'a str> for PayloadSARState {
     fn from(s: &'a str) -> Self {
         match s {
-            "NONE" => PayloadSARState::NONE,
-            "BEGIN" => PayloadSARState::BEGIN,
-            "INPROCESS" => PayloadSARState::INPROCESS,
-            "COMPLETE" => PayloadSARState::COMPLETE,
+            "NONE" => Self::NONE,
+            "BEGIN" => Self::BEGIN,
+            "INPROCESS" => Self::INPROCESS,
+            "COMPLETE" => Self::COMPLETE,
             _ => Self::default(),
         }
     }
@@ -338,15 +338,15 @@ pub enum MQTTVersion {
 
 impl Default for MQTTVersion {
     fn default() -> Self {
-        MQTTVersion::V3_1_1
+        Self::V3_1_1
     }
 }
 
 impl From<i32> for MQTTVersion {
     fn from(i: i32) -> Self {
         match i {
-            0 => MQTTVersion::V3_1_1,
-            1 => MQTTVersion::V5,
+            0 => Self::V3_1_1,
+            1 => Self::V5,
             _ => Self::default(),
         }
     }
@@ -355,8 +355,8 @@ impl From<i32> for MQTTVersion {
 impl<'a> From<&'a str> for MQTTVersion {
     fn from(s: &'a str) -> Self {
         match s {
-            "V3_1_1" => MQTTVersion::V3_1_1,
-            "V5" => MQTTVersion::V5,
+            "V3_1_1" => Self::V3_1_1,
+            "V5" => Self::V5,
             _ => Self::default(),
         }
     }
@@ -410,14 +410,14 @@ pub enum STOMPVersion {
 
 impl Default for STOMPVersion {
     fn default() -> Self {
-        STOMPVersion::V1_2
+        Self::V1_2
     }
 }
 
 impl From<i32> for STOMPVersion {
     fn from(i: i32) -> Self {
         match i {
-            0 => STOMPVersion::V1_2,
+            0 => Self::V1_2,
             _ => Self::default(),
         }
     }
@@ -426,7 +426,7 @@ impl From<i32> for STOMPVersion {
 impl<'a> From<&'a str> for STOMPVersion {
     fn from(s: &'a str) -> Self {
         match s {
-            "V1_2" => STOMPVersion::V1_2,
+            "V1_2" => Self::V1_2,
             _ => Self::default(),
         }
     }

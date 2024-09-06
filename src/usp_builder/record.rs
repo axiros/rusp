@@ -47,7 +47,7 @@ pub struct SessionContextBuilder {
 }
 
 impl SessionContextBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             session_id: None,
             sequence_id: None,
@@ -57,27 +57,27 @@ impl SessionContextBuilder {
         }
     }
 
-    pub fn with_session_id(mut self, session_id: u64) -> Self {
+    #[must_use] pub const fn with_session_id(mut self, session_id: u64) -> Self {
         self.session_id = Some(session_id);
         self
     }
 
-    pub fn with_sequence_id(mut self, sequence_id: u64) -> Self {
+    #[must_use] pub const fn with_sequence_id(mut self, sequence_id: u64) -> Self {
         self.sequence_id = Some(sequence_id);
         self
     }
 
-    pub fn with_expected_id(mut self, expected_id: u64) -> Self {
+    #[must_use] pub const fn with_expected_id(mut self, expected_id: u64) -> Self {
         self.expected_id = Some(expected_id);
         self
     }
 
-    pub fn with_retransmit_id(mut self, retransmit_id: u64) -> Self {
+    #[must_use] pub const fn with_retransmit_id(mut self, retransmit_id: u64) -> Self {
         self.retransmit_id = retransmit_id;
         self
     }
 
-    pub fn with_payload(mut self, payload: Vec<u8>) -> Self {
+    #[must_use] pub fn with_payload(mut self, payload: Vec<u8>) -> Self {
         self.payload = Some(payload);
         self
     }
@@ -122,7 +122,7 @@ pub struct RecordBuilder {
 }
 
 impl RecordBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             version: String::new(),
             to_id: None,
@@ -135,27 +135,27 @@ impl RecordBuilder {
         }
     }
 
-    pub fn with_version(mut self, version: String) -> Self {
+    #[must_use] pub fn with_version(mut self, version: String) -> Self {
         self.version = version;
         self
     }
 
-    pub fn with_to_id(mut self, id: String) -> Self {
+    #[must_use] pub fn with_to_id(mut self, id: String) -> Self {
         self.to_id = Some(id);
         self
     }
 
-    pub fn with_from_id(mut self, id: String) -> Self {
+    #[must_use] pub fn with_from_id(mut self, id: String) -> Self {
         self.from_id = Some(id);
         self
     }
 
-    pub fn with_session_context_builder(mut self, session_context: SessionContextBuilder) -> Self {
+    #[must_use] pub fn with_session_context_builder(mut self, session_context: SessionContextBuilder) -> Self {
         self.typ = RecordType::SessionContext { session_context };
         self
     }
 
-    pub fn with_no_session_context_payload(mut self, msg: Msg) -> Self {
+    #[must_use] pub fn with_no_session_context_payload(mut self, msg: Msg) -> Self {
         let mut buf = Vec::new();
         let mut writer = quick_protobuf::Writer::new(&mut buf);
         quick_protobuf::MessageWrite::write_message(&msg, &mut writer).unwrap();
@@ -163,17 +163,17 @@ impl RecordBuilder {
         self.with_no_session_context_payload_bytes(buf)
     }
 
-    pub fn with_no_session_context_payload_bytes(mut self, buf: Vec<u8>) -> Self {
+    #[must_use] pub fn with_no_session_context_payload_bytes(mut self, buf: Vec<u8>) -> Self {
         self.payload = Some(buf);
         self
     }
 
-    pub fn as_websocket_connect_record(mut self) -> Self {
+    #[must_use] pub fn as_websocket_connect_record(mut self) -> Self {
         self.typ = RecordType::WebSocketConnect;
         self
     }
 
-    pub fn as_mqtt_connect_record(
+    #[must_use] pub fn as_mqtt_connect_record(
         mut self,
         version: MQTTVersion,
         subscribed_topic: String,
@@ -185,7 +185,7 @@ impl RecordBuilder {
         self
     }
 
-    pub fn as_stomp_connect_record(
+    #[must_use] pub fn as_stomp_connect_record(
         mut self,
         version: crate::usp_record::mod_STOMPConnectRecord::STOMPVersion,
         subscribed_destination: String,
@@ -197,7 +197,7 @@ impl RecordBuilder {
         self
     }
 
-    pub fn as_disconnect_record(mut self, reason: String, reason_code: u32) -> Self {
+    #[must_use] pub fn as_disconnect_record(mut self, reason: String, reason_code: u32) -> Self {
         self.typ = RecordType::Disconnect {
             reason,
             reason_code,
@@ -205,7 +205,7 @@ impl RecordBuilder {
         self
     }
 
-    pub fn as_uds_connect_record(mut self) -> Self {
+    #[must_use] pub fn as_uds_connect_record(mut self) -> Self {
         self.typ = RecordType::UDSConnect;
         self
     }

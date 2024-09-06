@@ -1,6 +1,6 @@
 use crate::usp::mod_Body::OneOfmsg_body::{request, response};
 use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::{
-    OneOfoper_status::*, OperationFailure, OperationSuccess,
+    OneOfoper_status::{oper_failure, oper_success}, OperationFailure, OperationSuccess,
 };
 use crate::usp::mod_DeleteResp::UnaffectedPathError;
 use crate::usp::mod_DeleteResp::{mod_DeletedObjectResult::OperationStatus, DeletedObjectResult};
@@ -18,19 +18,19 @@ pub struct DeleteBuilder {
 }
 
 impl DeleteBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             allow_partial: false,
             obj_paths: vec![],
         }
     }
 
-    pub fn with_allow_partial(mut self, allow_partial: bool) -> Self {
+    #[must_use] pub const fn with_allow_partial(mut self, allow_partial: bool) -> Self {
         self.allow_partial = allow_partial;
         self
     }
 
-    pub fn with_obj_paths(mut self, params: Vec<String>) -> Self {
+    #[must_use] pub fn with_obj_paths(mut self, params: Vec<String>) -> Self {
         self.obj_paths = params;
         self
     }
@@ -78,14 +78,14 @@ pub struct DeletedObjectResultsBuilder {
 }
 
 impl DeletedObjectResultsBuilder {
-    pub const fn new(requested_path: String) -> Self {
+    #[must_use] pub const fn new(requested_path: String) -> Self {
         Self {
             requested_path,
             oper_status: DeleteRespOperationStatus::None,
         }
     }
 
-    pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
+    #[must_use] pub fn set_failure(mut self, err_code: u32, err_msg: Option<String>) -> Self {
         self.oper_status = DeleteRespOperationStatus::Failure {
             err_code,
             err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
@@ -93,7 +93,7 @@ impl DeletedObjectResultsBuilder {
         self
     }
 
-    pub fn set_success(
+    #[must_use] pub fn set_success(
         mut self,
         affected_paths: Vec<String>,
         unaffected_path_errs: Vec<DeleteRespUnaffectedPathError>,
@@ -145,13 +145,13 @@ pub struct DeleteRespBuilder {
 }
 
 impl DeleteRespBuilder {
-    pub const fn new() -> Self {
+    #[must_use] pub const fn new() -> Self {
         Self {
             deleted_obj_results: vec![],
         }
     }
 
-    pub fn with_deleted_obj_results(
+    #[must_use] pub fn with_deleted_obj_results(
         mut self,
         deleted_obj_results: Vec<DeletedObjectResultsBuilder>,
     ) -> Self {
@@ -168,7 +168,7 @@ impl DeleteRespBuilder {
                             deleted_obj_results: self
                                 .deleted_obj_results
                                 .into_iter()
-                                .map(|r| r.build())
+                                .map(DeletedObjectResultsBuilder::build)
                                 .collect::<Result<Vec<_>>>()?,
                         }
                     }),

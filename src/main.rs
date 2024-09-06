@@ -218,7 +218,7 @@ enum RuspAction {
     },
 }
 
-/// Parse a JSON object into a Rust HashMap
+/// Parse a JSON object into a Rust `HashMap`
 fn parse_key_val_json(s: &str) -> Result<HashMap<String, String>, String> {
     serde_json::from_str::<HashMap<String, String>>(s).map_err(|e| e.to_string())
 }
@@ -238,7 +238,7 @@ impl Default for OperateResponse {
 
 #[derive(Parser, PartialEq, Eq)]
 enum NotifyType {
-    /// USP OnBoardRequest notification
+    /// USP `OnBoardRequest` notification
     OnBoardRequest {
         /// The OUI associated with the manufacturer of the device
         oui: String,
@@ -252,7 +252,7 @@ enum NotifyType {
         /// A comma separated list of supported USP versions
         agent_supported_protocol_versions: String,
     },
-    /// USP ValueChange notification
+    /// USP `ValueChange` notification
     ValueChange {
         /// The path of the changed parameter
         param_path: String,
@@ -269,21 +269,21 @@ enum NotifyType {
         #[arg(value_parser = parse_key_val_json)]
         params: HashMap<String, String>,
     },
-    /// USP ObjectCreation notification
+    /// USP `ObjectCreation` notification
     ObjectCreation {
         /// The path of the created object
         obj_path: String,
-        /// A stringified JSON object containing the unique_keys and values of the created Object
+        /// A stringified JSON object containing the `unique_keys` and values of the created Object
         #[arg(value_parser = parse_key_val_json)]
         unique_keys: HashMap<String, String>,
     },
-    /// USP ObjectDeletion notification
+    /// USP `ObjectDeletion` notification
     ObjectDeletion {
         /// The path of the deleted object
         obj_path: String,
     },
 
-    /// USP OperationComplete notification
+    /// USP `OperationComplete` notification
     OperationComplete {
         /// The path of the operation object
         obj_path: String,
@@ -307,7 +307,7 @@ impl TryFrom<NotifyType> for RuspNotifyType {
                 product_class,
                 serial_number,
                 agent_supported_protocol_versions,
-            } => RuspNotifyType::OnBoardRequest {
+            } => Self::OnBoardRequest {
                 oui,
                 product_class,
                 serial_number,
@@ -316,7 +316,7 @@ impl TryFrom<NotifyType> for RuspNotifyType {
             NotifyType::ValueChange {
                 param_path,
                 param_value,
-            } => RuspNotifyType::ValueChange {
+            } => Self::ValueChange {
                 param_path,
                 param_value,
             },
@@ -324,7 +324,7 @@ impl TryFrom<NotifyType> for RuspNotifyType {
                 obj_path,
                 event_name,
                 params,
-            } => RuspNotifyType::Event {
+            } => Self::Event {
                 obj_path,
                 event_name,
                 params,
@@ -332,17 +332,17 @@ impl TryFrom<NotifyType> for RuspNotifyType {
             NotifyType::ObjectCreation {
                 obj_path,
                 unique_keys,
-            } => RuspNotifyType::ObjectCreation {
+            } => Self::ObjectCreation {
                 obj_path,
                 unique_keys,
             },
-            NotifyType::ObjectDeletion { obj_path } => RuspNotifyType::ObjectDeletion { obj_path },
+            NotifyType::ObjectDeletion { obj_path } => Self::ObjectDeletion { obj_path },
             NotifyType::OperationComplete {
                 obj_path,
                 command_name,
                 command_key,
                 operation_resp,
-            } => RuspNotifyType::OperationComplete {
+            } => Self::OperationComplete {
                 obj_path,
                 command_name,
                 command_key,
@@ -402,14 +402,14 @@ enum MsgType {
         #[arg(long = "max_depth")]
         max_depth: Option<u32>,
     },
-    /// Generate an USP GetResp response message
+    /// Generate an USP `GetResp` response message
     #[command(name = "GetResp")]
     USPGetResp {
-        /// A JSON array of Strings resembling the result data for the GetResp operation
+        /// A JSON array of Strings resembling the result data for the `GetResp` operation
         #[arg(num_args(1..))]
         result: Vec<String>,
     },
-    /// Generate an USP GetInstances request message
+    /// Generate an USP `GetInstances` request message
     #[command(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
@@ -421,7 +421,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         obj_paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedDM request message
+    /// Generate an USP `GetSupportedDM` request message
     #[command(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
@@ -445,7 +445,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedProtocol request message
+    /// Generate an USP `GetSupportedProtocol` request message
     #[command(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
@@ -563,7 +563,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let args = args.join(" ");
             let v = serde_json::from_str::<Vec<(String, Vec<(String, String, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {}", args))?;
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {args}"))?;
 
             let builder = usp_builder::AddBuilder::new().with_allow_partial(allow_partial);
 
@@ -579,7 +579,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let obj_paths = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got {}", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got {obj_paths}"))?;
             serialize_into_vec(&usp_builder::DeleteBuilder::new().with_allow_partial(allow_partial).with_obj_paths(obj_paths).build()?)
         }
         MsgType::USPError { code, message } => {
@@ -589,7 +589,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         MsgType::USPGet { paths, max_depth } => {
             let paths = paths.join(" ");
             let v = serde_json::from_str::<Vec<String>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\", got {}", paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\", got {paths}"))?;
             serialize_into_vec(&usp_builder::GetBuilder::new().with_max_depth(max_depth.unwrap_or(0)).with_params(v).build()?)
         }
         MsgType::USPGetInstances {
@@ -598,7 +598,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let obj_paths = obj_paths.join(" ");
             let v = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {}", obj_paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {obj_paths}"))?;
             serialize_into_vec(&usp_builder::GetInstancesBuilder::new().with_first_level_only(first_level_only).with_obj_paths(v).build()?
         )}
         MsgType::USPGetSupportedDM {
@@ -610,7 +610,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             paths,
         } => {
             let v = serde_json::from_str::<Vec<String>>(&paths.join(" "))
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {:?}", paths))?;
+                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {paths:?}"))?;
             let msg = usp_builder::GetSupportedDMBuilder::new()
                 .with_first_level_only(first_level_only)
                 .with_return_commands(return_commands)
@@ -631,17 +631,17 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             let getresp_json: Vec<(String, u32, String, Vec<(String, HashMap<String, String>)>)> = serde_json::from_str(&result)?;
 
             let mut getrespb = usp_builder::GetRespBuilder::new();
-            for req_path_result in getresp_json.into_iter() {
+            for req_path_result in getresp_json {
                 let mut reqpathbuilder = usp_builder::GetReqPathResultBuilder::new(req_path_result.0);
                 if req_path_result.1 != 0
                 {
                     reqpathbuilder.err_code = req_path_result.1;
                 }
-                for res_path_result in req_path_result.3.into_iter() {
+                for res_path_result in req_path_result.3 {
                     let respathbuilder = usp_builder::ResolvedPathResultBuilder::new(res_path_result.0).with_result_params(res_path_result.1.into_iter().collect());
                     reqpathbuilder = reqpathbuilder.with_res_path_results(vec![respathbuilder]);
                 }
-                getrespb = getrespb.with_req_path_results(vec![reqpathbuilder])
+                getrespb = getrespb.with_req_path_results(vec![reqpathbuilder]);
             }
 
             serialize_into_vec(&getrespb.build()?)
@@ -680,7 +680,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             let args = args.join(" ");
             let v = if !args.is_empty() {
                 serde_json::from_str::<Vec<(String, String)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\", got {}", args))?
+                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\", got {args}"))?
             } else {
                 Vec::new()
             };
@@ -692,7 +692,7 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
         } => {
             let args = args.join(" ");
             let v = serde_json::from_str::<Vec<(&str, Vec<(String, String, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {}", args))?;
+                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {args}"))?;
             let msg = usp_builder::SetBuilder::new()
                 .with_allow_partial(allow_partial)
                 .with_update_objs(v.into_iter().map(|(path, par)| usp_builder::UpdateObjectBuilder::new(path.into()).with_param_settings(par)).collect())
@@ -714,7 +714,7 @@ fn write_c_array<W>(mut out: W, buf: &[u8]) -> Result<()>
 where
     W: Write,
 {
-    fn check_printable(c: u8) -> bool {
+    const fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
             | '-' | '_' => true,
@@ -729,7 +729,7 @@ where
     for chunk in buf.chunks(CHUNK_LEN) {
         write!(out, "  ")?;
         for i in chunk {
-            write!(out, "0x{:02x}, ", i)?;
+            write!(out, "0x{i:02x}, ")?;
         }
 
         for _ in chunk.len()..CHUNK_LEN {
@@ -754,7 +754,7 @@ where
 }
 
 fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
-    fn check_printable(c: u8) -> bool {
+    const fn check_printable(c: u8) -> bool {
         match c as char {
             ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
             | '_' => true,
@@ -768,7 +768,7 @@ fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
         if check_printable(*i) {
             write!(out, "{}", char::from(*i))?;
         } else {
-            write!(out, "\\x{:02x}", i)?;
+            write!(out, "\\x{i:02x}")?;
         }
     }
 
@@ -823,25 +823,22 @@ fn write_record<W: Write>(
     mut out: W,
     format: &OutputFormat,
 ) -> Result<()> {
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
-            )?;
-        }
-        _ => {
-            use quick_protobuf::{message::MessageWrite, Writer};
+    if format == &OutputFormat::Json {
+        writeln!(
+            out,
+            "{}",
+            serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
+        )?;
+    } else {
+        use quick_protobuf::{message::MessageWrite, Writer};
 
-            let mut buf = Vec::new();
-            let mut writer = Writer::new(&mut buf);
-            record
-                .write_message(&mut writer)
-                .context("Failed encoding USP Record")?;
+        let mut buf = Vec::new();
+        let mut writer = Writer::new(&mut buf);
+        record
+            .write_message(&mut writer)
+            .context("Failed encoding USP Record")?;
 
-            write_buf(buf, out, format)?
-        }
+        write_buf(buf, out, format)?;
     }
 
     Ok(())
@@ -849,24 +846,21 @@ fn write_record<W: Write>(
 
 /// Write the given USP Msg Body to the output stream in the specified format
 fn write_body<W: Write>(msg: rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
-            )?;
-        }
-        _ => {
-            use quick_protobuf::{message::MessageWrite, Writer};
+    if format == &OutputFormat::Json {
+        writeln!(
+            out,
+            "{}",
+            serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
+        )?;
+    } else {
+        use quick_protobuf::{message::MessageWrite, Writer};
 
-            let mut buf = Vec::new();
-            let mut writer = Writer::new(&mut buf);
-            msg.write_message(&mut writer)
-                .context("Failed encoding USP Msg Body")?;
+        let mut buf = Vec::new();
+        let mut writer = Writer::new(&mut buf);
+        msg.write_message(&mut writer)
+            .context("Failed encoding USP Msg Body")?;
 
-            write_buf(buf, out, format)?
-        }
+        write_buf(buf, out, format)?;
     }
 
     Ok(())
@@ -882,25 +876,22 @@ fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputForma
     let body: rusp::usp::Body =
         deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
 
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
-            )?;
-        }
-        _ => {
-            use quick_protobuf::message::MessageWrite;
+    if format == &OutputFormat::Json {
+        writeln!(
+            out,
+            "{}",
+            serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
+        )?;
+    } else {
+        use quick_protobuf::message::MessageWrite;
 
-            let mut buf = Vec::new();
-            let mut writer = Writer::new(&mut buf);
+        let mut buf = Vec::new();
+        let mut writer = Writer::new(&mut buf);
 
-            body.write_message(&mut writer)
-                .context("Failed encoding USP Msg Body")?;
+        body.write_message(&mut writer)
+            .context("Failed encoding USP Msg Body")?;
 
-            write_buf(buf, out, format)?
-        }
+        write_buf(buf, out, format)?;
     }
 
     Ok(())
