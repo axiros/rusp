@@ -19,10 +19,11 @@ While a Protobuf schema exists which allows generating bindings for several comm
 ## What is included?
 
 The toolkit includes:
-* Generated lowlevel Rust Protobuf bindings
+* Generated low-level Rust Protobuf bindings
 * A library providing:
   * Higher level access to de-/serialisation functionality
   * Convenience functions to generate messages
+  * A builder-style API to generate USP Messages and Records of all kinds
   * Convenience functions to work with the native Msg types
   * Pretty printing of **USP** records and messages
   * Serde de-/serialisation of **USP** records and messages
@@ -57,7 +58,7 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 
 messages via command line tool.
 
-**NEWSFLASH**: 0.17 adds some basic USP 1.4 support (breaking API, hence the bump)
+**NEWSFLASH**: 0.90 adds a new builder API which is a lot more feature rich, feature complete and easier to use and will replace the old "generator" API which is poised to be deprecated in the next version and removed in 1.0. The rusp application was changed to use the builder API and gained a few more tricks with even more to come.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -75,7 +76,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.17"
+rusp = "0.90"
 quick-protobuf = "0.8"
 
 ...
