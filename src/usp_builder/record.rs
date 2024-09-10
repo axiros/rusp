@@ -183,17 +183,17 @@ impl RecordBuilder {
     }
 
     #[must_use]
-    pub fn with_no_session_context_payload(mut self, msg: &Msg) -> Self {
+    pub fn with_no_session_context_payload(self, msg: &Msg) -> Self {
         let mut buf = Vec::new();
         let mut writer = quick_protobuf::Writer::new(&mut buf);
         let _ = quick_protobuf::MessageWrite::write_message(msg, &mut writer);
-        self.typ = RecordType::NoSessionContext;
         self.with_no_session_context_payload_bytes(buf)
     }
 
     #[must_use]
     pub fn with_no_session_context_payload_bytes(mut self, buf: Vec<u8>) -> Self {
         self.payload = Some(buf);
+        self.typ = RecordType::NoSessionContext;
         self
     }
 
