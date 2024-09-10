@@ -58,7 +58,7 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 
 messages via command line tool.
 
-**NEWSFLASH**: 0.90 adds a new builder API which is a lot more feature rich, feature complete and easier to use and will replace the old "generator" API which is poised to be deprecated in the next version and removed in 1.0. The rusp application was changed to use the builder API and gained a few more tricks with even more to come.
+**NEWSFLASH**: 0.90+ adds a new builder API which is a lot more feature rich, feature complete and easier to use and will replace the old "generator" API which is poised to be deprecated in the next version and removed in 1.0. The rusp application was changed to use the builder API and gained a few more tricks with even more to come.
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
