@@ -159,6 +159,24 @@ impl RecordBuilder {
     }
 
     #[must_use]
+    pub fn with_sender_cert(mut self, sender_cert: Vec<u8>) -> Self {
+        self.sender_cert = sender_cert;
+        self
+    }
+
+    #[must_use]
+    pub fn with_mac_signature(mut self, mac_signature: Vec<u8>) -> Self {
+        self.mac_signature = mac_signature;
+        self
+    }
+
+    #[must_use]
+    pub fn with_payload_security_tls12(mut self) -> Self {
+        self.payload_security = PayloadSecurity::TLS12;
+        self
+    }
+
+    #[must_use]
     pub fn with_session_context_builder(mut self, session_context: SessionContextBuilder) -> Self {
         self.typ = RecordType::SessionContext { session_context };
         self
