@@ -323,7 +323,7 @@ impl GSDMParamResult {
 }
 
 #[derive(Clone)]
-pub struct GSDMSupportedObjectResult {
+pub struct GSDMSupportedObjectResultBuilder {
     supported_obj_path: String,
     access: ObjAccessType,
     is_multi_instance: bool,
@@ -334,7 +334,7 @@ pub struct GSDMSupportedObjectResult {
     unique_key_sets: Vec<Vec<String>>,
 }
 
-impl GSDMSupportedObjectResult {
+impl GSDMSupportedObjectResultBuilder {
     #[must_use]
     pub const fn new(supported_obj_path: String) -> Self {
         Self {
@@ -347,6 +347,30 @@ impl GSDMSupportedObjectResult {
             divergent_paths: vec![],
             unique_key_sets: vec![],
         }
+    }
+
+    #[must_use]
+    pub const fn set_access_add_only(mut self) -> Self {
+        self.access = ObjAccessType::OBJ_ADD_ONLY;
+        self
+    }
+
+    #[must_use]
+    pub const fn set_access_delete_only(mut self) -> Self {
+        self.access = ObjAccessType::OBJ_DELETE_ONLY;
+        self
+    }
+
+    #[must_use]
+    pub const fn set_access_read_only(mut self) -> Self {
+        self.access = ObjAccessType::OBJ_READ_ONLY;
+        self
+    }
+
+    #[must_use]
+    pub const fn set_access_add_delete(mut self) -> Self {
+        self.access = ObjAccessType::OBJ_ADD_DELETE;
+        self
     }
 
     #[must_use]
@@ -435,7 +459,7 @@ pub struct GSDMReqObjectResultBuilder {
     err_code: u32,
     err_msg: Option<String>,
     data_model_inst_uri: String,
-    supported_objs: Vec<GSDMSupportedObjectResult>,
+    supported_objs: Vec<GSDMSupportedObjectResultBuilder>,
 }
 
 impl GSDMReqObjectResultBuilder {
@@ -465,7 +489,7 @@ impl GSDMReqObjectResultBuilder {
     }
 
     #[must_use]
-    pub fn with_supported_objs(mut self, supported_objs: Vec<GSDMSupportedObjectResult>) -> Self {
+    pub fn with_supported_objs(mut self, supported_objs: Vec<GSDMSupportedObjectResultBuilder>) -> Self {
         self.supported_objs = supported_objs;
         self
     }
@@ -479,7 +503,7 @@ impl GSDMReqObjectResultBuilder {
         let supported_objs = self
             .supported_objs
             .into_iter()
-            .map(GSDMSupportedObjectResult::build)
+            .map(GSDMSupportedObjectResultBuilder::build)
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedObjectResult {

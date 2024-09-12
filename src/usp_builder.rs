@@ -38,7 +38,7 @@ pub use getinstances::{
 };
 pub use getsupporteddm::{
     GSDMCommandResult, GSDMEventResult, GSDMParamResult, GSDMReqObjectResultBuilder,
-    GSDMSupportedObjectResult, GetSupportedDMBuilder, GetSupportedDMRespBuilder,
+    GSDMSupportedObjectResultBuilder, GetSupportedDMBuilder, GetSupportedDMRespBuilder,
 };
 pub use getsupportedprotocol::{GetSupportedProtocolBuilder, GetSupportedProtocolRespBuilder};
 pub use msg::MsgBuilder;
