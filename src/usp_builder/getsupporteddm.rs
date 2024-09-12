@@ -489,7 +489,10 @@ impl GSDMReqObjectResultBuilder {
     }
 
     #[must_use]
-    pub fn with_supported_objs(mut self, supported_objs: Vec<GSDMSupportedObjectResultBuilder>) -> Self {
+    pub fn with_supported_objs(
+        mut self,
+        supported_objs: Vec<GSDMSupportedObjectResultBuilder>,
+    ) -> Self {
         self.supported_objs = supported_objs;
         self
     }
