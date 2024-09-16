@@ -308,11 +308,6 @@ impl GSDMParamResult {
         if matches!(self.value_type, ParamValueType::PARAM_UNKNOWN) {
             anyhow::bail!("Cannot build a Supported Param Result without a specified value type");
         }
-        if matches!(self.value_change, ValueChangeType::VALUE_CHANGE_UNKNOWN) {
-            anyhow::bail!(
-                "Cannot build a Supported Param Result without a specified value change behaviour"
-            );
-        }
         Ok(SupportedParamResult {
             param_name: self.param_name.into(),
             access: self.access,
