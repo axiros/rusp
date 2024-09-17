@@ -104,17 +104,6 @@ enum RuspAction {
         #[command(subcommand)]
         typ: MsgType,
     },
-    /// Encode command line input into a single raw USP message body
-    #[command(name = "encode_msg_body")]
-    EncodeMsgBody {
-        /// Filename (will output to standard output if omitted)
-        #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP Protobuf message to
-        filename: Option<PathBuf>,
-        /// Type of message
-        #[command(subcommand)]
-        typ: MsgType,
-    },
     /// Extract the USP message from an USP record
     #[command(name = "extract_msg")]
     ExtractMsg {
@@ -122,32 +111,6 @@ enum RuspAction {
         in_file: PathBuf,
         /// Output filename of USP Protobuf message to write into, use `-` for stdout
         out_file: PathBuf,
-    },
-    /// Extract the USP message body from an USP record
-    #[command(name = "extract_msg_body")]
-    ExtractMsgBody {
-        /// Input filename of USP Protobuf record to decode
-        in_file: PathBuf,
-        /// Output filename of USP Protobuf message body to write into, use `-` for stdout
-        out_file: PathBuf,
-    },
-    /// Wrap msg from stdin into a single no-session context USP record (this option is deprecated
-    /// and will be removed in a future version, use `encode_no_session_record` instead)
-    #[command(name = "wrap_msg_raw")]
-    WrapMsgRaw {
-        #[arg(long = "version", default_value = "1.3")]
-        /// USP specification version
-        version: String,
-        #[arg(long = "from", default_value = "doc::from")]
-        /// Sender Id
-        from: String,
-        #[arg(long = "to", default_value = "doc::to")]
-        /// Recipient Id
-        to: String,
-        /// Filename (will output to standard output if omitted)
-        #[arg(short = 'f', long = "file")]
-        /// Output filename of file to encode USP Protobuf record to
-        filename: Option<PathBuf>,
     },
     /// Encode Msg payload provided via stdin into a single no-session context USP Record
     #[command(name = "encode_no_session_record")]
@@ -713,97 +676,6 @@ fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
     Ok(Box::new(stdout()))
 }
 
-fn write_c_array<W>(mut out: W, buf: &[u8]) -> Result<()>
-where
-    W: Write,
-{
-    const fn check_printable(c: u8) -> bool {
-        match c as char {
-            ' ' | '.' | '!' | '(' | ')' | '\'' | '"' | ',' | '*' | '[' | ']' | '=' | '<' | '>'
-            | '-' | '_' => true,
-            _ if c.is_ascii_alphanumeric() => true,
-            _ => false,
-        }
-    }
-
-    const CHUNK_LEN: usize = 8;
-    writeln!(out, "unsigned int pb_len = {};", buf.len())?;
-    writeln!(out, "const char pb[] = {{")?;
-    for chunk in buf.chunks(CHUNK_LEN) {
-        write!(out, "  ")?;
-        for i in chunk {
-            write!(out, "0x{i:02x}, ")?;
-        }
-
-        for _ in chunk.len()..CHUNK_LEN {
-            write!(out, "      ")?;
-        }
-
-        write!(out, "/* ")?;
-        for i in chunk {
-            if check_printable(*i) {
-                write!(out, "{}", char::from(*i))?;
-            } else {
-                write!(out, "_")?;
-            }
-        }
-        write!(out, " */")?;
-
-        writeln!(out)?;
-    }
-    writeln!(out, "}};")?;
-
-    Ok(())
-}
-
-fn write_c_str<W: Write>(mut out: W, buf: &[u8]) -> Result<()> {
-    const fn check_printable(c: u8) -> bool {
-        match c as char {
-            ' ' | '.' | '!' | '(' | ')' | '\'' | ',' | '*' | '[' | ']' | '=' | '<' | '>' | '-'
-            | '_' => true,
-            _ if c.is_ascii_alphanumeric() => true,
-            _ => false,
-        }
-    }
-
-    write!(out, "\"")?;
-    for i in buf {
-        if check_printable(*i) {
-            write!(out, "{}", char::from(*i))?;
-        } else {
-            write!(out, "\\x{i:02x}")?;
-        }
-    }
-
-    writeln!(out, "\"")?;
-
-    Ok(())
-}
-
-/// Serialize the binary output to the output stream according to the chosen output format
-fn write_buf<W: Write>(buf: &[u8], mut out: W, format: &OutputFormat) -> Result<()> {
-    match format {
-        OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&buf).context("Failed to serialize JSON")?
-            )?;
-        }
-        OutputFormat::CStr => {
-            write_c_str(out, buf)?;
-        }
-        OutputFormat::CArray => {
-            write_c_array(out, buf)?;
-        }
-        OutputFormat::Protobuf => {
-            out.write_all(buf)?;
-        }
-    }
-
-    Ok(())
-}
-
 /// Write the given USP Msg to the output stream in the specified format
 fn write_msg<W: Write>(msg: &rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
@@ -834,59 +706,6 @@ fn write_record<W: Write>(
         OutputFormat::CArray => out.write_all(&record.to_c_array()?.into_bytes()),
         OutputFormat::Protobuf => out.write_all(&record.to_vec()?),
     }?;
-
-    Ok(())
-}
-
-/// Write the given USP Msg Body to the output stream in the specified format
-fn write_body<W: Write>(msg: &rusp::usp::Body, mut out: W, format: &OutputFormat) -> Result<()> {
-    if format == &OutputFormat::Json {
-        writeln!(
-            out,
-            "{}",
-            serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
-        )?;
-    } else {
-        use quick_protobuf::{message::MessageWrite, Writer};
-
-        let mut buf = Vec::new();
-        let mut writer = Writer::new(&mut buf);
-        msg.write_message(&mut writer)
-            .context("Failed encoding USP Msg Body")?;
-
-        write_buf(&buf, out, format)?;
-    }
-
-    Ok(())
-}
-
-fn encode_msg_body(filename: Option<PathBuf>, typ: MsgType, format: &OutputFormat) -> Result<()> {
-    use quick_protobuf::{deserialize_from_slice, Writer};
-
-    // Open output stream
-    let mut out = get_out_stream(filename)?;
-
-    let encoded_body = encode_msg_body_buf(typ)?;
-    let body: rusp::usp::Body =
-        deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-
-    if format == &OutputFormat::Json {
-        writeln!(
-            out,
-            "{}",
-            serde_json::to_string_pretty(&body).context("Failed to serialize JSON")?
-        )?;
-    } else {
-        use quick_protobuf::message::MessageWrite;
-
-        let mut buf = Vec::new();
-        let mut writer = Writer::new(&mut buf);
-
-        body.write_message(&mut writer)
-            .context("Failed encoding USP Msg Body")?;
-
-        write_buf(&buf, out, format)?;
-    }
 
     Ok(())
 }
@@ -927,37 +746,6 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result
             // Open output stream
             let out = get_out_stream(Some(out_file.to_path_buf()))?;
             write_msg(&msg, out, format)?;
-        }
-        OneOfrecord_type::session_context(_)
-        | OneOfrecord_type::websocket_connect(_)
-        | OneOfrecord_type::mqtt_connect(_)
-        | OneOfrecord_type::stomp_connect(_)
-        | OneOfrecord_type::uds_connect(_)
-        | OneOfrecord_type::disconnect(_)
-        | OneOfrecord_type::None => unreachable!(),
-    }
-
-    Ok(())
-}
-
-fn extract_msg_body(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result<()> {
-    use rusp::usp_record::mod_Record::OneOfrecord_type;
-
-    let fp = File::open(in_file)?;
-    let mut buf_reader = BufReader::new(fp);
-    let mut contents = Vec::new();
-    buf_reader.read_to_end(&mut contents)?;
-
-    let record = try_decode_record(&contents)?;
-
-    match record.record_type {
-        OneOfrecord_type::no_session_context(context) => {
-            let msg = try_decode_msg(&context.payload)?;
-            let body = msg.body.context("Failed extracting USP Msg body")?;
-
-            // Open output stream
-            let out = get_out_stream(Some(out_file.to_path_buf()))?;
-            write_body(&body, out, format)?;
         }
         OneOfrecord_type::session_context(_)
         | OneOfrecord_type::websocket_connect(_)
@@ -1079,23 +867,13 @@ fn main() -> Result<()> {
         RuspAction::DecodeRecord {} => decode_record_stdin(&format),
         RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, &format),
         RuspAction::DecodeMsg {} => decode_msg_stdin(&format),
-        RuspAction::EncodeMsgBody { filename, typ } => encode_msg_body(filename, typ, &format),
         RuspAction::EncodeMsg {
             msgid,
             filename,
             typ,
         } => encode_msg(&msgid, filename, typ, &format),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, &format),
-        RuspAction::ExtractMsgBody { in_file, out_file } => {
-            extract_msg_body(&in_file, &out_file, &format)
-        }
-        RuspAction::WrapMsgRaw {
-            version,
-            from,
-            to,
-            filename,
-        }
-        | RuspAction::EncodeNoSessionRecord {
+        RuspAction::EncodeNoSessionRecord {
             version,
             from,
             to,
