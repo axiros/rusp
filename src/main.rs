@@ -808,14 +808,13 @@ fn write_buf<W: Write>(buf: &[u8], mut out: W, format: &OutputFormat) -> Result<
 fn write_msg<W: Write>(msg: &rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
-            writeln!(
-                out,
-                "{}",
-                serde_json::to_string_pretty(&msg).context("Failed to serialize JSON")?
-            )?;
+            out.write_all(&msg.to_json()?.into_bytes())?;
+            writeln!(out)
         }
-        _ => write_buf(&msg.to_vec()?, out, format)?,
-    }
+        OutputFormat::CStr => out.write_all(&msg.to_c_str()?.into_bytes()),
+        OutputFormat::CArray => out.write_all(&msg.to_c_array()?.into_bytes()),
+        OutputFormat::Protobuf => out.write_all(&msg.to_vec()?),
+    }?;
 
     Ok(())
 }
@@ -826,23 +825,15 @@ fn write_record<W: Write>(
     mut out: W,
     format: &OutputFormat,
 ) -> Result<()> {
-    if format == &OutputFormat::Json {
-        writeln!(
-            out,
-            "{}",
-            serde_json::to_string_pretty(&record).context("Failed to serialize JSON")?
-        )?;
-    } else {
-        use quick_protobuf::{message::MessageWrite, Writer};
-
-        let mut buf = Vec::new();
-        let mut writer = Writer::new(&mut buf);
-        record
-            .write_message(&mut writer)
-            .context("Failed encoding USP Record")?;
-
-        write_buf(&buf, out, format)?;
-    }
+    match format {
+        OutputFormat::Json => {
+            out.write_all(&record.to_json()?.into_bytes())?;
+            writeln!(out)
+        }
+        OutputFormat::CStr => out.write_all(&record.to_c_str()?.into_bytes()),
+        OutputFormat::CArray => out.write_all(&record.to_c_array()?.into_bytes()),
+        OutputFormat::Protobuf => out.write_all(&record.to_vec()?),
+    }?;
 
     Ok(())
 }

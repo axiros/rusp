@@ -51,6 +51,9 @@ pub mod usp_builder;
 /// Helper functions to decode a Protobuf encoded byte stream into Rust types
 pub mod usp_decoder;
 
+/// Helper functions to encode native Rust types into Protobuf encoded byte streams
+pub mod usp_encoder;
+
 /// Helper functions to generate USP Messages
 pub mod usp_generator;
 

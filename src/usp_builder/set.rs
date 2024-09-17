@@ -106,16 +106,50 @@ impl SetBuilder {
 
 #[derive(Clone)]
 pub struct SetRespParameterError {
-    pub param: String,
-    pub err_code: u32,
-    pub err_msg: String,
+    param: String,
+    err_code: u32,
+    err_msg: String,
+}
+
+impl SetRespParameterError {
+    #[must_use]
+    pub fn new(param: String, err_code: u32, err_msg: Option<String>) -> Self {
+        Self {
+            param,
+            err_code,
+            err_msg: err_msg.unwrap_or_else(|| usp_errors::get_err_msg(err_code).to_string()),
+        }
+    }
 }
 
 #[derive(Clone)]
 pub struct SetOperationSuccessBuilder {
-    pub affected_path: String,
-    pub param_errs: Vec<SetRespParameterError>,
-    pub updated_params: HashMap<String, String>,
+    affected_path: String,
+    param_errs: Vec<SetRespParameterError>,
+    updated_params: HashMap<String, String>,
+}
+
+impl SetOperationSuccessBuilder {
+    #[must_use]
+    pub fn new(affected_path: String) -> Self {
+        Self {
+            affected_path,
+            param_errs: vec![],
+            updated_params: HashMap::new(),
+        }
+    }
+
+    #[must_use]
+    pub fn with_param_errs(mut self, param_errs: Vec<SetRespParameterError>) -> Self {
+        self.param_errs = param_errs;
+        self
+    }
+
+    #[must_use]
+    pub fn with_updated_params(mut self, updated_params: HashMap<String, String>) -> Self {
+        self.updated_params = updated_params;
+        self
+    }
 }
 
 #[derive(Clone)]
