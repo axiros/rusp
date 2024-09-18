@@ -76,7 +76,7 @@ After this you should be able to use the `rusp` binary, which has built-in help 
 ...
 
 [dependencies]
-rusp = "0.90"
+rusp = "0.92"
 quick-protobuf = "0.8"
 
 ...
