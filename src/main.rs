@@ -680,7 +680,7 @@ fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
 fn write_msg<W: Write>(msg: &rusp::usp::Msg, mut out: W, format: &OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Json => {
-            out.write_all(&msg.to_json()?.into_bytes())?;
+            out.write_all(&msg.to_json_pretty()?.into_bytes())?;
             writeln!(out)
         }
         OutputFormat::CStr => out.write_all(&msg.to_c_str()?.into_bytes()),
@@ -699,7 +699,7 @@ fn write_record<W: Write>(
 ) -> Result<()> {
     match format {
         OutputFormat::Json => {
-            out.write_all(&record.to_json()?.into_bytes())?;
+            out.write_all(&record.to_json_pretty()?.into_bytes())?;
             writeln!(out)
         }
         OutputFormat::CStr => out.write_all(&record.to_c_str()?.into_bytes()),
