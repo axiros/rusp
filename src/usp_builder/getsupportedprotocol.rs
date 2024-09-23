@@ -18,15 +18,14 @@ impl GetSupportedProtocolBuilder {
         }
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
                     req_type: get_supported_protocol({
                         GetSupportedProtocol {
                             controller_supported_protocol_versions: self
-                                .controller_supported_protocol_versions
-                                .into(),
+                                .controller_supported_protocol_versions,
                         }
                     }),
                 }
@@ -48,15 +47,14 @@ impl GetSupportedProtocolRespBuilder {
         }
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: response({
                 Response {
                     resp_type: get_supported_protocol_resp({
                         GetSupportedProtocolResp {
                             agent_supported_protocol_versions: self
-                                .agent_supported_protocol_versions
-                                .into(),
+                                .agent_supported_protocol_versions,
                         }
                     }),
                 }

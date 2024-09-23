@@ -64,7 +64,7 @@ pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
 }
 
 /// Implementation of some extension methods for `Msg`s
-impl<'a> Msg<'a> {
+impl<'a> Msg {
     /// Retrieves the message ID from a Msg structure
     ///
     /// # Arguments
@@ -340,7 +340,7 @@ impl<'a> Msg<'a> {
     /// assert_eq!(msg.is_error(), true);
     /// ```
     #[must_use]
-    pub const fn is_error(&'a self) -> bool {
+    pub fn is_error(&'a self) -> bool {
         self.get_error().is_some()
     }
 
@@ -396,10 +396,10 @@ impl<'a> Msg<'a> {
     /// assert!(msg.get_error().is_some());
     /// ```
     #[must_use]
-    pub const fn get_error(&'a self) -> Option<&Error> {
+    pub fn get_error(&'a self) -> Option<Error> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::error(error) = &body.msg_body {
-                return Some(error);
+                return Some(error.clone());
             }
         }
 

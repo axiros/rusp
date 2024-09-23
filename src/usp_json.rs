@@ -18,7 +18,7 @@ use crate::usp_record::{
 use anyhow::Context;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
-impl Serialize for Record<'_> {
+impl Serialize for Record {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -79,7 +79,7 @@ impl Serialize for mod_Record::PayloadSecurity {
     }
 }
 
-impl Serialize for SessionContextRecord<'_> {
+impl Serialize for SessionContextRecord {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -120,7 +120,7 @@ impl Serialize for WebSocketConnectRecord {
     }
 }
 
-impl Serialize for MQTTConnectRecord<'_> {
+impl Serialize for MQTTConnectRecord {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -147,7 +147,7 @@ impl Serialize for mod_MQTTConnectRecord::MQTTVersion {
     }
 }
 
-impl Serialize for STOMPConnectRecord<'_> {
+impl Serialize for STOMPConnectRecord {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -173,7 +173,7 @@ impl Serialize for mod_STOMPConnectRecord::STOMPVersion {
     }
 }
 
-impl Serialize for DisconnectRecord<'_> {
+impl Serialize for DisconnectRecord {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -185,7 +185,7 @@ impl Serialize for DisconnectRecord<'_> {
     }
 }
 
-impl Serialize for Msg<'_> {
+impl Serialize for Msg {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -197,7 +197,7 @@ impl Serialize for Msg<'_> {
     }
 }
 
-impl Serialize for Header<'_> {
+impl Serialize for Header {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -273,7 +273,7 @@ impl Serialize for mod_Header::MsgType {
     }
 }
 
-impl Serialize for Body<'_> {
+impl Serialize for Body {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -291,7 +291,7 @@ impl Serialize for Body<'_> {
     }
 }
 
-impl Serialize for Request<'_> {
+impl Serialize for Request {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -320,7 +320,7 @@ impl Serialize for Request<'_> {
     }
 }
 
-impl Serialize for Response<'_> {
+impl Serialize for Response {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -354,7 +354,7 @@ impl Serialize for Response<'_> {
     }
 }
 
-impl Serialize for Error<'_> {
+impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -367,7 +367,7 @@ impl Serialize for Error<'_> {
     }
 }
 
-impl Serialize for mod_Error::ParamError<'_> {
+impl Serialize for mod_Error::ParamError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -380,7 +380,7 @@ impl Serialize for mod_Error::ParamError<'_> {
     }
 }
 
-impl Serialize for DeleteResp<'_> {
+impl Serialize for DeleteResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -391,7 +391,7 @@ impl Serialize for DeleteResp<'_> {
     }
 }
 
-impl Serialize for Get<'_> {
+impl Serialize for Get {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -403,7 +403,7 @@ impl Serialize for Get<'_> {
     }
 }
 
-impl Serialize for GetSupportedDM<'_> {
+impl Serialize for GetSupportedDM {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -419,7 +419,7 @@ impl Serialize for GetSupportedDM<'_> {
     }
 }
 
-impl Serialize for GetSupportedProtocol<'_> {
+impl Serialize for GetSupportedProtocol {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -433,7 +433,7 @@ impl Serialize for GetSupportedProtocol<'_> {
     }
 }
 
-impl Serialize for Operate<'_> {
+impl Serialize for Operate {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -447,7 +447,7 @@ impl Serialize for Operate<'_> {
     }
 }
 
-impl Serialize for Notify<'_> {
+impl Serialize for Notify {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -474,7 +474,7 @@ impl Serialize for Notify<'_> {
     }
 }
 
-impl Serialize for Register<'_> {
+impl Serialize for Register {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -486,7 +486,7 @@ impl Serialize for Register<'_> {
     }
 }
 
-impl Serialize for mod_Register::RegistrationPath<'_> {
+impl Serialize for mod_Register::RegistrationPath {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -497,7 +497,7 @@ impl Serialize for mod_Register::RegistrationPath<'_> {
     }
 }
 
-impl Serialize for Deregister<'_> {
+impl Serialize for Deregister {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -508,7 +508,7 @@ impl Serialize for Deregister<'_> {
     }
 }
 
-impl Serialize for mod_Notify::Event<'_> {
+impl Serialize for mod_Notify::Event {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -521,7 +521,7 @@ impl Serialize for mod_Notify::Event<'_> {
     }
 }
 
-impl Serialize for mod_Notify::ValueChange<'_> {
+impl Serialize for mod_Notify::ValueChange {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -533,7 +533,7 @@ impl Serialize for mod_Notify::ValueChange<'_> {
     }
 }
 
-impl Serialize for mod_Notify::ObjectCreation<'_> {
+impl Serialize for mod_Notify::ObjectCreation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -545,7 +545,7 @@ impl Serialize for mod_Notify::ObjectCreation<'_> {
     }
 }
 
-impl Serialize for mod_Notify::ObjectDeletion<'_> {
+impl Serialize for mod_Notify::ObjectDeletion {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -556,7 +556,7 @@ impl Serialize for mod_Notify::ObjectDeletion<'_> {
     }
 }
 
-impl Serialize for mod_Notify::OperationComplete<'_> {
+impl Serialize for mod_Notify::OperationComplete {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -581,7 +581,7 @@ impl Serialize for mod_Notify::OperationComplete<'_> {
     }
 }
 
-impl Serialize for mod_Notify::mod_OperationComplete::OutputArgs<'_> {
+impl Serialize for mod_Notify::mod_OperationComplete::OutputArgs {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -592,7 +592,7 @@ impl Serialize for mod_Notify::mod_OperationComplete::OutputArgs<'_> {
     }
 }
 
-impl Serialize for mod_Notify::mod_OperationComplete::CommandFailure<'_> {
+impl Serialize for mod_Notify::mod_OperationComplete::CommandFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -604,7 +604,7 @@ impl Serialize for mod_Notify::mod_OperationComplete::CommandFailure<'_> {
     }
 }
 
-impl Serialize for mod_Notify::OnBoardRequest<'_> {
+impl Serialize for mod_Notify::OnBoardRequest {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -621,7 +621,7 @@ impl Serialize for mod_Notify::OnBoardRequest<'_> {
     }
 }
 
-impl Serialize for Set<'_> {
+impl Serialize for Set {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -633,7 +633,7 @@ impl Serialize for Set<'_> {
     }
 }
 
-impl Serialize for mod_Set::UpdateObject<'_> {
+impl Serialize for mod_Set::UpdateObject {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -645,7 +645,7 @@ impl Serialize for mod_Set::UpdateObject<'_> {
     }
 }
 
-impl Serialize for mod_Set::UpdateParamSetting<'_> {
+impl Serialize for mod_Set::UpdateParamSetting {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -658,7 +658,7 @@ impl Serialize for mod_Set::UpdateParamSetting<'_> {
     }
 }
 
-impl Serialize for Add<'_> {
+impl Serialize for Add {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -670,7 +670,7 @@ impl Serialize for Add<'_> {
     }
 }
 
-impl Serialize for mod_Add::CreateObject<'_> {
+impl Serialize for mod_Add::CreateObject {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -682,7 +682,7 @@ impl Serialize for mod_Add::CreateObject<'_> {
     }
 }
 
-impl Serialize for mod_Add::CreateParamSetting<'_> {
+impl Serialize for mod_Add::CreateParamSetting {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -695,7 +695,7 @@ impl Serialize for mod_Add::CreateParamSetting<'_> {
     }
 }
 
-impl Serialize for Delete<'_> {
+impl Serialize for Delete {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -707,7 +707,7 @@ impl Serialize for Delete<'_> {
     }
 }
 
-impl Serialize for GetInstances<'_> {
+impl Serialize for GetInstances {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -719,7 +719,7 @@ impl Serialize for GetInstances<'_> {
     }
 }
 
-impl Serialize for GetResp<'_> {
+impl Serialize for GetResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -730,7 +730,7 @@ impl Serialize for GetResp<'_> {
     }
 }
 
-impl Serialize for GetSupportedDMResp<'_> {
+impl Serialize for GetSupportedDMResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -741,7 +741,7 @@ impl Serialize for GetSupportedDMResp<'_> {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
+impl Serialize for mod_GetSupportedDMResp::RequestedObjectResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -756,7 +756,7 @@ impl Serialize for mod_GetSupportedDMResp::RequestedObjectResult<'_> {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::SupportedObjectResult<'_> {
+impl Serialize for mod_GetSupportedDMResp::SupportedObjectResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -796,7 +796,7 @@ impl Serialize for mod_GetSupportedDMResp::ObjAccessType {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::SupportedCommandResult<'_> {
+impl Serialize for mod_GetSupportedDMResp::SupportedCommandResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -826,7 +826,7 @@ impl Serialize for mod_GetSupportedDMResp::CmdType {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::SupportedEventResult<'_> {
+impl Serialize for mod_GetSupportedDMResp::SupportedEventResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -838,7 +838,7 @@ impl Serialize for mod_GetSupportedDMResp::SupportedEventResult<'_> {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::SupportedParamResult<'_> {
+impl Serialize for mod_GetSupportedDMResp::SupportedParamResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -880,7 +880,7 @@ impl Serialize for mod_GetSupportedDMResp::ParamValueType {
     }
 }
 
-impl Serialize for mod_GetSupportedDMResp::SupportedUniqueKeySet<'_> {
+impl Serialize for mod_GetSupportedDMResp::SupportedUniqueKeySet {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -932,7 +932,7 @@ impl Serialize for mod_GetSupportedDMResp::ParamAccessType {
     }
 }
 
-impl Serialize for GetInstancesResp<'_> {
+impl Serialize for GetInstancesResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -943,7 +943,7 @@ impl Serialize for GetInstancesResp<'_> {
     }
 }
 
-impl Serialize for mod_GetInstancesResp::RequestedPathResult<'_> {
+impl Serialize for mod_GetInstancesResp::RequestedPathResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -957,7 +957,7 @@ impl Serialize for mod_GetInstancesResp::RequestedPathResult<'_> {
     }
 }
 
-impl Serialize for mod_GetInstancesResp::CurrInstance<'_> {
+impl Serialize for mod_GetInstancesResp::CurrInstance {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -969,7 +969,7 @@ impl Serialize for mod_GetInstancesResp::CurrInstance<'_> {
     }
 }
 
-impl Serialize for SetResp<'_> {
+impl Serialize for SetResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -980,7 +980,7 @@ impl Serialize for SetResp<'_> {
     }
 }
 
-impl Serialize for mod_SetResp::UpdatedObjectResult<'_> {
+impl Serialize for mod_SetResp::UpdatedObjectResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -992,7 +992,7 @@ impl Serialize for mod_SetResp::UpdatedObjectResult<'_> {
     }
 }
 
-impl Serialize for mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
+impl Serialize for mod_SetResp::mod_UpdatedObjectResult::OperationStatus {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1013,7 +1013,7 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::OperationStatus<'_> {
     }
 }
 
-impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess<'_> {
+impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationSuccess {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1024,7 +1024,7 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_SetResp::UpdatedInstanceResult<'_> {
+impl Serialize for mod_SetResp::UpdatedInstanceResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1037,7 +1037,7 @@ impl Serialize for mod_SetResp::UpdatedInstanceResult<'_> {
     }
 }
 
-impl Serialize for mod_SetResp::UpdatedInstanceFailure<'_> {
+impl Serialize for mod_SetResp::UpdatedInstanceFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1049,7 +1049,7 @@ impl Serialize for mod_SetResp::UpdatedInstanceFailure<'_> {
     }
 }
 
-impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure<'_> {
+impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::OperationFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1062,7 +1062,7 @@ impl Serialize for mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_SetResp::ParameterError<'_> {
+impl Serialize for mod_SetResp::ParameterError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1075,7 +1075,7 @@ impl Serialize for mod_SetResp::ParameterError<'_> {
     }
 }
 
-impl Serialize for OperateResp<'_> {
+impl Serialize for OperateResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1086,7 +1086,7 @@ impl Serialize for OperateResp<'_> {
     }
 }
 
-impl Serialize for mod_OperateResp::OperationResult<'_> {
+impl Serialize for mod_OperateResp::OperationResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1109,7 +1109,7 @@ impl Serialize for mod_OperateResp::OperationResult<'_> {
     }
 }
 
-impl Serialize for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
+impl Serialize for mod_OperateResp::mod_OperationResult::OutputArgs {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1120,7 +1120,7 @@ impl Serialize for mod_OperateResp::mod_OperationResult::OutputArgs<'_> {
     }
 }
 
-impl Serialize for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
+impl Serialize for mod_OperateResp::mod_OperationResult::CommandFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1132,7 +1132,7 @@ impl Serialize for mod_OperateResp::mod_OperationResult::CommandFailure<'_> {
     }
 }
 
-impl Serialize for NotifyResp<'_> {
+impl Serialize for NotifyResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1143,7 +1143,7 @@ impl Serialize for NotifyResp<'_> {
     }
 }
 
-impl Serialize for GetSupportedProtocolResp<'_> {
+impl Serialize for GetSupportedProtocolResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1157,7 +1157,7 @@ impl Serialize for GetSupportedProtocolResp<'_> {
     }
 }
 
-impl Serialize for RegisterResp<'_> {
+impl Serialize for RegisterResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1168,7 +1168,7 @@ impl Serialize for RegisterResp<'_> {
     }
 }
 
-impl Serialize for mod_RegisterResp::RegisteredPathResult<'_> {
+impl Serialize for mod_RegisterResp::RegisteredPathResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1180,7 +1180,7 @@ impl Serialize for mod_RegisterResp::RegisteredPathResult<'_> {
     }
 }
 
-impl Serialize for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'_> {
+impl Serialize for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1202,7 +1202,7 @@ impl Serialize for mod_RegisterResp::mod_RegisteredPathResult::OperationStatus<'
 }
 
 impl Serialize
-    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationSuccess
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1215,7 +1215,7 @@ impl Serialize
 }
 
 impl Serialize
-    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+    for mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::OperationFailure
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1228,7 +1228,7 @@ impl Serialize
     }
 }
 
-impl Serialize for DeregisterResp<'_> {
+impl Serialize for DeregisterResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1239,7 +1239,7 @@ impl Serialize for DeregisterResp<'_> {
     }
 }
 
-impl Serialize for mod_DeregisterResp::DeregisteredPathResult<'_> {
+impl Serialize for mod_DeregisterResp::DeregisteredPathResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1251,7 +1251,7 @@ impl Serialize for mod_DeregisterResp::DeregisteredPathResult<'_> {
     }
 }
 
-impl Serialize for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus<'_> {
+impl Serialize for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1271,7 +1271,7 @@ impl Serialize for mod_DeregisterResp::mod_DeregisteredPathResult::OperationStat
 }
 
 impl Serialize
-    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess<'_>
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationSuccess
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1284,7 +1284,7 @@ impl Serialize
 }
 
 impl Serialize
-    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure<'_>
+    for mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::OperationFailure
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1297,7 +1297,7 @@ impl Serialize
     }
 }
 
-impl Serialize for mod_DeleteResp::DeletedObjectResult<'_> {
+impl Serialize for mod_DeleteResp::DeletedObjectResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1309,7 +1309,7 @@ impl Serialize for mod_DeleteResp::DeletedObjectResult<'_> {
     }
 }
 
-impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus<'_> {
+impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1330,9 +1330,7 @@ impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::OperationStatus<'_> 
     }
 }
 
-impl Serialize
-    for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationSuccess<'_>
-{
+impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationSuccess {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1344,9 +1342,7 @@ impl Serialize
     }
 }
 
-impl Serialize
-    for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationFailure<'_>
-{
+impl Serialize for mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::OperationFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1358,7 +1354,7 @@ impl Serialize
     }
 }
 
-impl Serialize for mod_DeleteResp::UnaffectedPathError<'_> {
+impl Serialize for mod_DeleteResp::UnaffectedPathError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1371,7 +1367,7 @@ impl Serialize for mod_DeleteResp::UnaffectedPathError<'_> {
     }
 }
 
-impl Serialize for mod_GetResp::RequestedPathResult<'_> {
+impl Serialize for mod_GetResp::RequestedPathResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1385,7 +1381,7 @@ impl Serialize for mod_GetResp::RequestedPathResult<'_> {
     }
 }
 
-impl Serialize for mod_GetResp::ResolvedPathResult<'_> {
+impl Serialize for mod_GetResp::ResolvedPathResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1397,7 +1393,7 @@ impl Serialize for mod_GetResp::ResolvedPathResult<'_> {
     }
 }
 
-impl Serialize for AddResp<'_> {
+impl Serialize for AddResp {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1408,7 +1404,7 @@ impl Serialize for AddResp<'_> {
     }
 }
 
-impl Serialize for mod_AddResp::CreatedObjectResult<'_> {
+impl Serialize for mod_AddResp::CreatedObjectResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1420,7 +1416,7 @@ impl Serialize for mod_AddResp::CreatedObjectResult<'_> {
     }
 }
 
-impl Serialize for mod_AddResp::mod_CreatedObjectResult::OperationStatus<'_> {
+impl Serialize for mod_AddResp::mod_CreatedObjectResult::OperationStatus {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1440,7 +1436,7 @@ impl Serialize for mod_AddResp::mod_CreatedObjectResult::OperationStatus<'_> {
     }
 }
 
-impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure<'_> {
+impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationFailure {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1452,7 +1448,7 @@ impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess<'_> {
+impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::OperationSuccess {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -1465,7 +1461,7 @@ impl Serialize for mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::Op
     }
 }
 
-impl Serialize for mod_AddResp::ParameterError<'_> {
+impl Serialize for mod_AddResp::ParameterError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,

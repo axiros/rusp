@@ -40,7 +40,7 @@ impl RegisterBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -50,7 +50,7 @@ impl RegisterBuilder {
                             reg_paths: self
                                 .reg_paths
                                 .into_iter()
-                                .map(|p| RegistrationPath { path: p.into() })
+                                .map(|p| RegistrationPath { path: p })
                                 .collect(),
                         }
                     }),
@@ -97,19 +97,19 @@ impl RegisteredPathResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<RegisteredPathResult<'static>> {
+    pub fn build(self) -> Result<RegisteredPathResult> {
         Ok(RegisteredPathResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             oper_status: Some(match self.oper_status {
                 RegisterOperationStatus::Failure { err_code, err_msg } => Ok(OperationStatus {
                     oper_status: OneOfoper_status::oper_failure(OperationFailure {
                         err_code,
-                        err_msg: err_msg.into(),
+                        err_msg,
                     }),
                 }),
                 RegisterOperationStatus::Success(s) => Ok(OperationStatus {
                     oper_status: OneOfoper_status::oper_success(OperationSuccess {
-                        registered_path: s.into(),
+                        registered_path: s,
                     }),
                 }),
                 RegisterOperationStatus::None => Err(anyhow::anyhow!("")),
@@ -140,7 +140,7 @@ impl RegisterRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let registered_path_results = self
             .registered_path_results
             .into_iter()

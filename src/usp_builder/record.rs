@@ -88,7 +88,7 @@ impl SessionContextBuilder {
         self
     }
 
-    pub fn build(self) -> Result<SessionContextRecord<'static>> {
+    pub fn build(self) -> Result<SessionContextRecord> {
         let scr = SessionContextRecord {
             session_id: self
                 .session_id
@@ -106,7 +106,7 @@ impl SessionContextBuilder {
             payloadrec_sar_state: PayloadSARState::NONE,
             payload: self
                 .payload
-                .map_or_else(Vec::new, |payload| vec![payload.into()]),
+                .map_or_else(Vec::new, |payload| vec![payload]),
         };
 
         Ok(scr)
@@ -244,7 +244,7 @@ impl RecordBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Record<'static>> {
+    pub fn build(self) -> Result<Record> {
         let to_id = self
             .to_id
             .with_context(|| "Cannot produce USP Record without to_id")?;
@@ -256,12 +256,12 @@ impl RecordBuilder {
             version: if self.version.is_empty() {
                 "1.3.".into()
             } else {
-                self.version.into()
+                self.version
             },
-            to_id: to_id.into(),
-            from_id: from_id.into(),
-            sender_cert: self.sender_cert.into(),
-            mac_signature: self.mac_signature.into(),
+            to_id,
+            from_id,
+            sender_cert: self.sender_cert,
+            mac_signature: self.mac_signature,
             payload_security: self.payload_security,
             record_type: OneOfrecord_type::None,
         };
@@ -271,8 +271,7 @@ impl RecordBuilder {
             RecordType::NoSessionContext => {
                 let payload = self
                     .payload
-                    .with_context(|| "Cannot produce USP Record without payload")?
-                    .into();
+                    .with_context(|| "Cannot produce USP Record without payload")?;
 
                 record.record_type =
                     OneOfrecord_type::no_session_context(NoSessionContextRecord { payload });
@@ -289,7 +288,7 @@ impl RecordBuilder {
             } => {
                 record.record_type = OneOfrecord_type::mqtt_connect(MQTTConnectRecord {
                     version,
-                    subscribed_topic: subscribed_topic.into(),
+                    subscribed_topic,
                 });
             }
             RecordType::STOMPConnect {
@@ -298,7 +297,7 @@ impl RecordBuilder {
             } => {
                 record.record_type = OneOfrecord_type::stomp_connect(STOMPConnectRecord {
                     version,
-                    subscribed_destination: subscribed_destination.into(),
+                    subscribed_destination,
                 });
             }
             RecordType::Disconnect {
@@ -306,7 +305,7 @@ impl RecordBuilder {
                 reason_code,
             } => {
                 record.record_type = OneOfrecord_type::disconnect(DisconnectRecord {
-                    reason: reason.into(),
+                    reason,
                     reason_code,
                 });
             }

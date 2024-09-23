@@ -54,9 +54,6 @@ pub mod usp_decoder;
 /// Helper functions to encode native Rust types into Protobuf encoded byte streams
 pub mod usp_encoder;
 
-/// Helper functions to generate USP Messages
-pub mod usp_generator;
-
 /// Automatically generated bindings for USP Records from the [`USP Records Protobuf schema`]
 ///
 /// [`USP Records Protobuf schema`]: <https://usp.technology/specification/usp-record-1-3.proto>

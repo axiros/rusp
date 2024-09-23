@@ -50,19 +50,18 @@ impl OperateBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
                     req_type: operate({
                         Operate {
-                            command: self.command.into(),
-                            command_key: self.command_key.into(),
+                            command: self.command,
+                            command_key: self.command_key,
                             send_resp: self.send_resp,
                             input_args: self
                                 .input_args
                                 .into_iter()
-                                .map(|(k, v)| (k.into(), v.into()))
                                 .collect(),
                         }
                     }),
@@ -125,30 +124,29 @@ impl OperateRespResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<OperationResult<'static>> {
+    pub fn build(self) -> Result<OperationResult> {
         match self.operation_result {
             OperateRespOperationResult::OutputArgs { output_args } => Ok(OperationResult {
                 operation_resp: OneOfoperation_resp::req_output_args(OutputArgs {
                     output_args: output_args
                         .into_iter()
-                        .map(|(k, v)| (k.into(), v.into()))
                         .collect::<HashMap<_, _>>(),
                 }),
-                executed_command: self.executed_command.into(),
+                executed_command: self.executed_command,
             }),
             OperateRespOperationResult::Failure { err_code, err_msg } => Ok(OperationResult {
                 operation_resp: OneOfoperation_resp::cmd_failure(CommandFailure {
                     err_code,
-                    err_msg: err_msg.into(),
+                    err_msg,
                 }),
-                executed_command: self.executed_command.into(),
+                executed_command: self.executed_command,
             }),
             OperateRespOperationResult::None => Err(anyhow::anyhow!(
                 "Need to have either OutputArgs or Path or Failure"
             )),
             OperateRespOperationResult::Path { req_obj_path } => Ok(OperationResult {
-                operation_resp: OneOfoperation_resp::req_obj_path(req_obj_path.into()),
-                executed_command: self.executed_command.into(),
+                operation_resp: OneOfoperation_resp::req_obj_path(req_obj_path),
+                executed_command: self.executed_command,
             }),
         }
     }
@@ -176,7 +174,7 @@ impl OperateRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: response({
                 Response {

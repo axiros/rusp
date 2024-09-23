@@ -72,7 +72,7 @@ impl GetSupportedDMBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -139,14 +139,14 @@ impl GSDMCommandResult {
         self
     }
 
-    pub fn build(self) -> Result<SupportedCommandResult<'static>> {
+    pub fn build(self) -> Result<SupportedCommandResult> {
         if matches!(self.command_type, CmdType::CMD_UNKNOWN) {
             anyhow::bail!(
                 "Cannot build a Supported Command Result without a specified command type"
             );
         }
         Ok(SupportedCommandResult {
-            command_name: self.command_name.into(),
+            command_name: self.command_name,
             input_arg_names: self
                 .input_arg_names
                 .into_iter()
@@ -183,9 +183,9 @@ impl GSDMEventResult {
         self
     }
 
-    pub fn build(self) -> Result<SupportedEventResult<'static>> {
+    pub fn build(self) -> Result<SupportedEventResult> {
         Ok(SupportedEventResult {
-            event_name: self.event_name.into(),
+            event_name: self.event_name,
             arg_names: self
                 .arg_names
                 .into_iter()
@@ -304,12 +304,12 @@ impl GSDMParamResult {
         self
     }
 
-    pub fn build(self) -> Result<SupportedParamResult<'static>> {
+    pub fn build(self) -> Result<SupportedParamResult> {
         if matches!(self.value_type, ParamValueType::PARAM_UNKNOWN) {
             anyhow::bail!("Cannot build a Supported Param Result without a specified value type");
         }
         Ok(SupportedParamResult {
-            param_name: self.param_name.into(),
+            param_name: self.param_name,
             access: self.access,
             value_type: self.value_type,
             value_change: self.value_change,
@@ -404,7 +404,7 @@ impl GSDMSupportedObjectResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<SupportedObjectResult<'static>> {
+    pub fn build(self) -> Result<SupportedObjectResult> {
         let supported_commands = self
             .supported_commands
             .into_iter()
@@ -423,16 +423,14 @@ impl GSDMSupportedObjectResultBuilder {
             .map(GSDMParamResult::build)
             .collect::<Result<Vec<_>>>()?;
 
-        let unique_key_sets: Vec<SupportedUniqueKeySet<'_>> = self
+        let unique_key_sets: Vec<SupportedUniqueKeySet> = self
             .unique_key_sets
             .into_iter()
-            .map(|i| SupportedUniqueKeySet {
-                key_names: i.into_iter().map(std::borrow::Cow::Owned).collect(),
-            })
+            .map(|i| SupportedUniqueKeySet { key_names: i })
             .collect();
 
         Ok(SupportedObjectResult {
-            supported_obj_path: self.supported_obj_path.into(),
+            supported_obj_path: self.supported_obj_path,
             access: self.access,
             is_multi_instance: self.is_multi_instance,
             supported_commands,
@@ -492,7 +490,7 @@ impl GSDMReqObjectResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<RequestedObjectResult<'static>> {
+    pub fn build(self) -> Result<RequestedObjectResult> {
         let err_msg = self
             .err_msg
             .clone()
@@ -505,10 +503,10 @@ impl GSDMReqObjectResultBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedObjectResult {
-            req_obj_path: self.req_obj_path.into(),
+            req_obj_path: self.req_obj_path,
             err_code: self.err_code,
-            err_msg: err_msg.into(),
-            data_model_inst_uri: self.data_model_inst_uri.into(),
+            err_msg,
+            data_model_inst_uri: self.data_model_inst_uri,
             supported_objs,
         })
     }
@@ -536,7 +534,7 @@ impl GetSupportedDMRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let req_obj_results = self
             .req_obj_results
             .into_iter()

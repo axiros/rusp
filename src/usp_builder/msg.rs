@@ -8,12 +8,12 @@ use crate::usp::Msg;
 use anyhow::{Context, Result};
 
 #[derive(Clone)]
-pub struct MsgBuilder<'a> {
+pub struct MsgBuilder {
     msg_id: Option<String>,
-    body: Option<Body<'a>>,
+    body: Option<Body>,
 }
 
-impl<'a> MsgBuilder<'a> {
+impl MsgBuilder {
     #[must_use]
     pub const fn new() -> Self {
         Self {
@@ -29,12 +29,12 @@ impl<'a> MsgBuilder<'a> {
     }
 
     #[must_use]
-    pub fn with_body(mut self, body: Body<'a>) -> Self {
+    pub fn with_body(mut self, body: Body) -> Self {
         self.body = Some(body);
         self
     }
 
-    pub fn build(self) -> Result<Msg<'a>> {
+    pub fn build(self) -> Result<Msg> {
         use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
         use crate::usp::mod_Header::MsgType::{
             ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET,
@@ -94,7 +94,7 @@ impl<'a> MsgBuilder<'a> {
 
         Ok(Msg {
             header: Some(Header {
-                msg_id: msg_id.into(),
+                msg_id,
                 msg_type,
             }),
             body: Some(body),

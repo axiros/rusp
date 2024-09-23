@@ -56,7 +56,7 @@ pub fn try_encode_msg(msg: &Msg) -> Result<Vec<u8>> {
 }
 
 /// Implementation of some extension methods for `Record`s
-impl<'a> Record<'a> {
+impl<'a> Record {
     /// Render the `Record` into JSON
     ///
     /// # Arguments
@@ -251,7 +251,7 @@ impl<'a> Record<'a> {
 }
 
 /// Implementation of some extension methods for `Msg`s
-impl<'a> Msg<'a> {
+impl Msg {
     /// Encode the Msg as JSON format
     ///
     /// # Arguments
@@ -274,7 +274,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.to_json().unwrap(), "{\"Header\":{\"msg_id\":\"test\",\"msg_type\":\"NOTIFY\"},\"Body\":{\"Request\":{\"Notify\":{\"subscription_id\":\"notif\",\"send_resp\":true,\"on_board_req\":{\"oui\":\"0044FF\",\"product_class\":\"Foo\",\"serial_number\":\"01234\",\"agent_supported_protocol_versions\":\"1.3\"}}}}}");
     /// ```
-    pub fn to_json(&'a self) -> Result<String> {
+    pub fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).context("Failed serializing USP Msg to JSON")
     }
 
@@ -300,7 +300,7 @@ impl<'a> Msg<'a> {
     ///     ]).unwrap();
     /// assert_eq!(msg.to_json_pretty().unwrap(), "{\n  \"Header\": {\n    \"msg_id\": \"test\",\n    \"msg_type\": \"NOTIFY\"\n  },\n  \"Body\": {\n    \"Request\": {\n      \"Notify\": {\n        \"subscription_id\": \"notif\",\n        \"send_resp\": true,\n        \"on_board_req\": {\n          \"oui\": \"0044FF\",\n          \"product_class\": \"Foo\",\n          \"serial_number\": \"01234\",\n          \"agent_supported_protocol_versions\": \"1.3\"\n        }\n      }\n    }\n  }\n}");
     /// ```
-    pub fn to_json_pretty(&'a self) -> Result<String> {
+    pub fn to_json_pretty(&self) -> Result<String> {
         serde_json::to_string_pretty(self).context("Failed serializing USP Msg to JSON")
     }
 

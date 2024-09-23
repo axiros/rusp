@@ -35,7 +35,7 @@ impl GetBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -72,15 +72,14 @@ impl ResolvedPathResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<ResolvedPathResult<'static>> {
+    pub fn build(self) -> Result<ResolvedPathResult> {
         let result_params = self
             .result_params
             .into_iter()
-            .map(|(k, v)| (k.into(), v.into()))
             .collect();
 
         Ok(ResolvedPathResult {
-            resolved_path: self.resolved_path.into(),
+            resolved_path: self.resolved_path,
             result_params,
         })
     }
@@ -121,7 +120,7 @@ impl ReqPathResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<RequestedPathResult<'static>> {
+    pub fn build(self) -> Result<RequestedPathResult> {
         let err_msg = self
             .err_msg
             .clone()
@@ -134,9 +133,9 @@ impl ReqPathResultBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedPathResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             err_code: self.err_code,
-            err_msg: err_msg.into(),
+            err_msg,
             resolved_path_results,
         })
     }
@@ -161,7 +160,7 @@ impl GetRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let req_path_results = self
             .req_path_results
             .into_iter()

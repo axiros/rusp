@@ -34,19 +34,19 @@ impl UpdateObjectBuilder {
         self
     }
 
-    pub fn build(self) -> Result<UpdateObject<'static>> {
+    pub fn build(self) -> Result<UpdateObject> {
         let param_settings = self
             .param_settings
             .into_iter()
             .map(|(n, v, r)| UpdateParamSetting {
-                param: n.into(),
-                value: v.into(),
+                param: n,
+                value: v,
                 required: r,
             })
             .collect();
 
         Ok(UpdateObject {
-            obj_path: self.obj_path.into(),
+            obj_path: self.obj_path,
             param_settings,
         })
     }
@@ -79,7 +79,7 @@ impl SetBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         use crate::usp::mod_Body::OneOfmsg_body::request;
         use crate::usp::mod_Request::OneOfreq_type::set;
 
@@ -213,27 +213,27 @@ impl SetOperationStatus {
         Self::Success(updated_inst_results)
     }
 
-    pub fn build(self) -> Result<OperationStatus<'static>> {
+    pub fn build(self) -> Result<OperationStatus> {
         match self {
             Self::Failure(f) => Ok(OperationStatus {
                 oper_status: oper_failure(OperationFailure {
                     err_code: f.err_code,
-                    err_msg: f.err_msg.into(),
+                    err_msg: f.err_msg,
                     updated_inst_failures: f
                         .updated_inst_failures
                         .into_iter()
                         .map(|e| UpdatedInstanceFailure {
-                            affected_path: e.affected_path.into(),
+                            affected_path: e.affected_path,
                             param_errs: e
                                 .param_errs
                                 .into_iter()
                                 .map(|p| ParameterError {
-                                    param: p.param.into(),
+                                    param: p.param,
                                     err_code: p.err_code,
                                     err_msg: if p.err_msg.is_empty() {
                                         usp_errors::get_err_msg(p.err_code).into()
                                     } else {
-                                        p.err_msg.into()
+                                        p.err_msg
                                     },
                                 })
                                 .collect(),
@@ -246,24 +246,23 @@ impl SetOperationStatus {
                     updated_inst_results: s
                         .into_iter()
                         .map(|s| UpdatedInstanceResult {
-                            affected_path: s.affected_path.into(),
+                            affected_path: s.affected_path,
                             param_errs: s
                                 .param_errs
                                 .into_iter()
                                 .map(|e| ParameterError {
-                                    param: e.param.into(),
+                                    param: e.param,
                                     err_code: e.err_code,
                                     err_msg: if e.err_msg.is_empty() {
                                         usp_errors::get_err_msg(e.err_code).into()
                                     } else {
-                                        e.err_msg.into()
+                                        e.err_msg
                                     },
                                 })
                                 .collect(),
                             updated_params: s
                                 .updated_params
                                 .into_iter()
-                                .map(|(k, v)| (k.into(), v.into()))
                                 .collect(),
                         })
                         .collect(),
@@ -289,9 +288,9 @@ impl UpdatedObjectResultsBuilder {
         }
     }
 
-    pub fn build(self) -> Result<UpdatedObjectResult<'static>> {
+    pub fn build(self) -> Result<UpdatedObjectResult> {
         Ok(UpdatedObjectResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             oper_status: Some(self.oper_status.build()?),
         })
     }
@@ -319,7 +318,7 @@ impl SetRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         use crate::usp::mod_Body::OneOfmsg_body::response;
         use crate::usp::mod_Response::OneOfresp_type::set_resp;
 

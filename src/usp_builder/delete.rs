@@ -39,7 +39,7 @@ impl DeleteBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -112,9 +112,9 @@ impl DeletedObjectResultsBuilder {
         self
     }
 
-    pub fn build(self) -> Result<DeletedObjectResult<'static>> {
+    pub fn build(self) -> Result<DeletedObjectResult> {
         Ok(DeletedObjectResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             oper_status: match self.oper_status {
                 DeleteRespOperationStatus::Success(s) => Some(OperationStatus {
                     oper_status: oper_success(OperationSuccess {
@@ -123,12 +123,12 @@ impl DeletedObjectResultsBuilder {
                             .unaffected_path_errs
                             .into_iter()
                             .map(|e| UnaffectedPathError {
-                                unaffected_path: e.unaffected_path.into(),
+                                unaffected_path: e.unaffected_path,
                                 err_code: e.err_code,
                                 err_msg: if e.err_msg.is_empty() {
                                     usp_errors::get_err_msg(e.err_code).into()
                                 } else {
-                                    e.err_msg.into()
+                                    e.err_msg
                                 },
                             })
                             .collect(),
@@ -137,7 +137,7 @@ impl DeletedObjectResultsBuilder {
                 DeleteRespOperationStatus::Failure { err_code, err_msg } => Some(OperationStatus {
                     oper_status: oper_failure(OperationFailure {
                         err_code,
-                        err_msg: err_msg.into(),
+                        err_msg,
                     }),
                 }),
                 DeleteRespOperationStatus::None => Err(anyhow::anyhow!(""))?,
@@ -168,7 +168,7 @@ impl DeleteRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: response({
                 Response {

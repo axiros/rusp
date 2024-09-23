@@ -35,7 +35,7 @@ impl GetInstancesBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -72,15 +72,14 @@ impl CurrInstanceBuilder {
         self
     }
 
-    pub fn build(self) -> Result<CurrInstance<'static>> {
+    pub fn build(self) -> Result<CurrInstance> {
         let unique_keys = self
             .unique_keys
             .into_iter()
-            .map(|(k, v)| (k.into(), v.into()))
             .collect();
 
         Ok(CurrInstance {
-            instantiated_obj_path: self.instantiated_obj_path.into(),
+            instantiated_obj_path: self.instantiated_obj_path,
             unique_keys,
         })
     }
@@ -118,7 +117,7 @@ impl ReqPathResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<RequestedPathResult<'static>> {
+    pub fn build(self) -> Result<RequestedPathResult> {
         let err_msg = self
             .err_msg
             .clone()
@@ -131,9 +130,9 @@ impl ReqPathResultBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(RequestedPathResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             err_code: self.err_code,
-            err_msg: err_msg.into(),
+            err_msg,
             curr_insts,
         })
     }
@@ -158,7 +157,7 @@ impl GetInstancesRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let req_path_results = self
             .req_path_results
             .into_iter()

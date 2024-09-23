@@ -29,7 +29,7 @@ impl DeregisterBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: request({
                 Request {
@@ -85,14 +85,14 @@ impl DeregisteredPathResultBuilder {
         self
     }
 
-    pub fn build(self) -> Result<DeregisteredPathResult<'static>> {
+    pub fn build(self) -> Result<DeregisteredPathResult> {
         Ok(DeregisteredPathResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             oper_status: Some(match self.oper_status {
                 DeregisterOperationStatus::Failure { err_code, err_msg } => Ok(OperationStatus {
                     oper_status: OneOfoper_status::oper_failure(OperationFailure {
                         err_code,
-                        err_msg: err_msg.into(),
+                        err_msg,
                     }),
                 }),
                 DeregisterOperationStatus::Success(s) => Ok(OperationStatus {
@@ -131,7 +131,7 @@ impl DeregisterRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let deregistered_path_results = self
             .deregistered_path_results
             .into_iter()

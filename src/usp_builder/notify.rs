@@ -197,7 +197,7 @@ impl NotifyBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let notify_type = self
             .notify_type
             .context("Must specify a notification type")?;
@@ -209,42 +209,40 @@ impl NotifyBuilder {
                 serial_number,
                 agent_supported_protocol_versions,
             } => on_board_req(OnBoardRequest {
-                agent_supported_protocol_versions: agent_supported_protocol_versions.into(),
-                oui: oui.into(),
-                product_class: product_class.into(),
-                serial_number: serial_number.into(),
+                agent_supported_protocol_versions,
+                oui,
+                product_class,
+                serial_number,
             }),
             NotifyType::ValueChange {
                 param_path,
                 param_value,
             } => value_change(ValueChange {
-                param_path: param_path.into(),
-                param_value: param_value.into(),
+                param_path,
+                param_value,
             }),
             NotifyType::Event {
                 obj_path,
                 event_name,
                 params,
             } => event(Event {
-                obj_path: obj_path.into(),
-                event_name: event_name.into(),
+                obj_path,
+                event_name,
                 params: params
                     .into_iter()
-                    .map(|(k, v)| (k.into(), v.into()))
                     .collect::<HashMap<_, _>>(),
             }),
             NotifyType::ObjectCreation {
                 obj_path,
                 unique_keys,
             } => obj_creation(ObjectCreation {
-                obj_path: obj_path.into(),
+                obj_path,
                 unique_keys: unique_keys
                     .into_iter()
-                    .map(|(k, v)| (k.into(), v.into()))
                     .collect::<HashMap<_, _>>(),
             }),
             NotifyType::ObjectDeletion { obj_path } => obj_deletion(ObjectDeletion {
-                obj_path: obj_path.into(),
+                obj_path,
             }),
             NotifyType::OperationComplete {
                 obj_path,
@@ -252,15 +250,14 @@ impl NotifyBuilder {
                 command_key,
                 operation_resp,
             } => oper_complete(OperationComplete {
-                obj_path: obj_path.into(),
-                command_name: command_name.into(),
-                command_key: command_key.into(),
+                obj_path,
+                command_name,
+                command_key,
                 operation_resp: match operation_resp {
                     OperationCompleteType::OutputArgs(h) => OneOfoperation_resp::req_output_args(
                         crate::usp::mod_Notify::mod_OperationComplete::OutputArgs {
                             output_args: h
                                 .into_iter()
-                                .map(|(k, v)| (k.into(), v.into()))
                                 .collect::<HashMap<_, _>>(),
                         },
                     ),
@@ -268,7 +265,7 @@ impl NotifyBuilder {
                         OneOfoperation_resp::cmd_failure(
                             crate::usp::mod_Notify::mod_OperationComplete::CommandFailure {
                                 err_code: code,
-                                err_msg: msg.into(),
+                                err_msg: msg,
                             },
                         )
                     }
@@ -281,7 +278,7 @@ impl NotifyBuilder {
                 Request {
                     req_type: notify({
                         Notify {
-                            subscription_id: self.subscription_id.into(),
+                            subscription_id: self.subscription_id,
                             send_resp: self.send_resp,
                             notification: notify_type,
                         }
@@ -303,13 +300,13 @@ impl NotifyRespBuilder {
         Self { subscription_id }
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         Ok(Body {
             msg_body: response({
                 Response {
                     resp_type: notify_resp({
                         NotifyResp {
-                            subscription_id: self.subscription_id.into(),
+                            subscription_id: self.subscription_id,
                         }
                     }),
                 }

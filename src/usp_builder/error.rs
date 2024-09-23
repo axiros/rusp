@@ -37,7 +37,7 @@ impl ErrorBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         let message = self
             .message
             .clone()
@@ -49,13 +49,13 @@ impl ErrorBuilder {
             msg_body: error({
                 Error {
                     err_code: self.code,
-                    err_msg: message.into(),
+                    err_msg: message,
                     param_errs: param_errs
                         .into_iter()
                         .map(|(param_path, err_code, err_msg)| ParamError {
-                            param_path: param_path.into(),
+                            param_path,
                             err_code,
-                            err_msg: err_msg.into(),
+                            err_msg,
                         })
                         .collect(),
                 }

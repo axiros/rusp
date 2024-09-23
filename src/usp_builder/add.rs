@@ -28,19 +28,19 @@ impl CreateObjectBuilder {
         self
     }
 
-    pub fn build(self) -> Result<CreateObject<'static>> {
+    pub fn build(self) -> Result<CreateObject> {
         let param_settings = self
             .param_settings
             .into_iter()
             .map(|(n, v, r)| CreateParamSetting {
-                param: n.into(),
-                value: v.into(),
+                param: n,
+                value: v,
                 required: r,
             })
             .collect();
 
         Ok(CreateObject {
-            obj_path: self.obj_path.into(),
+            obj_path: self.obj_path,
             param_settings,
         })
     }
@@ -73,7 +73,7 @@ impl AddBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         use crate::usp::mod_Body::OneOfmsg_body::request;
         use crate::usp::mod_Request::OneOfreq_type::add;
 
@@ -153,7 +153,7 @@ impl AddOperationStatus {
         })
     }
 
-    pub fn build(self) -> Result<OperationStatus<'static>> {
+    pub fn build(self) -> Result<OperationStatus> {
         use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
             OneOfoper_status::{oper_failure, oper_success},
             OperationFailure, OperationSuccess,
@@ -163,29 +163,28 @@ impl AddOperationStatus {
             Self::Failure(f) => Ok(OperationStatus {
                 oper_status: oper_failure(OperationFailure {
                     err_code: f.err_code,
-                    err_msg: f.err_msg.into(),
+                    err_msg: f.err_msg,
                 }),
             }),
             Self::Success(s) => Ok(OperationStatus {
                 oper_status: oper_success(OperationSuccess {
-                    instantiated_path: s.instantiated_path.into(),
+                    instantiated_path: s.instantiated_path,
                     param_errs: s
                         .param_errs
                         .into_iter()
                         .map(|e| ParameterError {
-                            param: e.param.into(),
+                            param: e.param,
                             err_code: e.err_code,
                             err_msg: if e.err_msg.is_empty() {
                                 usp_errors::get_err_msg(e.err_code).into()
                             } else {
-                                e.err_msg.into()
+                                e.err_msg
                             },
                         })
                         .collect(),
                     unique_keys: s
                         .unique_keys
                         .into_iter()
-                        .map(|(k, v)| (k.into(), v.into()))
                         .collect(),
                 }),
             }),
@@ -209,9 +208,9 @@ impl CreatedObjectResultsBuilder {
         }
     }
 
-    pub fn build(self) -> Result<CreatedObjectResult<'static>> {
+    pub fn build(self) -> Result<CreatedObjectResult> {
         Ok(CreatedObjectResult {
-            requested_path: self.requested_path.into(),
+            requested_path: self.requested_path,
             oper_status: Some(self.oper_status.build()?),
         })
     }
@@ -239,7 +238,7 @@ impl AddRespBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Body<'static>> {
+    pub fn build(self) -> Result<Body> {
         use crate::usp::mod_Body::OneOfmsg_body::response;
         use crate::usp::mod_Response::OneOfresp_type::add_resp;
 
