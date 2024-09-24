@@ -59,10 +59,7 @@ impl OperateBuilder {
                             command: self.command,
                             command_key: self.command_key,
                             send_resp: self.send_resp,
-                            input_args: self
-                                .input_args
-                                .into_iter()
-                                .collect(),
+                            input_args: self.input_args.into_iter().collect(),
                         }
                     }),
                 }
@@ -128,9 +125,7 @@ impl OperateRespResultBuilder {
         match self.operation_result {
             OperateRespOperationResult::OutputArgs { output_args } => Ok(OperationResult {
                 operation_resp: OneOfoperation_resp::req_output_args(OutputArgs {
-                    output_args: output_args
-                        .into_iter()
-                        .collect::<HashMap<_, _>>(),
+                    output_args: output_args.into_iter().collect::<HashMap<_, _>>(),
                 }),
                 executed_command: self.executed_command,
             }),

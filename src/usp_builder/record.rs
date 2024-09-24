@@ -104,9 +104,7 @@ impl SessionContextBuilder {
             payload_sar_state: PayloadSARState::NONE,
             // FIXME
             payloadrec_sar_state: PayloadSARState::NONE,
-            payload: self
-                .payload
-                .map_or_else(Vec::new, |payload| vec![payload]),
+            payload: self.payload.map_or_else(Vec::new, |payload| vec![payload]),
         };
 
         Ok(scr)

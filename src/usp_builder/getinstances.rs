@@ -73,10 +73,7 @@ impl CurrInstanceBuilder {
     }
 
     pub fn build(self) -> Result<CurrInstance> {
-        let unique_keys = self
-            .unique_keys
-            .into_iter()
-            .collect();
+        let unique_keys = self.unique_keys.into_iter().collect();
 
         Ok(CurrInstance {
             instantiated_obj_path: self.instantiated_obj_path,

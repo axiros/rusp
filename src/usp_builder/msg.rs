@@ -93,10 +93,7 @@ impl MsgBuilder {
         };
 
         Ok(Msg {
-            header: Some(Header {
-                msg_id,
-                msg_type,
-            }),
+            header: Some(Header { msg_id, msg_type }),
             body: Some(body),
         })
     }

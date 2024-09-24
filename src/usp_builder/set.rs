@@ -260,10 +260,7 @@ impl SetOperationStatus {
                                     },
                                 })
                                 .collect(),
-                            updated_params: s
-                                .updated_params
-                                .into_iter()
-                                .collect(),
+                            updated_params: s.updated_params.into_iter().collect(),
                         })
                         .collect(),
                 }),

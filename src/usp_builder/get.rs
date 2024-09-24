@@ -73,10 +73,7 @@ impl ResolvedPathResultBuilder {
     }
 
     pub fn build(self) -> Result<ResolvedPathResult> {
-        let result_params = self
-            .result_params
-            .into_iter()
-            .collect();
+        let result_params = self.result_params.into_iter().collect();
 
         Ok(ResolvedPathResult {
             resolved_path: self.resolved_path,

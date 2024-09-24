@@ -228,22 +228,16 @@ impl NotifyBuilder {
             } => event(Event {
                 obj_path,
                 event_name,
-                params: params
-                    .into_iter()
-                    .collect::<HashMap<_, _>>(),
+                params: params.into_iter().collect::<HashMap<_, _>>(),
             }),
             NotifyType::ObjectCreation {
                 obj_path,
                 unique_keys,
             } => obj_creation(ObjectCreation {
                 obj_path,
-                unique_keys: unique_keys
-                    .into_iter()
-                    .collect::<HashMap<_, _>>(),
+                unique_keys: unique_keys.into_iter().collect::<HashMap<_, _>>(),
             }),
-            NotifyType::ObjectDeletion { obj_path } => obj_deletion(ObjectDeletion {
-                obj_path,
-            }),
+            NotifyType::ObjectDeletion { obj_path } => obj_deletion(ObjectDeletion { obj_path }),
             NotifyType::OperationComplete {
                 obj_path,
                 command_name,
@@ -256,9 +250,7 @@ impl NotifyBuilder {
                 operation_resp: match operation_resp {
                     OperationCompleteType::OutputArgs(h) => OneOfoperation_resp::req_output_args(
                         crate::usp::mod_Notify::mod_OperationComplete::OutputArgs {
-                            output_args: h
-                                .into_iter()
-                                .collect::<HashMap<_, _>>(),
+                            output_args: h.into_iter().collect::<HashMap<_, _>>(),
                         },
                     ),
                     OperationCompleteType::CommandFailure(code, msg) => {

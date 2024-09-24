@@ -182,10 +182,7 @@ impl AddOperationStatus {
                             },
                         })
                         .collect(),
-                    unique_keys: s
-                        .unique_keys
-                        .into_iter()
-                        .collect(),
+                    unique_keys: s.unique_keys.into_iter().collect(),
                 }),
             }),
             Self::None => Err(anyhow::anyhow!("")),

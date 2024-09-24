@@ -135,10 +135,7 @@ impl DeletedObjectResultsBuilder {
                     }),
                 }),
                 DeleteRespOperationStatus::Failure { err_code, err_msg } => Some(OperationStatus {
-                    oper_status: oper_failure(OperationFailure {
-                        err_code,
-                        err_msg,
-                    }),
+                    oper_status: oper_failure(OperationFailure { err_code, err_msg }),
                 }),
                 DeleteRespOperationStatus::None => Err(anyhow::anyhow!(""))?,
             },
