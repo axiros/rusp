@@ -367,14 +367,14 @@ enum MsgType {
         #[arg(long = "max_depth")]
         max_depth: Option<u32>,
     },
-    /// Generate an USP `GetResp` response message
+    /// Generate an USP GetResp response message
     #[command(name = "GetResp")]
     USPGetResp {
-        /// A JSON array of Strings resembling the result data for the `GetResp` operation
+        /// A JSON array of Strings resembling the result data for the GetResp operation
         #[arg(num_args(1..))]
         result: Vec<String>,
     },
-    /// Generate an USP `GetInstances` request message
+    /// Generate an USP GetInstances request message
     #[command(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
@@ -386,7 +386,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         obj_paths: Vec<String>,
     },
-    /// Generate an USP `GetSupportedDM` request message
+    /// Generate an USP GetSupportedDM request message
     #[command(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
@@ -410,7 +410,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         paths: Vec<String>,
     },
-    /// Generate an USP `GetSupportedProtocol` request message
+    /// Generate an USP GetSupportedProtocol request message
     #[command(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
@@ -459,6 +459,27 @@ enum MsgType {
         /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
         #[arg(num_args(1..))]
         args: Vec<String>,
+    },
+    /// Generate an USP Register request message
+    #[command(name = "Register")]
+    USPRegister {
+        /// Do we allow partial execution?
+        #[arg(action = clap::ArgAction::Set)]
+        allow_partial: bool,
+        /// A JSON structure resembling the input for a Register operation
+        ///
+        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
+        #[arg(num_args(1..))]
+        reg_paths: Vec<String>,
+    },
+    /// Generate an USP Register request message
+    #[command(name = "Deregister")]
+    USPDeregister {
+        /// A JSON structure resembling the input for a Deregister operation
+        ///
+        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
+        #[arg(num_args(1..))]
+        paths: Vec<String>,
     },
 }
 
@@ -662,6 +683,19 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
             let msg = usp_builder::SetBuilder::new()
                 .with_allow_partial(allow_partial)
                 .with_update_objs(v.into_iter().map(|(path, par)| usp_builder::UpdateObjectBuilder::new(path.into()).with_param_settings(par)).collect())
+                .build()?;
+            serialize_into_vec(&msg)
+        }
+        MsgType::USPRegister { allow_partial, reg_paths } => {
+            let msg = usp_builder::RegisterBuilder::new()
+                .with_allow_partial(allow_partial)
+                .with_reg_paths(reg_paths)
+                .build()?;
+            serialize_into_vec(&msg)
+        }
+        MsgType::USPDeregister { paths } => {
+            let msg = usp_builder::DeregisterBuilder::new()
+                .with_paths(paths)
                 .build()?;
             serialize_into_vec(&msg)
         }
