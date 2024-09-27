@@ -325,7 +325,7 @@ impl TryFrom<NotifyType> for RuspNotifyType {
 #[derive(Parser)]
 #[command(rename_all = "verbatim")]
 enum MsgType {
-    /// Generate an USP Add request message
+    /// Generate an USP Add Request Message
     #[command(name = "Add")]
     USPAdd {
         /// Do we allow partial execution?
@@ -337,7 +337,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         args: Vec<String>,
     },
-    /// Generate an USP Delete request message
+    /// Generate an USP Delete Request Message
     #[command(name = "Delete")]
     USPDelete {
         /// Do we allow partial execution?
@@ -349,6 +349,15 @@ enum MsgType {
         #[arg(num_args(1..))]
         obj_paths: Vec<String>,
     },
+    /// Generate an USP Register Request Message
+    #[command(name = "Deregister")]
+    USPDeregister {
+        /// A JSON structure resembling the input for a Deregister operation
+        ///
+        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
+        #[arg(num_args(1..))]
+        paths: Vec<String>,
+    },
     /// Generate an USP Error message
     #[command(name = "Error")]
     USPError {
@@ -358,7 +367,7 @@ enum MsgType {
         /// code if not provided
         message: Option<String>,
     },
-    /// Generate an USP Get request message
+    /// Generate an USP Get Request Message
     #[command(name = "Get")]
     USPGet {
         /// A JSON array of Strings resembling the paths for the Get operation
@@ -367,14 +376,14 @@ enum MsgType {
         #[arg(long = "max_depth")]
         max_depth: Option<u32>,
     },
-    /// Generate an USP GetResp response message
+    /// Generate an USP Get Response Message
     #[command(name = "GetResp")]
     USPGetResp {
         /// A JSON array of Strings resembling the result data for the GetResp operation
         #[arg(num_args(1..))]
         result: Vec<String>,
     },
-    /// Generate an USP GetInstances request message
+    /// Generate an USP GetInstances Request Message
     #[command(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
@@ -386,7 +395,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         obj_paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedDM request message
+    /// Generate an USP GetSupportedDM Request Message
     #[command(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
@@ -410,13 +419,13 @@ enum MsgType {
         #[arg(num_args(1..))]
         paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedProtocol request message
+    /// Generate an USP GetSupportedProtocol Request Message
     #[command(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
         cspv: String,
     },
-    /// Generate an USP Notify request message
+    /// Generate an USP Notify Request Message
     #[command(name = "Notify")]
     USPNotify {
         /// Subscription ID
@@ -428,13 +437,13 @@ enum MsgType {
         #[command(subcommand)]
         typ: NotifyType,
     },
-    /// Generate an USP Notify response message
+    /// Generate an USP Notify Response Message
     #[command(name = "NotifyResp")]
     USPNotifyResp {
         /// Subscription ID
         sub_id: String,
     },
-    /// Generate an USP Operate request message
+    /// Generate an USP Operate Request Message
     #[command(name = "Operate")]
     USPOperate {
         /// The full pathname of of the command to execute
@@ -448,7 +457,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         args: Vec<String>,
     },
-    /// Generate an USP Set request message
+    /// Generate an USP Set Request Message
     #[command(name = "Set")]
     USPSet {
         /// Do we allow partial execution?
@@ -460,7 +469,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         args: Vec<String>,
     },
-    /// Generate an USP Register request message
+    /// Generate an USP Register Request Message
     #[command(name = "Register")]
     USPRegister {
         /// Do we allow partial execution?
@@ -471,15 +480,6 @@ enum MsgType {
         /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
         #[arg(num_args(1..))]
         reg_paths: Vec<String>,
-    },
-    /// Generate an USP Register request message
-    #[command(name = "Deregister")]
-    USPDeregister {
-        /// A JSON structure resembling the input for a Deregister operation
-        ///
-        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
-        #[arg(num_args(1..))]
-        paths: Vec<String>,
     },
 }
 
