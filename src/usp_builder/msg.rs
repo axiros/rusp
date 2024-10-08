@@ -72,7 +72,7 @@ impl MsgBuilder {
                 get_supported_protocol(_) => GET_SUPPORTED_PROTO,
                 register(_) => REGISTER,
                 deregister(_) => DEREGISTER,
-                OneOfreq_type::None => unreachable!(),
+                OneOfreq_type::None => ERROR,
             },
             response(ref resp) => match &resp.resp_type {
                 get_resp(_) => GET_RESP,
@@ -86,10 +86,9 @@ impl MsgBuilder {
                 get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
                 register_resp(_) => REGISTER_RESP,
                 deregister_resp(_) => DEREGISTER_RESP,
-                OneOfresp_type::None => unreachable!(),
+                OneOfresp_type::None => ERROR,
             },
-            error(_) => ERROR,
-            OneOfmsg_body::None => unreachable!(),
+            error(_) | OneOfmsg_body::None => ERROR,
         };
 
         Ok(Msg {
