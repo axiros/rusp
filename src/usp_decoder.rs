@@ -1,9 +1,10 @@
-use crate::usp::{self, Error, Msg, Notify};
-use crate::usp_record::Record;
+use anyhow::{anyhow, Context, Result};
 use quick_protobuf::message::MessageRead;
 use quick_protobuf::BytesReader;
 
-use anyhow::{Context, Result};
+use crate::usp::{self, Error, Msg, Notify};
+use crate::usp_record::mod_Record::OneOfrecord_type;
+use crate::usp_record::{NoSessionContextRecord, Record};
 
 /// Decodes a slice of bytes containing a Protobuf encoded USP Record into a Record structure for
 /// further processing
@@ -64,7 +65,7 @@ pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
 }
 
 /// Implementation of some extension methods for `Msg`s
-impl<'a> Msg {
+impl Msg {
     /// Retrieves the message ID from a Msg structure
     ///
     /// # Arguments
@@ -90,7 +91,7 @@ impl<'a> Msg {
     /// assert_eq!(msg.unwrap().msg_id(), "AXSS-1544114045.442596");
     /// ```
     #[must_use]
-    pub fn msg_id(&'a self) -> &str {
+    pub fn msg_id(&self) -> &str {
         self.header
             .as_ref()
             .map_or("", |header| header.msg_id.as_ref())
@@ -136,7 +137,7 @@ impl<'a> Msg {
     /// assert_eq!(msg.is_request(), false);
     /// ```
     #[must_use]
-    pub const fn is_request(&'a self) -> bool {
+    pub const fn is_request(&self) -> bool {
         if let Some(body) = self.body.as_ref() {
             matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_))
         } else {
@@ -184,7 +185,7 @@ impl<'a> Msg {
     /// assert_eq!(msg.is_notify_request(), false);
     /// ```
     #[must_use]
-    pub const fn is_notify_request(&'a self) -> bool {
+    pub const fn is_notify_request(&self) -> bool {
         self.get_notify_request().is_some()
     }
 
@@ -228,7 +229,7 @@ impl<'a> Msg {
     /// assert!(msg.get_notify_request().is_none());
     /// ```
     #[must_use]
-    pub const fn get_notify_request(&'a self) -> Option<&Notify> {
+    pub const fn get_notify_request(&self) -> Option<&Notify> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::request(request) = &body.msg_body {
                 if let usp::mod_Request::OneOfreq_type::notify(notify) = &request.req_type {
@@ -280,7 +281,7 @@ impl<'a> Msg {
     /// assert_eq!(msg.is_response(), true);
     /// ```
     #[must_use]
-    pub const fn is_response(&'a self) -> bool {
+    pub const fn is_response(&self) -> bool {
         if let Some(body) = self.body.as_ref() {
             matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_))
         } else {
@@ -340,7 +341,7 @@ impl<'a> Msg {
     /// assert_eq!(msg.is_error(), true);
     /// ```
     #[must_use]
-    pub fn is_error(&'a self) -> bool {
+    pub fn is_error(&self) -> bool {
         self.get_error().is_some()
     }
 
@@ -396,7 +397,7 @@ impl<'a> Msg {
     /// assert!(msg.get_error().is_some());
     /// ```
     #[must_use]
-    pub fn get_error(&'a self) -> Option<Error> {
+    pub fn get_error(&self) -> Option<Error> {
         if let Some(body) = self.body.as_ref() {
             if let usp::mod_Body::OneOfmsg_body::error(error) = &body.msg_body {
                 return Some(error.clone());
@@ -404,5 +405,161 @@ impl<'a> Msg {
         }
 
         None
+    }
+
+    /// Checks the validity of this [`Msg`] according to the USP specification
+    ///
+    /// Although the type itself guarantees its validity against the protobuf schema, the USP
+    /// specification places additional constrains on the values used
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rusp::usp_decoder::try_decode_msg;
+    /// let msg =
+    ///     try_decode_msg(&[
+    ///         0x0a, 0x09, 0x0a, 0x07, 0x6e, 0x6f, 0x2d, 0x62,
+    ///         0x6f, 0x64, 0x79, 0x12, 0x00,
+    ///     ]).unwrap();
+    /// assert!(msg.check_validity().is_err());
+    /// ```
+    pub fn check_validity(&self) -> Result<()> {
+        use crate::usp::mod_Body::OneOfmsg_body;
+        use crate::usp::mod_Request::OneOfreq_type;
+        use crate::usp::mod_Response::OneOfresp_type;
+        use crate::usp::{Request, Response};
+
+        self.header
+            .as_ref()
+            .filter(|h| !h.msg_id.is_empty())
+            .ok_or_else(|| anyhow!("Empty message ID"))?;
+
+        let body = self
+            .body
+            .as_ref()
+            .filter(|b| !matches!(b.msg_body, OneOfmsg_body::None))
+            .ok_or_else(|| anyhow!("Invalid message body"))?;
+
+        match body.msg_body {
+            OneOfmsg_body::request(Request {
+                req_type: OneOfreq_type::None,
+            }) => Err(anyhow!("Invalid Request message")),
+            OneOfmsg_body::response(Response {
+                resp_type: OneOfresp_type::None,
+            }) => Err(anyhow!("Invalid Response message")),
+            _ => Ok(()),
+        }
+    }
+}
+
+impl Record {
+    /// Checks the validity of this [`Record`] according to the USP specification
+    ///
+    /// Although the type itself guarantees its validity against the protobuf schema, the USP
+    /// specification places additional constrains on the values used
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rusp::usp_decoder::try_decode_record;
+    /// let no_session_empty_payload =
+    ///     try_decode_record(&[
+    ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
+    ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
+    ///         0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f,
+    ///         0x6d, 0x3a, 0x00,
+    ///     ]).unwrap();
+    /// assert!(no_session_empty_payload.check_validity().is_err());
+    /// ```
+    pub fn check_validity(&self) -> Result<()> {
+        if self.version.is_empty() {
+            return Err(anyhow!("Invalid USP version"));
+        }
+
+        if self.to_id.is_empty() {
+            return Err(anyhow!("Invalid to_id field in Record"));
+        }
+        if self.from_id.is_empty() {
+            return Err(anyhow!("Invalid from_id field in Record"));
+        }
+
+        match &self.record_type {
+            OneOfrecord_type::None => Err(anyhow!("Invalid Record type")),
+            OneOfrecord_type::no_session_context(NoSessionContextRecord { payload })
+                if payload.is_empty() =>
+            {
+                Err(anyhow!(
+                    "NoSessionContext Record containing an empty payload"
+                ))
+            }
+            _ => Ok(()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_msg_id() {
+        let raw = [
+            0x0a, 0x02, 0x10, 0x01, 0x12, 0x28, 0x0a, 0x26, 0x0a, 0x24, 0x0a, 0x22, 0x44, 0x65,
+            0x76, 0x69, 0x63, 0x65, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x66,
+            0x6f, 0x2e, 0x53, 0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65, 0x56, 0x65, 0x72, 0x73,
+            0x69, 0x6f, 0x6e, 0x2e,
+        ];
+        let msg = try_decode_msg(&raw)
+            .expect("raw should be a valid USP Message according to the protobuf schema");
+        assert!(msg.check_validity().is_err());
+    }
+
+    #[test]
+    fn invalid_record_to_id() {
+        let raw = [
+            0x0a, 0x03, 0x31, 0x2e, 0x33, 0x1a, 0x09, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72,
+            0x6f, 0x6d, 0x3a, 0x35, 0x12, 0x33, 0x0a, 0x07, 0x0a, 0x03, 0x67, 0x65, 0x74, 0x10,
+            0x01, 0x12, 0x28, 0x0a, 0x26, 0x0a, 0x24, 0x0a, 0x22, 0x44, 0x65, 0x76, 0x69, 0x63,
+            0x65, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x53,
+            0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
+            0x2e,
+        ];
+        let record = try_decode_record(&raw)
+            .expect("raw should be a valid Record according to the protobuf schema");
+        assert!(record.check_validity().is_err());
+
+        let OneOfrecord_type::no_session_context(NoSessionContextRecord { payload: msg_raw }) =
+            record.record_type
+        else {
+            panic!("Record should have a NoSessionContext type");
+        };
+
+        let msg = try_decode_msg(&msg_raw)
+            .expect("msg_raw should be a valid USP Message according to the protobuf schema");
+        msg.check_validity().unwrap();
+    }
+
+    #[test]
+    fn invalid_record_from_id() {
+        let raw = [
+            0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f,
+            0x3a, 0x35, 0x12, 0x33, 0x0a, 0x07, 0x0a, 0x03, 0x67, 0x65, 0x74, 0x10, 0x01, 0x12,
+            0x28, 0x0a, 0x26, 0x0a, 0x24, 0x0a, 0x22, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x2e,
+            0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x53, 0x6f, 0x66,
+            0x74, 0x77, 0x61, 0x72, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x2e,
+        ];
+        let record = try_decode_record(&raw)
+            .expect("raw should be a valid Record according to the protobuf schema");
+        assert!(record.check_validity().is_err());
+
+        let OneOfrecord_type::no_session_context(NoSessionContextRecord { payload: msg_raw }) =
+            record.record_type
+        else {
+            panic!("Record should have a NoSessionContext type");
+        };
+
+        let msg = try_decode_msg(&msg_raw)
+            .expect("msg_raw should be a valid USP Message according to the protobuf schema");
+        msg.check_validity().unwrap();
     }
 }
