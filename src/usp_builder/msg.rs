@@ -5,6 +5,7 @@ use crate::usp::Body;
 use crate::usp::Header;
 use crate::usp::Msg;
 
+use anyhow::anyhow;
 use anyhow::{Context, Result};
 
 #[derive(Clone)]
@@ -35,7 +36,7 @@ impl MsgBuilder {
     }
 
     pub fn build(self) -> Result<Msg> {
-        use crate::usp::mod_Body::OneOfmsg_body::{error, request, response};
+        use crate::usp::mod_Body::OneOfmsg_body::{request, response};
         use crate::usp::mod_Header::MsgType::{
             ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET,
             GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP,
@@ -72,7 +73,7 @@ impl MsgBuilder {
                 get_supported_protocol(_) => GET_SUPPORTED_PROTO,
                 register(_) => REGISTER,
                 deregister(_) => DEREGISTER,
-                OneOfreq_type::None => ERROR,
+                OneOfreq_type::None => anyhow::bail!("Request type can't be None"),
             },
             response(ref resp) => match &resp.resp_type {
                 get_resp(_) => GET_RESP,
@@ -86,9 +87,10 @@ impl MsgBuilder {
                 get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
                 register_resp(_) => REGISTER_RESP,
                 deregister_resp(_) => DEREGISTER_RESP,
-                OneOfresp_type::None => ERROR,
+                OneOfresp_type::None => Err(anyhow!("Response type can't be None"))?,
             },
-            error(_) | OneOfmsg_body::None => ERROR,
+            OneOfmsg_body::error(_) => ERROR,
+            OneOfmsg_body::None => Err(anyhow!("Body type can't be None"))?,
         };
 
         Ok(Msg {
