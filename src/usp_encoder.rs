@@ -1,5 +1,5 @@
 use crate::usp::Msg;
-use crate::usp_record::Record;
+use crate::usp_record::{Record, SessionContextRecord};
 
 use anyhow::{Context, Result};
 
@@ -55,8 +55,31 @@ pub fn try_encode_msg(msg: &Msg) -> Result<Vec<u8>> {
     msg.to_vec()
 }
 
+impl SessionContextRecord {
+    /// Creates a new [`SessionContextRecord`] with an unfragmented payload
+    pub fn new_unfragmented(
+        session_id: u64,
+        sequence_id: u64,
+        expected_id: u64,
+        retransmit_id: u64,
+        payload: Vec<u8>,
+    ) -> Self {
+        use crate::usp_record::mod_SessionContextRecord::PayloadSARState;
+
+        Self {
+            session_id,
+            sequence_id,
+            expected_id,
+            retransmit_id,
+            payload_sar_state: PayloadSARState::NONE,
+            payloadrec_sar_state: PayloadSARState::NONE,
+            payload: vec![payload],
+        }
+    }
+}
+
 /// Implementation of some extension methods for `Record`s
-impl<'a> Record {
+impl Record {
     /// Render the `Record` into JSON
     ///
     /// # Arguments
@@ -77,7 +100,7 @@ impl<'a> Record {
     ///     ]).unwrap();
     /// assert_eq!(record.to_json().unwrap(), "{\"version\":\"1.3\",\"to_id\":\"doc::to\",\"from_id\":\"doc::from\",\"payload_security\":\"PLAINTEXT\",\"mac_signature\":[],\"sender_cert\":[],\"mqtt_connect\":{\"version\":\"V5\",\"subscribed_topic\":\"topic\"}}");
     /// ```
-    pub fn to_json(&'a self) -> Result<String> {
+    pub fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).context("Failed serializing USP Record to JSON")
     }
 
@@ -101,7 +124,7 @@ impl<'a> Record {
     ///     ]).unwrap();
     /// assert_eq!(record.to_json_pretty().unwrap(), "{\n  \"version\": \"1.3\",\n  \"to_id\": \"doc::to\",\n  \"from_id\": \"doc::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"mqtt_connect\": {\n    \"version\": \"V5\",\n    \"subscribed_topic\": \"topic\"\n  }\n}");
     /// ```
-    pub fn to_json_pretty(&'a self) -> Result<String> {
+    pub fn to_json_pretty(&self) -> Result<String> {
         serde_json::to_string_pretty(self).context("Failed serializing USP Record to JSON")
     }
 

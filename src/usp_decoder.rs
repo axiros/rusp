@@ -66,6 +66,39 @@ pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
 
 /// Implementation of some extension methods for `Msg`s
 impl Msg {
+    /// Tries to decode a slice of bytes contained a Protobuf encoded USP Message
+    ///
+    /// This function also performs additional checks required by the USP specification, see also
+    /// [`Msg::check_validity`]
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes` - A slice of bytes containing the Protobuf encoded USP Message
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rusp::usp::Msg;
+    /// let msg =
+    ///     Msg::from_bytes(&[
+    ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
+    ///         0x34, 0x31, 0x31, 0x34, 0x30, 0x34, 0x35, 0x2e, 0x34, 0x34, 0x32, 0x35,
+    ///         0x39, 0x36, 0x10, 0x02, 0x12, 0x46, 0x12, 0x44, 0x0a, 0x42, 0x0a, 0x40,
+    ///         0x0a, 0x22, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x6f, 0x63,
+    ///         0x61, 0x6c, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x4d, 0x54, 0x50, 0x2e,
+    ///         0x31, 0x2e, 0x57, 0x65, 0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
+    ///         0x15, 0x62, 0x1b, 0x00, 0x00, 0x1a, 0x15, 0x55, 0x6e, 0x73, 0x75, 0x70,
+    ///         0x70, 0x6f, 0x72, 0x74, 0x65, 0x64, 0x20, 0x70, 0x61, 0x72, 0x61, 0x6d,
+    ///         0x65, 0x74, 0x65, 0x72
+    ///     ])
+    ///     .unwrap();
+    /// ```
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        let this = try_decode_msg(bytes)?;
+        this.check_validity()?;
+        Ok(this)
+    }
+
     /// Retrieves the message ID from a Msg structure
     ///
     /// # Arguments
@@ -453,6 +486,39 @@ impl Msg {
 }
 
 impl Record {
+    /// Tries to decode a slice of bytes contained a Protobuf encoded USP Record
+    ///
+    /// This function also performs additional checks required by the USP specification, see also
+    /// [`Record::check_validity`]
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes` - A slice of bytes containing the Protobuf encoded USP Record
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rusp::usp_record::Record;
+    /// let record =
+    ///     Record::from_bytes(&[
+    ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
+    ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
+    ///         0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f,
+    ///         0x6d, 0x3a, 0x35, 0x12, 0x33, 0x0a, 0x07, 0x0a,
+    ///         0x03, 0x67, 0x65, 0x74, 0x10, 0x01, 0x12, 0x28,
+    ///         0x0a, 0x26, 0x0a, 0x24, 0x0a, 0x22, 0x44, 0x65,
+    ///         0x76, 0x69, 0x63, 0x65, 0x2e, 0x44, 0x65, 0x76,
+    ///         0x69, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x2e,
+    ///         0x53, 0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65,
+    ///         0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x2e,
+    ///     ])
+    ///     .unwrap();
+    /// ```
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        let this = try_decode_record(bytes)?;
+        this.check_validity()?;
+        Ok(this)
+    }
     /// Checks the validity of this [`Record`] according to the USP specification
     ///
     /// Although the type itself guarantees its validity against the protobuf schema, the USP
@@ -494,6 +560,31 @@ impl Record {
             }
             _ => Ok(()),
         }
+    }
+
+    /// Flattens the payload of the [`Record`] and returns a mutable reference to it
+    ///
+    /// This function will return [`None`] for both empty payloads and Record types that do not
+    /// contain a payload
+    pub fn payload_flatten(&mut self) -> Option<&mut Vec<u8>> {
+        use crate::usp_record::mod_Record::OneOfrecord_type;
+        use std::mem;
+
+        let flatten = match &mut self.record_type {
+            OneOfrecord_type::no_session_context(no_session) => Some(&mut no_session.payload),
+            OneOfrecord_type::session_context(session) => {
+                let flatten = if session.payload.len() == 1 {
+                    &mut session.payload[0]
+                } else {
+                    let old = mem::take(&mut session.payload);
+                    session.payload = vec![old.into_iter().flatten().collect()];
+                    &mut session.payload[0]
+                };
+                Some(flatten)
+            }
+            _ => None,
+        };
+        flatten.filter(|p| !p.is_empty())
     }
 }
 
@@ -561,5 +652,37 @@ mod tests {
         let msg = try_decode_msg(&msg_raw)
             .expect("msg_raw should be a valid USP Message according to the protobuf schema");
         msg.check_validity().unwrap();
+    }
+
+    #[test]
+    fn flat_record() {
+        use crate::usp_record::mod_Record::OneOfrecord_type;
+
+        let raw = [
+            0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f,
+            0x1a, 0x09, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x42, 0x3c, 0x08,
+            0xd2, 0x09, 0x10, 0x01, 0x18, 0x02, 0x3a, 0x33, 0x0a, 0x07, 0x0a, 0x03, 0x67, 0x65,
+            0x74, 0x10, 0x01, 0x12, 0x28, 0x0a, 0x26, 0x0a, 0x24, 0x0a, 0x22, 0x44, 0x65, 0x76,
+            0x69, 0x63, 0x65, 0x2e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f,
+            0x2e, 0x53, 0x6f, 0x66, 0x74, 0x77, 0x61, 0x72, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69,
+            0x6f, 0x6e, 0x2e,
+        ];
+        let mut record = Record::from_bytes(&raw).expect("raw should be a valid Record");
+        let payload = record.payload_flatten().unwrap().clone();
+        assert!(!payload.is_empty());
+
+        let splitted = payload.chunks(2).map(Vec::from).collect::<Vec<_>>();
+        assert!(splitted.len() > 1);
+
+        let session = match &mut record.record_type {
+            OneOfrecord_type::session_context(session) => session,
+            _ => {
+                panic!("Record should be of type SessionContext");
+            }
+        };
+        session.payload = splitted;
+
+        let flatten = record.payload_flatten().unwrap();
+        assert_eq!(flatten, &payload);
     }
 }
