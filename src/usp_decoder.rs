@@ -66,7 +66,7 @@ pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
 
 /// Implementation of some extension methods for `Msg`s
 impl Msg {
-    /// Tries to decode a slice of bytes contained a Protobuf encoded USP Message
+    /// Tries to decode a slice of bytes containing a Protobuf encoded USP Message
     ///
     /// This function also performs additional checks required by the USP specification, see also
     /// [`Msg::check_validity`]
@@ -486,7 +486,7 @@ impl Msg {
 }
 
 impl Record {
-    /// Tries to decode a slice of bytes contained a Protobuf encoded USP Record
+    /// Tries to decode a slice of bytes containing a Protobuf encoded USP Record
     ///
     /// This function also performs additional checks required by the USP specification, see also
     /// [`Record::check_validity`]
