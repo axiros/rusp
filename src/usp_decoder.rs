@@ -4,7 +4,7 @@ use quick_protobuf::BytesReader;
 
 use crate::usp::{self, Error, Msg, Notify};
 use crate::usp_record::mod_Record::OneOfrecord_type;
-use crate::usp_record::{NoSessionContextRecord, Record};
+use crate::usp_record::{NoSessionContextRecord, Record, SessionContextRecord};
 
 /// Decodes a slice of bytes containing a Protobuf encoded USP Record into a Record structure for
 /// further processing
@@ -485,6 +485,19 @@ impl Msg {
     }
 }
 
+impl SessionContextRecord {
+    /// Gets the payload of this [`SessionContextRecord`], flattening it if necessary
+    pub fn payload_flatten(&mut self) -> &mut Vec<u8> {
+        if self.payload.len() == 1 {
+            &mut self.payload[0]
+        } else {
+            let old = std::mem::take(&mut self.payload);
+            self.payload = vec![old.into_iter().flatten().collect()];
+            &mut self.payload[0]
+        }
+    }
+}
+
 impl Record {
     /// Tries to decode a slice of bytes containing a Protobuf encoded USP Record
     ///
@@ -564,27 +577,15 @@ impl Record {
 
     /// Flattens the payload of the [`Record`] and returns a mutable reference to it
     ///
-    /// This function will return [`None`] for both empty payloads and Record types that do not
-    /// contain a payload
+    /// This function will return [`None`] for Record types that do not contain a payload
     pub fn payload_flatten(&mut self) -> Option<&mut Vec<u8>> {
         use crate::usp_record::mod_Record::OneOfrecord_type;
-        use std::mem;
 
-        let flatten = match &mut self.record_type {
+        match &mut self.record_type {
             OneOfrecord_type::no_session_context(no_session) => Some(&mut no_session.payload),
-            OneOfrecord_type::session_context(session) => {
-                let flatten = if session.payload.len() == 1 {
-                    &mut session.payload[0]
-                } else {
-                    let old = mem::take(&mut session.payload);
-                    session.payload = vec![old.into_iter().flatten().collect()];
-                    &mut session.payload[0]
-                };
-                Some(flatten)
-            }
+            OneOfrecord_type::session_context(session) => Some(session.payload_flatten()),
             _ => None,
-        };
-        flatten.filter(|p| !p.is_empty())
+        }
     }
 }
 
