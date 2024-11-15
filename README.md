@@ -29,7 +29,7 @@ You may use this crate however you like under the **BSD 3-Clause Licence**.
 
 The toolkit is still far from feature complete but already a big aid in our product development and also helped to find one or the other discrepancy in the standard.
 
-Feel free to spread the word or drop us a note if you like it. Collaboration on this crate is highly welcome as are pull requests!
+Feel free to spread the word or drop us a note if you like it. Collaboration on this crate is highly welcome as are pull requests in [our GitHub repo](https://github.com/axiros/rusp/).
 
 ## Contact us
 

@@ -1,24 +1,8 @@
 ![Continuous integration](https://github.com/axiros/rusp/workflows/Continuous%20integration/badge.svg)
 
-# rusp
+# rusp-bin
 
-**rusp** is the **Rust USP** toolkit, brought to you by Axiros!
-
-[Rust][] is a fast and safe systems programming language.
-
-[USP][] (or User Services Platform) is a new protocol for management of connected devices, maintained and developed by the [Broadband Forum][BBF].
-
-[Axiros][] is a leading company for device management.
-
-## What is rusp?
-
-**rusp** is a toolkit, written in **Rust**, providing support to work with **USP** records and messages which are encoded in Protobuf bytestreams.
-
-While a Protobuf schema exists which allows generating bindings for several commonly used programming languages, those are either uncomfortable to use and/or highly unsafe. By leveraging the strong Rust type system and the strict compiler, Rust is capable of detecting many incorrect or incomplete uses of the Protobuf encoding at compile time which allows for confident use of the **USP** protocol.
-
-## What is included?
-
-The toolkit is split into two parts: this is the application part, which contains:
+This crate contains the application part of Rusp, which contains:
 
 * A **rusp** binary granting access to library functionality via command line. Included functionality at the moment are:
   * Decoding of **USP** Msg Protobuf bytestreams from standard input
@@ -28,15 +12,17 @@ The toolkit is split into two parts: this is the application part, which contain
   * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
   * Generation of **USP** Msg Protobuf bytestreams and C char arrays for selected messages and Error
 
-## How to use it?
-
-### rusp binary
+## How to use the rusp binary?
 
 **rusp** includes a binary with the same name demonstrating some of the uses.
 
-At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text. It also allows extracting a **Msg** structure from a **Record** for own implementations as well as to encode USP
+At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text and other useful formats like code and to extracting a **Msg** structure from a **Record**.
+
+Currently, it also still supports synthesizing the following USP Messages
+
 * **Add**
 * **Delete**
+* **Deregister**
 * **Error**
 * **Get**
 * **GetInstances**
@@ -47,10 +33,9 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 * **NotifyResp**
 * **Operate**
 * **Set**
+* **Register**
 
-messages via command line tool.
-
-**NEWSFLASH**: 0.93.0 moves to owned types and removed the deprecated generator API. If you're using the binary, you won't observe any changes, if you use the library, expect a bit of update work but a much nicer interface.
+and USP Records via command line, however this feature is going to be phased out soon in favour of something way better. 😉
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
@@ -66,7 +51,7 @@ You may use this crate however you like under the **BSD 3-Clause Licence**.
 
 The toolkit is still far from feature complete but already a big aid in our product development and also helped to find one or the other discrepancy in the standard.
 
-Feel free to spread the word or drop us a note if you like it. Collaboration on this crate is highly welcome as are pull requests!
+Feel free to spread the word or drop us a note if you like it. Collaboration on this crate is highly welcome as are pull requests in [our GitHub repo](https://github.com/axiros/rusp/).
 
 ## Contact us
 
