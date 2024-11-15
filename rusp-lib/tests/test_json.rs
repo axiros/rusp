@@ -1,6 +1,6 @@
 mod tests {
     use quick_protobuf::{BytesReader, MessageRead};
-    use rusp::usp_record::Record;
+    use rusp_lib::usp_record::Record;
 
     #[test]
     fn simple_notify() {

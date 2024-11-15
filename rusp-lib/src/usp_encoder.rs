@@ -12,8 +12,8 @@ use anyhow::{Context, Result};
 /// # Example
 ///
 /// ```
-/// use rusp::usp_decoder::try_decode_record;
-/// use rusp::usp_encoder::try_encode_record;
+/// use rusp_lib::usp_decoder::try_decode_record;
+/// use rusp_lib::usp_encoder::try_encode_record;
 /// let bytes = &[
 ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
 ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
@@ -37,8 +37,8 @@ pub fn try_encode_record(record: &Record) -> Result<Vec<u8>> {
 /// # Example
 ///
 /// ```
-/// use rusp::usp_decoder::try_decode_msg;
-/// use rusp::usp_encoder::try_encode_msg;
+/// use rusp_lib::usp_decoder::try_decode_msg;
+/// use rusp_lib::usp_encoder::try_encode_msg;
 /// let bytes = &[
 ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
 ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,
@@ -89,7 +89,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let record =
     ///     try_decode_record(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
@@ -113,7 +113,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let record =
     ///     try_decode_record(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
@@ -137,7 +137,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let bytes = &[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
     ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
@@ -168,7 +168,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let record =
     ///     try_decode_record(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
@@ -216,7 +216,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let record =
     ///     try_decode_record(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
@@ -284,7 +284,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -310,7 +310,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -336,7 +336,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let bytes = &[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
     ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,
@@ -369,7 +369,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let bytes = &[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
     ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,
@@ -419,7 +419,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let bytes = &[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
     ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,

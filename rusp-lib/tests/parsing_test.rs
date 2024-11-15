@@ -1,7 +1,7 @@
 mod tests {
     use quick_protobuf::{BytesReader, MessageRead};
-    use rusp::usp::{mod_Body::OneOfmsg_body::request, Msg};
-    use rusp::usp_record::{mod_Record::OneOfrecord_type::no_session_context, Record};
+    use rusp_lib::usp::{mod_Body::OneOfmsg_body::request, Msg};
+    use rusp_lib::usp_record::{mod_Record::OneOfrecord_type::no_session_context, Record};
 
     #[test]
     fn simple_notify() {
@@ -17,7 +17,7 @@ mod tests {
             0x6d, 0x62, 0x65, 0x72, 0x22, 0x03, 0x31, 0x2e, 0x30,
         ];
 
-        use rusp::usp::{
+        use rusp_lib::usp::{
             mod_Header::MsgType::NOTIFY, mod_Notify::OneOfnotification::on_board_req,
             mod_Request::OneOfreq_type::notify,
         };
@@ -80,7 +80,7 @@ mod tests {
             0x73, 0x74, 0x18, 0x01,
         ];
 
-        use rusp::usp::{mod_Header::MsgType::ADD, mod_Request::OneOfreq_type::add};
+        use rusp_lib::usp::{mod_Header::MsgType::ADD, mod_Request::OneOfreq_type::add};
 
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
@@ -144,7 +144,7 @@ mod tests {
             0x57, 0x65, 0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        use rusp::usp::{mod_Header::MsgType::DELETE, mod_Request::OneOfreq_type::delete};
+        use rusp_lib::usp::{mod_Header::MsgType::DELETE, mod_Request::OneOfreq_type::delete};
 
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
@@ -197,7 +197,7 @@ mod tests {
             0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        use rusp::usp::{mod_Header::MsgType::GET, mod_Request::OneOfreq_type::get};
+        use rusp_lib::usp::{mod_Header::MsgType::GET, mod_Request::OneOfreq_type::get};
 
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");

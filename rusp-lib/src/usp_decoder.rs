@@ -16,7 +16,7 @@ use crate::usp_record::{NoSessionContextRecord, Record, SessionContextRecord};
 /// # Example
 ///
 /// ```
-/// use rusp::usp_decoder::try_decode_record;
+/// use rusp_lib::usp_decoder::try_decode_record;
 /// let record =
 ///     try_decode_record(&[
 ///         0x0a, 0x03, 0x31, 0x2e, 0x30, 0x1a, 0x23, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3a, 0x3a,
@@ -45,7 +45,7 @@ pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
 /// # Example
 ///
 /// ```
-/// use rusp::usp_decoder::try_decode_msg;
+/// use rusp_lib::usp_decoder::try_decode_msg;
 /// let msg =
 ///     try_decode_msg(&[
 ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -78,7 +78,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp::Msg;
+    /// use rusp_lib::usp::Msg;
     /// let msg =
     ///     Msg::from_bytes(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -108,7 +108,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -139,7 +139,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -154,7 +154,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -187,7 +187,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -202,7 +202,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -231,7 +231,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -246,7 +246,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -283,7 +283,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -298,7 +298,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -331,7 +331,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -346,7 +346,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -363,7 +363,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x05, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x12,
@@ -387,7 +387,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
@@ -402,7 +402,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x1a, 0x0a, 0x16, 0x41, 0x58, 0x53, 0x53, 0x2d, 0x31, 0x35, 0x34,
@@ -419,7 +419,7 @@ impl Msg {
     /// ```
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x05, 0x0a, 0x03, 0x65, 0x72, 0x72, 0x12,
@@ -448,7 +448,7 @@ impl Msg {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_msg;
+    /// use rusp_lib::usp_decoder::try_decode_msg;
     /// let msg =
     ///     try_decode_msg(&[
     ///         0x0a, 0x09, 0x0a, 0x07, 0x6e, 0x6f, 0x2d, 0x62,
@@ -511,7 +511,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_record::Record;
+    /// use rusp_lib::usp_record::Record;
     /// let record =
     ///     Record::from_bytes(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
@@ -540,7 +540,7 @@ impl Record {
     /// # Example
     ///
     /// ```
-    /// use rusp::usp_decoder::try_decode_record;
+    /// use rusp_lib::usp_decoder::try_decode_record;
     /// let no_session_empty_payload =
     ///     try_decode_record(&[
     ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
