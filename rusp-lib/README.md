@@ -18,7 +18,8 @@ While a Protobuf schema exists which allows generating bindings for several comm
 
 ## What is included?
 
-The toolkit includes:
+The toolkit is split into two parts: this is the library part, which contains:
+
 * Generated low-level Rust Protobuf bindings
 * A library providing:
   * Higher level access to de-/serialisation functionality
@@ -28,61 +29,24 @@ The toolkit includes:
   * Pretty printing of **USP** records and messages
   * Serde de-/serialisation of **USP** records and messages
   * Unittests and documentation (including doctests/examples)
-* A **rusp** binary granting access to library functionality via command line. Included functionality at the moment are:
-  * Decoding of **USP** Msg Protobuf bytestreams from standard input
-  * Decoding of **USP** Msg Protobuf bytestreams from file(s)
-  * Decoding of **USP** Record Protobuf bytestreams from standard input
-  * Decoding of **USP** Record Protobuf bytestreams from file(s)
-  * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
-  * Generation of **USP** Msg Protobuf bytestreams and C char arrays for selected messages and Error
 
 ## How to use it?
 
-### rusp binary
-
-**rusp** includes a binary with the same name demonstrating some of the uses.
-
-At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text. It also allows extracting a **Msg** structure from a **Record** for own implementations as well as to encode USP
-* **Add**
-* **Delete**
-* **Error**
-* **Get**
-* **GetInstances**
-* **GetResp**
-* **GetSupportedDM**
-* **GetSupportedProtocol**
-* **Notify**
-* **NotifyResp**
-* **Operate**
-* **Set**
-
-messages via command line tool.
-
-**NEWSFLASH**: 0.93.0 moves to owned types and removed the deprecated generator API. If you're using the binary, you won't observe any changes, if you use the library, expect a bit of update work but a much nicer interface.
-
-In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
+**rusp-lib** can be used as a library in your own Rust applications. To use **rusp** as a library you simply need to add the **rusp** and most likely **quick-protobuf** crates to your `Cargo.toml` as dependencies:
 
 ```
-# cargo install rusp
-```
-
-After this you should be able to use the `rusp` binary, which has built-in help for all the commands to guide the way.
-
-### rusp library
-
-**rusp** can also be used as a library in your own Rust applications. To use **rusp** as a library you simply need to add the **rusp** and most likely **quick-protobuf** crates to your `Cargo.toml` as dependencies:
-
-```
-...
-
 [dependencies]
-rusp = "0.93.0"
+rusp-lib = "0.95.0"
 quick-protobuf = "0.8"
-
-...
 ```
 
-Documentation and examples for its use can be found on [docs.rs](https://docs.rs/rusp/latest/rusp/index.html).
+Please note that as of v0.95, the library and the application have been split into two parts, `rusp-lib` and `rusp`. In order to seamlessly continue what is now `rusp-lib` you have three options:
+
+1. Rename all uses of the `rusp` namespace into `rusp_lib` in your source code
+2. Put a `use rusp_lib as rusp;` line at the top of each code file using the `rusp` namespace
+2. Rename the library via `Cargo.toml` by declaring the dependency as `rusp-lib = { version = "0.95", package = "rusp" }`
+
+Documentation and examples for its use can be found on [docs.rs](https://docs.rs/rusp/latest/rusp-lib/index.html).
 
 ## What else?
 

@@ -1,5 +1,7 @@
 #![allow(clippy::type_complexity)]
 
+use rusp_lib as rusp;
+
 use clap::{Parser, Subcommand};
 use rusp::usp_builder;
 use rusp::usp_record::mod_MQTTConnectRecord::MQTTVersion;

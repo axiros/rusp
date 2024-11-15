@@ -1,30 +1,13 @@
-[package]
-authors = ["Daniel Egger <daniel.egger@axiros.com>", "Axiros GmbH"]
-description = "The Rust USP toolkit"
-documentation = "https://docs.rs/crate/rusp"
-edition = "2021"
-license = "BSD-3-Clause"
-name = "rusp"
-readme = "README.md"
-repository = "https://github.com/axiros/rusp"
-version = "0.94.1"
+[workspace]
+resolver = "2"
+members = [
+    "rusp-lib",
+    "rusp-bin",
+]
 
-[badges]
-[badges.travis-ci]
-repository = "axiros/rusp"
-
-[dependencies]
-quick-protobuf = "0.8"
+[workspace.dependencies]
+anyhow = "1.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-clap = { version = "4", features = ["derive"], optional = true }
-anyhow = "1.0"
-
-[features]
-default = ["clap"]
-clap = ["dep:clap"]
-
-[[bin]]
-name = "rusp"
-required-features = ["clap"]
+quick-protobuf = "0.8"
