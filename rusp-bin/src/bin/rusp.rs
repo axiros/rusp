@@ -706,10 +706,10 @@ fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
 
 fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
     if let Some(filename) = filename {
-        return Ok(Box::new(File::create(filename)?));
+        Ok(Box::new(File::create(filename)?))
+    } else {
+        Ok(Box::new(stdout()))
     }
-
-    Ok(Box::new(stdout()))
 }
 
 /// Write the given USP Msg to the output stream in the specified format
