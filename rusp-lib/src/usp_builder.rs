@@ -563,7 +563,7 @@ mod tests {
         ";
 
         let rmsg = try_decode_msg(data).expect("deserialisation failed");
-        assert_eq!(msg, rmsg)
+        assert_eq!(msg, rmsg);
     }
 
     #[test]
@@ -589,7 +589,7 @@ mod tests {
         ";
 
         let rmsg = try_decode_msg(data).expect("deserialisation failed");
-        assert_eq!(msg, rmsg)
+        assert_eq!(msg, rmsg);
     }
 
     #[test]
@@ -686,7 +686,7 @@ mod tests {
         let data = b"\n\x1c\n\x18CXOue8V6Pg/hYC4bKfO8rw==\x10\x12\x12\t\x12\x07J\x05\n\x031.1";
         let rmsg = try_decode_msg(data).expect("deserialisation failed");
 
-        assert_eq!(msg, rmsg)
+        assert_eq!(msg, rmsg);
     }
 
     #[test]

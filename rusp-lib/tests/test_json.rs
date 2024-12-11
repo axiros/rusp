@@ -20,7 +20,7 @@ mod tests {
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string_pretty(&record).unwrap();
-        println!("serialized = {}", serialized);
+        println!("serialized = {serialized}");
         assert_eq!(
             serialized,
             r#"{
@@ -189,7 +189,7 @@ mod tests {
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string_pretty(&record).unwrap();
-        println!("serialized = {}", serialized);
+        println!("serialized = {serialized}");
         assert_eq!(
             serialized,
             r#"{

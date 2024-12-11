@@ -57,7 +57,7 @@ pub fn try_encode_msg(msg: &Msg) -> Result<Vec<u8>> {
 
 impl SessionContextRecord {
     /// Creates a new [`SessionContextRecord`] with an unfragmented payload
-    pub fn new_unfragmented(
+    #[must_use] pub fn new_unfragmented(
         session_id: u64,
         sequence_id: u64,
         expected_id: u64,
@@ -195,7 +195,7 @@ impl Record {
         let mut out = String::new();
 
         write!(out, "\"")?;
-        for i in data.iter() {
+        for i in &data {
             if check_printable(*i) {
                 write!(out, "{}", char::from(*i))?;
             } else {
@@ -398,7 +398,7 @@ impl Msg {
         let mut out = String::new();
 
         write!(out, "\"")?;
-        for i in data.iter() {
+        for i in &data {
             if check_printable(*i) {
                 write!(out, "{}", char::from(*i))?;
             } else {

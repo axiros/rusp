@@ -208,12 +208,7 @@ impl NotifyBuilder {
                 product_class,
                 serial_number,
                 agent_supported_protocol_versions,
-            } => on_board_req(OnBoardRequest {
-                agent_supported_protocol_versions,
-                oui,
-                product_class,
-                serial_number,
-            }),
+            } => on_board_req(OnBoardRequest { oui, product_class, serial_number, agent_supported_protocol_versions }),
             NotifyType::ValueChange {
                 param_path,
                 param_value,

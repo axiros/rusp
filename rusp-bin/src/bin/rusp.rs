@@ -381,11 +381,11 @@ enum MsgType {
     /// Generate an USP Get Response Message
     #[command(name = "GetResp")]
     USPGetResp {
-        /// A JSON array of Strings resembling the result data for the GetResp operation
+        /// A JSON array of Strings resembling the result data for the `GetResp` operation
         #[arg(num_args(1..))]
         result: Vec<String>,
     },
-    /// Generate an USP GetInstances Request Message
+    /// Generate an USP `GetInstances` Request Message
     #[command(name = "GetInstances")]
     USPGetInstances {
         /// Only return the first level of recursive structures?
@@ -397,7 +397,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         obj_paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedDM Request Message
+    /// Generate an USP `GetSupportedDM` Request Message
     #[command(name = "GetSupportedDM")]
     USPGetSupportedDM {
         /// Only return the first level of recursive structures?
@@ -421,7 +421,7 @@ enum MsgType {
         #[arg(num_args(1..))]
         paths: Vec<String>,
     },
-    /// Generate an USP GetSupportedProtocol Request Message
+    /// Generate an USP `GetSupportedProtocol` Request Message
     #[command(name = "GetSupportedProtocol")]
     USPGetSupportedProtocol {
         /// Controller Supported Protocol Version
