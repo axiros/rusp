@@ -57,7 +57,8 @@ pub fn try_encode_msg(msg: &Msg) -> Result<Vec<u8>> {
 
 impl SessionContextRecord {
     /// Creates a new [`SessionContextRecord`] with an unfragmented payload
-    #[must_use] pub fn new_unfragmented(
+    #[must_use]
+    pub fn new_unfragmented(
         session_id: u64,
         sequence_id: u64,
         expected_id: u64,
