@@ -1,0 +1,27 @@
+[package]
+authors = ["Daniel Egger <daniel.egger@axiros.com>", "Axiros GmbH"]
+description = "The Rust USP toolkit for Rhai"
+edition = "2021"
+license = "BSD-3-Clause"
+name = "rhai-rusp"
+readme = "README.md"
+repository = "https://github.com/axiros/rusp"
+version = "0.95.0"
+
+[badges]
+[badges.travis-ci]
+repository = "axiros/rusp"
+
+[dependencies]
+rhai = { workspace = true }
+anyhow = { workspace = true }
+clap = { version = "4", features = ["derive"] }
+quick-protobuf = { workspace = true }
+rusp-lib = { workspace = true }
+rhai-rusp-lib = { workspace = true }
+serde = { workspace = true }
+serde_derive = { workspace = true }
+serde_json = { workspace = true }
+
+[[bin]]
+name = "rusp-run"

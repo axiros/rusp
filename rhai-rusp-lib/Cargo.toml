@@ -1,0 +1,13 @@
+[package]
+name = "rhai-rusp-lib"
+version = "0.95.0"
+edition = "2021"
+
+[dependencies]
+rhai = { workspace = true }
+rusp-lib = { workspace = true }
+anyhow = { workspace = true }
+quick-protobuf = { workspace = true }
+serde = { workspace = true }
+serde_derive = { workspace = true }
+serde_json = { workspace = true }
