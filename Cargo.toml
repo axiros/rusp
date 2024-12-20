@@ -3,8 +3,7 @@ resolver = "2"
 members = [
     "rusp-lib",
     "rusp-bin",
-    "rhai-rusp-lib",
-    "rhai-rusp-bin",
+    "rhai-rusp",
 ]
 
 [workspace.dependencies]

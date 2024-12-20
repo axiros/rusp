@@ -1,9 +1,10 @@
 [package]
-name = "rhai-rusp-lib"
+name = "rhai-rusp"
 version = "0.95.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4", features = ["derive"] }
 rhai = { workspace = true }
 rusp-lib = { workspace = true }
 anyhow = { workspace = true }
