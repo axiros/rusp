@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use rusp::usp_decoder::{try_decode_msg, try_decode_record};
 
@@ -89,18 +89,17 @@ enum RuspAction {
         /// Filenames of USP Protobuf records to decode
         files: Vec<PathBuf>,
     },
-    /// Encode command line input into a single raw USP message
+    /// Not available anymore since 0.96
     #[command(name = "encode_msg")]
     EncodeMsg {
         /// The message ID to use in the USP Msg header
-        msgid: String,
+        _msgid: String,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
         /// Output filename of file to encode USP Protobuf message to
-        filename: Option<PathBuf>,
-        /// Type of message
-        #[command(subcommand)]
-        typ: MsgType,
+        _filename: Option<PathBuf>,
+        #[arg(required = true)]
+        _command: Vec<String>,
     },
     /// Extract the USP message from an USP record
     #[command(name = "extract_msg")]
@@ -260,167 +259,6 @@ enum NotifyType {
     },
 }
 
-#[derive(Parser)]
-#[command(rename_all = "verbatim")]
-enum MsgType {
-    /// Generate an USP Add Request Message
-    #[command(name = "Add")]
-    USPAdd {
-        /// Do we allow partial execution?
-        #[arg(action = clap::ArgAction::Set)]
-        allow_partial: bool,
-        /// A JSON structure resembling the input for a Add operation
-        ///
-        /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[arg(num_args(1..))]
-        args: Vec<String>,
-    },
-    /// Generate an USP Delete Request Message
-    #[command(name = "Delete")]
-    USPDelete {
-        /// Do we allow partial execution?
-        #[arg(action = clap::ArgAction::Set)]
-        allow_partial: bool,
-        /// A JSON structure resembling the input for a Delete operation
-        ///
-        /// Example use: '["Device.XMPP.Connection.1.", "Device.LocalAgent.Subscription.3."]'
-        #[arg(num_args(1..))]
-        obj_paths: Vec<String>,
-    },
-    /// Generate an USP Register Request Message
-    #[command(name = "Deregister")]
-    USPDeregister {
-        /// A JSON structure resembling the input for a Deregister operation
-        ///
-        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
-        #[arg(num_args(1..))]
-        paths: Vec<String>,
-    },
-    /// Generate an USP Error message
-    #[command(name = "Error")]
-    USPError {
-        /// The USP error code (MUST be between 7000 and 7999)
-        code: u32,
-        /// An (optional) error message. Standard error messages will be computed from the error
-        /// code if not provided
-        message: Option<String>,
-    },
-    /// Generate an USP Get Request Message
-    #[command(name = "Get")]
-    USPGet {
-        /// A JSON array of Strings resembling the paths for the Get operation
-        #[arg(num_args(1..))]
-        paths: Vec<String>,
-        #[arg(long = "max_depth")]
-        max_depth: Option<u32>,
-    },
-    /// Generate an USP Get Response Message
-    #[command(name = "GetResp")]
-    USPGetResp {
-        /// A JSON array of Strings resembling the result data for the `GetResp` operation
-        #[arg(num_args(1..))]
-        result: Vec<String>,
-    },
-    /// Generate an USP `GetInstances` Request Message
-    #[command(name = "GetInstances")]
-    USPGetInstances {
-        /// Only return the first level of recursive structures?
-        #[arg(action = clap::ArgAction::Set)]
-        first_level_only: bool,
-        /// A JSON array resembling the object paths we're interested in
-        ///
-        /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[arg(num_args(1..))]
-        obj_paths: Vec<String>,
-    },
-    /// Generate an USP `GetSupportedDM` Request Message
-    #[command(name = "GetSupportedDM")]
-    USPGetSupportedDM {
-        /// Only return the first level of recursive structures?
-        #[arg(action = clap::ArgAction::Set)]
-        first_level_only: bool,
-        /// Return commands?
-        #[arg(action = clap::ArgAction::Set)]
-        return_commands: bool,
-        /// Return events?
-        #[arg(action = clap::ArgAction::Set)]
-        return_events: bool,
-        /// Return parameters?
-        #[arg(action = clap::ArgAction::Set)]
-        return_params: bool,
-        /// Return unique key sets?
-        #[arg(action = clap::ArgAction::Set)]
-        return_unique_key_sets: bool,
-        /// A JSON array resembling the paths we're interested in
-        ///
-        /// Example use: '["Device.DeviceInfo.", "Device.LocalAgent."]'
-        #[arg(num_args(1..))]
-        paths: Vec<String>,
-    },
-    /// Generate an USP `GetSupportedProtocol` Request Message
-    #[command(name = "GetSupportedProtocol")]
-    USPGetSupportedProtocol {
-        /// Controller Supported Protocol Version
-        cspv: String,
-    },
-    /// Generate an USP Notify Request Message
-    #[command(name = "Notify")]
-    USPNotify {
-        /// Subscription ID
-        sub_id: String,
-        /// Do we expect a response?
-        #[arg(action = clap::ArgAction::Set)]
-        send_resp: bool,
-        /// Type of notification
-        #[command(subcommand)]
-        typ: NotifyType,
-    },
-    /// Generate an USP Notify Response Message
-    #[command(name = "NotifyResp")]
-    USPNotifyResp {
-        /// Subscription ID
-        sub_id: String,
-    },
-    /// Generate an USP Operate Request Message
-    #[command(name = "Operate")]
-    USPOperate {
-        /// The full pathname of of the command to execute
-        command: String,
-        /// The command key to use in the request to allow later matching with a result
-        command_key: String,
-        /// A boolean indicating whether a response is expected in reply to this request
-        #[arg(action = clap::ArgAction::Set)]
-        send_resp: bool,
-        /// A JSON array of arrays containing the command input arguments with path names and values
-        #[arg(num_args(1..))]
-        args: Vec<String>,
-    },
-    /// Generate an USP Set Request Message
-    #[command(name = "Set")]
-    USPSet {
-        /// Do we allow partial execution?
-        #[arg(action = clap::ArgAction::Set)]
-        allow_partial: bool,
-        /// A JSON structure resembling the input for a Set operation
-        ///
-        /// Example use: '[["Device.DeviceInfo.", [["ProvisioningCode", "configured", true]]]]'
-        #[arg(num_args(1..))]
-        args: Vec<String>,
-    },
-    /// Generate an USP Register Request Message
-    #[command(name = "Register")]
-    USPRegister {
-        /// Do we allow partial execution?
-        #[arg(action = clap::ArgAction::Set)]
-        allow_partial: bool,
-        /// A JSON structure resembling the input for a Register operation
-        ///
-        /// Example use: '["Device.DeviceInfo.", "Device.Services.UPSService.1."]'
-        #[arg(num_args(1..))]
-        reg_paths: Vec<String>,
-    },
-}
-
 fn decode_msg_files(files: Vec<PathBuf>, format: &OutputFormat) -> Result<()> {
     for file in files {
         let fp = File::open(&file)?;
@@ -477,169 +315,6 @@ fn decode_record_stdin(format: &OutputFormat) -> Result<()> {
     write_record(&decoded, get_out_stream(None)?, format)
 }
 
-#[allow(clippy::too_many_lines)]
-fn encode_msg_body_buf(typ: MsgType) -> Result<Vec<u8>> {
-    use quick_protobuf::serialize_into_vec;
-
-    match typ {
-        MsgType::USPAdd {
-            allow_partial,
-            args,
-        } => {
-            let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(String, Vec<(String, String, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {args}"))?;
-
-            let builder = usp_builder::AddBuilder::new().with_allow_partial(allow_partial);
-
-            let create_objs = v.into_iter().map(|o| {
-                usp_builder::CreateObjectBuilder::new(o.0).with_param_settings(o.1)
-            }).collect::<Vec<_>>();
-
-            serialize_into_vec(&builder.with_create_objs(create_objs).build()?)
-        }
-        MsgType::USPDelete {
-            allow_partial,
-            obj_paths,
-        } => {
-            let obj_paths = obj_paths.join(" ");
-            let obj_paths = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object instance path>, ...]\", got {obj_paths}"))?;
-            serialize_into_vec(&usp_builder::DeleteBuilder::new().with_allow_partial(allow_partial).with_obj_paths(obj_paths).build()?)
-        }
-        MsgType::USPError { code, message } => {
-            let error = usp_builder::ErrorBuilder::new().set_err (code, message);
-            serialize_into_vec(&error.build()?)
-        }
-        MsgType::USPGet { paths, max_depth } => {
-            let paths = paths.join(" ");
-            let v = serde_json::from_str::<Vec<String>>(&paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Path name>, ...]\", got {paths}"))?;
-            serialize_into_vec(&usp_builder::GetBuilder::new().with_max_depth(max_depth.unwrap_or(0)).with_params(v).build()?)
-        }
-        MsgType::USPGetInstances {
-            first_level_only,
-            obj_paths,
-        } => {
-            let obj_paths = obj_paths.join(" ");
-            let v = serde_json::from_str::<Vec<String>>(&obj_paths)
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {obj_paths}"))?;
-            serialize_into_vec(&usp_builder::GetInstancesBuilder::new().with_first_level_only(first_level_only).with_obj_paths(v).build()?
-        )}
-        MsgType::USPGetSupportedDM {
-            first_level_only,
-            return_commands,
-            return_events,
-            return_params,
-            return_unique_key_sets,
-            paths,
-        } => {
-            let v = serde_json::from_str::<Vec<String>>(&paths.join(" "))
-                .with_context(|| format!("Expected JSON data in the form \"[<Object path>, ...]\", got {paths:?}"))?;
-            let msg = usp_builder::GetSupportedDMBuilder::new()
-                .with_first_level_only(first_level_only)
-                .with_return_commands(return_commands)
-                .with_return_events(return_events)
-                .with_return_params(return_params)
-                .with_return_unique_key_sets(return_unique_key_sets)
-                .with_obj_paths(v)
-                .build()?;
-            serialize_into_vec(&msg)
-        }
-        MsgType::USPGetSupportedProtocol { cspv } => {
-            let msg = usp_builder::GetSupportedProtocolBuilder::new(cspv)
-                .build()?;
-            serialize_into_vec(&msg)
-        }
-        MsgType::USPGetResp { result } => {
-            let result = result.join(" ");
-            let getresp_json: Vec<(String, u32, String, Vec<(String, HashMap<String, String>)>)> = serde_json::from_str(&result)?;
-
-            let mut getrespb = usp_builder::GetRespBuilder::new();
-            for req_path_result in getresp_json {
-                let mut reqpathbuilder = usp_builder::GetReqPathResultBuilder::new(req_path_result.0);
-                if req_path_result.1 != 0
-                {
-                    reqpathbuilder.err_code = req_path_result.1;
-                }
-                for res_path_result in req_path_result.3 {
-                    let respathbuilder = usp_builder::ResolvedPathResultBuilder::new(res_path_result.0).with_result_params(res_path_result.1.into_iter().collect());
-                    reqpathbuilder = reqpathbuilder.with_res_path_results(vec![respathbuilder]);
-                }
-                getrespb = getrespb.with_req_path_results(vec![reqpathbuilder]);
-            }
-
-            serialize_into_vec(&getrespb.build()?)
-        }
-        MsgType::USPNotify {
-            sub_id,
-            send_resp,
-            typ,
-        } => {
-            let mut notify = usp_builder::NotifyBuilder::new(sub_id).with_send_resp(send_resp);
-            notify = match typ {
-                NotifyType::OnBoardRequest { oui, product_class, serial_number, agent_supported_protocol_versions } => notify.with_onboard_request(oui, product_class, serial_number, agent_supported_protocol_versions),
-                NotifyType::ValueChange { param_path, param_value } => notify.with_value_change(param_path, param_value),
-                NotifyType::Event { obj_path, event_name, params } => notify.with_event(obj_path, event_name, params),
-                NotifyType::ObjectCreation { obj_path, unique_keys } => notify.with_object_creation(obj_path, unique_keys),
-                NotifyType::ObjectDeletion { obj_path } => notify.with_object_deletion(obj_path),
-                NotifyType::OperationComplete { obj_path, command_name, command_key, operation_resp } => match operation_resp {
-                    OperateResponse::OutputArgs(output_args) => notify.with_operation_complete_output_args(obj_path, command_name, command_key, output_args),
-                    OperateResponse::CommandFailure(err_code, err_msg) => notify.with_operation_complete_cmd_failure(obj_path, command_name, command_key, err_code, err_msg),
-                }
-            };
-
-            serialize_into_vec(&notify.build()?)
-        }
-        ,
-        MsgType::USPNotifyResp { sub_id } => {
-            let msg = usp_builder::NotifyRespBuilder::new(sub_id).build()?;
-            serialize_into_vec(&msg)
-        }
-        MsgType::USPOperate {
-            command,
-            command_key,
-            send_resp,
-            args,
-        } => {
-            let v = if args.is_empty() {
-                Vec::new()
-            } else {
-                let args = args.join(" ");
-                serde_json::from_str::<Vec<(String, String)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Argument name>, <Argument value>], ...]\", got {args}"))?
-            };
-            serialize_into_vec(&usp_builder::OperateBuilder::new(command).with_command_key(command_key).with_send_resp(send_resp).with_input_args(v).build()?)
-        }
-        MsgType::USPSet {
-            allow_partial,
-            args,
-        } => {
-            let args = args.join(" ");
-            let v = serde_json::from_str::<Vec<(&str, Vec<(String, String, bool)>)>>(&args)
-                .with_context(|| format!("Expected JSON data in the form \"[[<Object path>, [[<Parameter name>, <Parameter value>, <Required>], ...]], ...]\", got {args}"))?;
-            let msg = usp_builder::SetBuilder::new()
-                .with_allow_partial(allow_partial)
-                .with_update_objs(v.into_iter().map(|(path, par)| usp_builder::UpdateObjectBuilder::new(path.into()).with_param_settings(par)).collect())
-                .build()?;
-            serialize_into_vec(&msg)
-        }
-        MsgType::USPRegister { allow_partial, reg_paths } => {
-            let msg = usp_builder::RegisterBuilder::new()
-                .with_allow_partial(allow_partial)
-                .with_reg_paths(reg_paths)
-                .build()?;
-            serialize_into_vec(&msg)
-        }
-        MsgType::USPDeregister { paths } => {
-            let msg = usp_builder::DeregisterBuilder::new()
-                .with_paths(paths)
-                .build()?;
-            serialize_into_vec(&msg)
-        }
-    }.context("While trying to encode message to ProtoBuf")
-}
-
 fn get_out_stream(filename: Option<PathBuf>) -> Result<Box<dyn Write>> {
     if let Some(filename) = filename {
         Ok(Box::new(File::create(filename)?))
@@ -680,26 +355,6 @@ fn write_record<W: Write>(
     }?;
 
     Ok(())
-}
-
-fn encode_msg(
-    msgid: &str,
-    filename: Option<PathBuf>,
-    typ: MsgType,
-    format: &OutputFormat,
-) -> Result<()> {
-    use quick_protobuf::deserialize_from_slice;
-
-    let encoded_body = encode_msg_body_buf(typ)?;
-    let body: rusp::usp::Body =
-        deserialize_from_slice(&encoded_body).context("Failed trying to deserialise Msg body")?;
-    let msg = usp_builder::MsgBuilder::new()
-        .with_msg_id(msgid.into())
-        .with_body(body)
-        .build()?;
-
-    // Open the specified file (or stdout) as output stream and write the USP Msg to it
-    write_msg(&msg, get_out_stream(filename)?, format)
 }
 
 fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result<()> {
@@ -840,10 +495,12 @@ fn main() -> Result<()> {
         RuspAction::DecodeMsgFiles { files } => decode_msg_files(files, &format),
         RuspAction::DecodeMsg {} => decode_msg_stdin(&format),
         RuspAction::EncodeMsg {
-            msgid,
-            filename,
-            typ,
-        } => encode_msg(&msgid, filename, typ, &format),
+            _msgid,
+            _filename,
+            _command,
+        } => Err(anyhow::anyhow!(
+            "Support for encoding messages has been removed in rusp 0.96, use the new rusp-run command instead"
+        )),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, &format),
         RuspAction::EncodeNoSessionRecord {
             version,

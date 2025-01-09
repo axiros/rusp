@@ -18,24 +18,7 @@ This crate contains the application part of Rusp, which contains:
 
 At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text and other useful formats like code and to extracting a **Msg** structure from a **Record**.
 
-Currently, it also still supports synthesizing the following USP Messages
-
-* **Add**
-* **Delete**
-* **Deregister**
-* **Error**
-* **Get**
-* **GetInstances**
-* **GetResp**
-* **GetSupportedDM**
-* **GetSupportedProtocol**
-* **Notify**
-* **NotifyResp**
-* **Operate**
-* **Set**
-* **Register**
-
-and USP Records via command line, however this feature is going to be phased out soon in favour of something way better. 😉
+Currently, it also still supports synthesizing USP Records via command line, however this feature is going to be phased out soon in favour of something way better. 😉
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable Rust environment and run:
 
