@@ -6,17 +6,13 @@ use clap::{Parser, Subcommand};
 use rusp::usp_builder;
 use rusp::usp_record::mod_MQTTConnectRecord::MQTTVersion;
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 
-use rusp::{
-    usp_decoder::{try_decode_msg, try_decode_record},
-    usp_types::{NotifyType as RuspNotifyType, OperateResponse as RuspOperateResponse},
-};
+use rusp::usp_decoder::{try_decode_msg, try_decode_record};
 
 #[derive(PartialEq)]
 /// The supported output formats
@@ -262,66 +258,6 @@ enum NotifyType {
         #[structopt(skip)]
         operation_resp: OperateResponse,
     },
-}
-
-impl TryFrom<NotifyType> for RuspNotifyType {
-    type Error = Infallible;
-
-    fn try_from(notify: NotifyType) -> Result<Self, Self::Error> {
-        Ok(match notify {
-            NotifyType::OnBoardRequest {
-                oui,
-                product_class,
-                serial_number,
-                agent_supported_protocol_versions,
-            } => Self::OnBoardRequest {
-                oui,
-                product_class,
-                serial_number,
-                agent_supported_protocol_versions,
-            },
-            NotifyType::ValueChange {
-                param_path,
-                param_value,
-            } => Self::ValueChange {
-                param_path,
-                param_value,
-            },
-            NotifyType::Event {
-                obj_path,
-                event_name,
-                params,
-            } => Self::Event {
-                obj_path,
-                event_name,
-                params,
-            },
-            NotifyType::ObjectCreation {
-                obj_path,
-                unique_keys,
-            } => Self::ObjectCreation {
-                obj_path,
-                unique_keys,
-            },
-            NotifyType::ObjectDeletion { obj_path } => Self::ObjectDeletion { obj_path },
-            NotifyType::OperationComplete {
-                obj_path,
-                command_name,
-                command_key,
-                operation_resp,
-            } => Self::OperationComplete {
-                obj_path,
-                command_name,
-                command_key,
-                operation_resp: match operation_resp {
-                    OperateResponse::OutputArgs(a) => RuspOperateResponse::OutputArgs(a),
-                    OperateResponse::CommandFailure(code, msg) => {
-                        RuspOperateResponse::CommandFailure(code, msg)
-                    }
-                },
-            },
-        })
-    }
 }
 
 #[derive(Parser)]
