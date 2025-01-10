@@ -15,7 +15,7 @@ Rhai interpreter . To use `rhai-rusp` as a library, you simply need to add the
 
 ```
 [dependencies]
-rhai-rusp = "0.95.0"
+rhai-rusp = "0.96.0"
 ```
 
 The usual steps to embed a Rhai interpreter with rusp support are:
