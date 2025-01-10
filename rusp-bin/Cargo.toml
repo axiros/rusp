@@ -15,7 +15,7 @@ repository = "axiros/rusp"
 [dependencies]
 rhai = { workspace = true }
 anyhow = { workspace = true }
-clap = { version = "4", default-features = false, features = ["std", "derive"] }
+clap = { version = "4", features = ["derive"] }
 quick-protobuf = { workspace = true }
 rusp-lib = { workspace = true }
 rhai-rusp = { workspace = true }
