@@ -3,8 +3,7 @@
 # `rhai-rusp`
 
 `rhai-rusp` is a new approach to address your [USP][] protocol needs by
-providing [Rhai][] bindings for the [rusp-lib
-crate](https://crates.io/crates/rusp-lib), thus providing scripting capabilities
+providing [Rhai][] bindings for the [rusp-lib crate](https://crates.io/crates/rusp-lib), thus providing scripting capabilities
 to USP in Rhai for either standalone runners or [Rust][] applications which can
 embed the [Rhai][] interpreter together with the `rhai-rusp` bindings.
 
@@ -28,32 +27,10 @@ The usual steps to embed a Rhai interpreter with rusp support are:
 4. Execute the `Rhai` AST via `engine.run_ast(ast)`
 5. Handle errors, err... profit!
 
-## How to use `rhai-rusp` directly?
-
-Currently we're including a simply binary called `rusp-run`, demonstrating how
-to embed the bindings and allowing you to execute `Rhai` code directly from the
-commandline, read either from `stdin` or a file.
+There's also the `rusp-run` binary as part of the [rusp crate](https://crates.io/crates/rusp) which you can install via:
 
 ```
-# rusp-run --script 'let body = rusp::get_builder().with_max_depth(1).with_params(["Device."]).build();
-let msg = rusp::msg_builder().with_msg_id ("Foo").with_body (body).build();
-print (msg)'
-{
-  "Header": {
-    "msg_id": "Foo",
-    "msg_type": "GET"
-  },
-  "Body": {
-    "Request": {
-      "Get": {
-        "param_paths": [
-          "Device."
-        ],
-        "max_depth": 1
-      }
-    }
-  }
-}
+# cargo install rusp
 ```
 
 ## What else?

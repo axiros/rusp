@@ -34,22 +34,25 @@ Documentation and examples for its use can be found on [docs.rs](https://docs.rs
 
 ## What else?
 
-You may use this crate however you like under the **BSD 3-Clause Licence**.
+You may use this crate however you like under the [BSD 3-Clause Licence](LICENSE).
 
-The toolkit is still far from feature complete but already a big aid in our product development and also helped to find one or the other discrepancy in the standard.
-
-Feel free to spread the word or drop us a note if you like it. Collaboration on this crate is highly welcome as are pull requests in [our GitHub repo](https://github.com/axiros/rusp/).
+Feel free to spread the word or drop us a note if you like it. Collaboration on
+this crate is highly welcome as are pull requests in [our GitHub
+repo](https://github.com/axiros/rusp/).
 
 ## Contact us
 
-If you are in need of software for **USP** management software (agent, controller or testing) or expertise please get in touch with us via our [web form](https://www.axiros.com). We're also happy to solve all other device management and monitoring needs!
-
-[Rust]: https://www.rust-lang.org/
-[USP]: https://usp.technology/
-[BBF]: https://www.broadband-forum.org/
-[Axiros]: https://www.axiros.com/
+If you are in need of software for [USP][] management software (agent,
+controller or testing) or expertise please get [in touch with us][Axiros]. We're
+also happy to solve all other device management and monitoring needs!
 
 Licence
 -------
 
 [BSD 3-Clause Licence](LICENSE).
+
+[Rhai]: https://rhai.rs
+[Rust]: https://www.rust-lang.org/
+[USP]: https://usp.technology/
+[Axiros]: https://www.axiros.com/
+[BBF]: https://www.broadband-forum.org/
