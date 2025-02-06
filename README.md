@@ -21,7 +21,8 @@ While a Protobuf schema exists which allows generating bindings for several comm
 The toolkit currently provides these parts: 
 
 1. [The Rusp library (aptly named: rusp-lib)](https://github.com/axiros/rusp/tree/master/rusp-lib)
-2. [The Rusp binary](https://github.com/axiros/rusp/tree/master/rusp-bin)
+2. [The Rhai-Rusp library](https://github.com/axiros/rusp/tree/master/rhai-rusp)
+3. [The Rusp binary](https://github.com/axiros/rusp/tree/master/rusp-bin)
 
 ## What else?
 
