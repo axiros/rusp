@@ -55,6 +55,8 @@ print (msg)'
 }
 ```
 
+More examples can be found at [the Rhai-Rusp repository](https://github.com/axiros/rusp/tree/master/rhai-rusp).
+
 ## What else?
 
 You may use this crate however you like under the [BSD 3-Clause Licence](LICENSE).
