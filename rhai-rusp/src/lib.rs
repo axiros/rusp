@@ -2820,6 +2820,7 @@ pub mod rhai_rusp {
     use std::io::{BufReader, Read, Write as _};
 
     use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
+    use usp_record::mod_Record::OneOfrecord_type;
 
     /// Render a USP Body into JSON format, this function is polymorphic in Rhai and available as `to_string()`
     /// ```
@@ -3317,7 +3318,11 @@ pub mod rhai_rusp {
             .bytes()
             .collect::<Result<Vec<u8>, _>>()
             .map_err(|e| e.to_string())?;
-        Ok(try_decode_record(&contents).map_err(|e| e.to_string())?)
+        let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
+        if record.record_type == OneOfrecord_type::None {
+            Err("Protobuf file doesn't contain a valid USP Record")?
+        }
+        Ok(record)
     }
 }
 
