@@ -17,8 +17,7 @@
 //!   * [USP Record][`rusp::usp_record`]
 //!   * [USP Messages][`rusp::usp`]
 //! * A library providing:
-//!   * Higher level access to [de-][`rusp::usp_decoder`]/[serialisation][`rusp::usp_generator`] functionality
-//!   * Convenience functions to [generate messages][`rusp::usp_generator`]
+//!   * Higher level access to [deserialisation][`rusp::usp_decoder`] functionality
 //!   * Convenience functions to [work with the native Msg types][`rusp::usp_decoder`]
 //!   * Pretty printing of **USP** Records and Messages
 //!   * Serde de-/serialisation of **USP** Records and Messages
@@ -38,7 +37,6 @@
 //! [`rusp::usp`]: crate::usp
 //! [`rusp::usp_record`]: crate::usp_record
 //! [`rusp::usp_decoder`]: crate::usp_decoder
-//! [`rusp::usp_generator`]: crate::usp_generator
 
 /// Automatically generated bindings for USP Msgs from the [`USP Messages Protobuf schema`]
 ///
