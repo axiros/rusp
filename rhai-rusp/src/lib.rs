@@ -3295,7 +3295,14 @@ pub mod rhai_rusp {
         Ok(try_decode_msg(&contents).map_err(|e| e.to_string())?)
     }
 
-    /// Load a [`Record`] from a Protobuf file
+    /// Load a [`Record`] from a Protobuf file, in Rhai this function is called `load_record`.
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let record = rusp::load_record("test.pb");
+    /// record.to_string()
+    /// # "#;
+    /// ```
     ///
     /// # Errors
     ///
