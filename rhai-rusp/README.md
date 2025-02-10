@@ -10,7 +10,7 @@ embed the [Rhai][] interpreter together with the `rhai-rusp` bindings.
 ## How to embed `rhai-rusp`?
 
 `rhai-rusp` can be used as a library in your own Rust applications to embed a
-Rhai interpreter . To use `rhai-rusp` as a library, you simply need to add the
+Rhai interpreter. To use `rhai-rusp` as a library, you simply need to add the
 `rhai-rusp` crate to your `Cargo.toml` as dependency:
 
 ```
@@ -20,7 +20,7 @@ rhai-rusp = "0.96.0"
 
 The usual steps to embed a Rhai interpreter with rusp support are:
 
-1. Initialise a Rhai engine via `rhai::Engine::new()`
+1. Initialize a Rhai engine via `rhai::Engine::new()`
 2. Add the `rusp` bindings into the namespace per
 `engine.register_static_module("rusp", RuspPackage::new().as_shared_module())`
 3. Compile the `Rhai` code into an AST via `engine.compile(contents)`
@@ -32,6 +32,43 @@ There's also the `rusp-run` binary as part of the [rusp crate](https://crates.io
 ```
 # cargo install rusp
 ```
+
+## Example Rhai scripts
+
+The [documentation](https://docs.rs/rhai-rusp/latest/rhai_rusp/) provides plenty of examples inside the various modules of how to use them. But here are some practical examples anyway to give you a taste:
+
+```Rhai
+let msg = rusp::load_msg("msg.pb");
+print(msg);
+```
+
+loads and prints a Protobuf encoded USP Message as a readable JSON structure.
+
+```Rhai
+let record = rusp::load_record("record.pb");
+print(record.to_c_array());
+```
+
+loads and prints a Protobuf encoded USP Record as a C array which can e.g. be embedded into unit tests.
+
+```Rhai
+let body = rusp::get_builder()
+    .with_params(["Device."])
+    .with_max_depth(2)
+    .build();
+let msg = rusp::msg_builder()
+    .with_msg_id("Foo")
+    .with_body(body)
+    .build();
+let record = rusp::record_builder()
+    .with_version("1.3")
+    .with_to_id("proto::to")
+    .with_from_id("proto::from")
+    .with_no_session_context_payload(msg)
+    .build();
+```
+
+builds a body with a **Get** request, wraps it in a USP **Msg** and encapsulates that in a USP **Record**.
 
 ## What else?
 
