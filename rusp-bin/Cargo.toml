@@ -22,6 +22,7 @@ rhai-rusp = { workspace = true }
 serde = { workspace = true }
 serde_derive = { workspace = true }
 serde_json = { workspace = true }
+rhai-rand = "0.1.6"
 
 [[bin]]
 name = "rusp"

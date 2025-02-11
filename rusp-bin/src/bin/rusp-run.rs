@@ -2,6 +2,7 @@ use clap::Parser;
 use rhai::packages::Package;
 use rhai::{Engine, EvalAltResult, Position};
 use rhai_rusp::RuspPackage;
+use rhai_rand::RandomPackage;
 
 use std::convert::Into;
 use std::path::PathBuf;
@@ -62,6 +63,7 @@ fn main() {
 
     // Create rusp package and add the package into the engine
     engine.register_static_module("rusp", RuspPackage::new().as_shared_module());
+    engine.register_global_module(RandomPackage::new().as_shared_module());
     engine.set_optimization_level(rhai::OptimizationLevel::Simple);
 
     if let Some(filename) = args.filename {
