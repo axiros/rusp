@@ -1,8 +1,8 @@
-use clap::Parser;
+use argh::FromArgs;
 use rhai::packages::Package;
 use rhai::{Engine, EvalAltResult, Position};
-use rhai_rusp::RuspPackage;
 use rhai_rand::RandomPackage;
+use rhai_rusp::RuspPackage;
 
 use std::convert::Into;
 use std::path::PathBuf;
@@ -40,23 +40,20 @@ fn eprint_error(input: &str, mut err: EvalAltResult) {
     }
 }
 
-#[derive(Parser)]
-#[command(
-    author,
-    version,
-    name = "rusp-run",
-    about = "the Rust USP toolkit, rhai runner"
-)]
+#[derive(FromArgs)]
+/// the Rust USP toolkit, rhai runner
 struct Rusp {
-    #[arg(long = "script", short = 's')]
-    /// Inline rhai script
+    #[argh(option, long = "script", short = 's')]
+    /// inline rhai script
     script: Option<String>,
-    /// Output filename of file to encode USP Protobuf message to
+
+    #[argh(positional)]
+    /// a filename for a Rhai script to parse
     filename: Option<PathBuf>,
 }
 
 fn main() {
-    let args = Rusp::parse();
+    let args: Rusp = argh::from_env();
 
     // Initialize scripting engine
     let mut engine = Engine::new();
@@ -67,6 +64,10 @@ fn main() {
     engine.set_optimization_level(rhai::OptimizationLevel::Simple);
 
     if let Some(filename) = args.filename {
+        if args.script.is_some() {
+            eprintln!("Inline scripting and the use of a file are mutual exclusive");
+            exit(1);
+        }
         let mut contents = String::new();
         let filename = match Path::new(&filename).canonicalize() {
             Err(err) => {
