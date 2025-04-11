@@ -8,7 +8,7 @@ use rhai::{
         FuncRegistration, ImmutableString, Module, NativeCallContext, PluginFunc, RhaiResult,
         TypeId,
     },
-    Array, Map,
+    Array, Map, Variant,
 };
 use rusp_lib::usp::{Body, Msg};
 use rusp_lib::usp_builder;
@@ -36,7 +36,7 @@ use rusp_lib::usp_record::{self, Record};
 /// the provided Rhai script fails to evaluate.
 pub fn eval_rusp<T>(str: &str) -> Result<T, String>
 where
-    T: Clone + 'static,
+    T: Variant + Clone,
 {
     use rhai::{packages::Package, Engine};
 
