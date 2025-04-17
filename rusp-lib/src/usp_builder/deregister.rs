@@ -33,15 +33,7 @@ impl DeregisterBuilder {
         Ok(Body {
             msg_body: request({
                 Request {
-                    req_type: deregister({
-                        Deregister {
-                            paths: self
-                                .paths
-                                .into_iter()
-                                .map(std::convert::Into::into)
-                                .collect(),
-                        }
-                    }),
+                    req_type: deregister(Deregister { paths: self.paths }),
                 }
             }),
         })
@@ -97,10 +89,7 @@ impl DeregisteredPathResultBuilder {
                 }),
                 DeregisterOperationStatus::Success(s) => Ok(OperationStatus {
                     oper_status: OneOfoper_status::oper_success(OperationSuccess {
-                        deregistered_path: s
-                            .into_iter()
-                            .map(std::convert::Into::into)
-                            .collect::<Vec<_>>(),
+                        deregistered_path: s,
                     }),
                 }),
                 DeregisterOperationStatus::None => Err(anyhow::anyhow!("")),

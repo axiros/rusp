@@ -78,11 +78,7 @@ impl GetSupportedDMBuilder {
                 Request {
                     req_type: get_supported_dm({
                         GetSupportedDM {
-                            obj_paths: self
-                                .obj_paths
-                                .into_iter()
-                                .map(std::convert::Into::into)
-                                .collect(),
+                            obj_paths: self.obj_paths,
                             first_level_only: self.first_level_only,
                             return_commands: self.return_commands,
                             return_events: self.return_events,
@@ -147,16 +143,8 @@ impl GSDMCommandResult {
         }
         Ok(SupportedCommandResult {
             command_name: self.command_name,
-            input_arg_names: self
-                .input_arg_names
-                .into_iter()
-                .map(std::convert::Into::into)
-                .collect(),
-            output_arg_names: self
-                .output_arg_names
-                .into_iter()
-                .map(std::convert::Into::into)
-                .collect(),
+            input_arg_names: self.input_arg_names,
+            output_arg_names: self.output_arg_names,
             command_type: self.command_type,
         })
     }
@@ -186,11 +174,7 @@ impl GSDMEventResult {
     pub fn build(self) -> Result<SupportedEventResult> {
         Ok(SupportedEventResult {
             event_name: self.event_name,
-            arg_names: self
-                .arg_names
-                .into_iter()
-                .map(std::convert::Into::into)
-                .collect(),
+            arg_names: self.arg_names,
         })
     }
 }
@@ -436,11 +420,7 @@ impl GSDMSupportedObjectResultBuilder {
             supported_commands,
             supported_events,
             supported_params,
-            divergent_paths: self
-                .divergent_paths
-                .into_iter()
-                .map(std::convert::Into::into)
-                .collect(),
+            divergent_paths: self.divergent_paths,
             unique_key_sets,
         })
     }

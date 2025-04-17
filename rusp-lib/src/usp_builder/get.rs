@@ -42,7 +42,7 @@ impl GetBuilder {
                     req_type: get({
                         Get {
                             max_depth: self.max_depth,
-                            param_paths: self.params.into_iter().map(Into::into).collect(),
+                            param_paths: self.params,
                         }
                     }),
                 }
