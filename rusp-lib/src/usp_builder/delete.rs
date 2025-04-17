@@ -46,7 +46,7 @@ impl DeleteBuilder {
                     req_type: delete({
                         Delete {
                             allow_partial: self.allow_partial,
-                            obj_paths: self.obj_paths.into_iter().map(Into::into).collect(),
+                            obj_paths: self.obj_paths,
                         }
                     }),
                 }
@@ -118,7 +118,7 @@ impl DeletedObjectResultsBuilder {
             oper_status: match self.oper_status {
                 DeleteRespOperationStatus::Success(s) => Some(OperationStatus {
                     oper_status: oper_success(OperationSuccess {
-                        affected_paths: s.affected_paths.into_iter().map(Into::into).collect(),
+                        affected_paths: s.affected_paths,
                         unaffected_path_errs: s
                             .unaffected_path_errs
                             .into_iter()

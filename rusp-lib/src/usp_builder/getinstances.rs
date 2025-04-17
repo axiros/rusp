@@ -41,7 +41,7 @@ impl GetInstancesBuilder {
                 Request {
                     req_type: get_instances({
                         GetInstances {
-                            obj_paths: self.obj_paths.into_iter().map(Into::into).collect(),
+                            obj_paths: self.obj_paths,
                             first_level_only: self.first_level_only,
                         }
                     }),
