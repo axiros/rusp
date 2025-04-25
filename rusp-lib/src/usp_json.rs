@@ -11,11 +11,10 @@ use crate::usp::{
 };
 use crate::usp_record::{
     mod_MQTTConnectRecord, mod_Record, mod_STOMPConnectRecord, mod_SessionContextRecord,
-    DisconnectRecord, MQTTConnectRecord, Record, STOMPConnectRecord, SessionContextRecord,
-    WebSocketConnectRecord,
+    DisconnectRecord, MQTTConnectRecord, NoSessionContextRecord, Record, STOMPConnectRecord,
+    SessionContextRecord, WebSocketConnectRecord,
 };
 
-use anyhow::Context;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 impl Serialize for Record {
@@ -23,7 +22,6 @@ impl Serialize for Record {
     where
         S: Serializer,
     {
-        use crate::usp_decoder::try_decode_msg;
         use mod_Record::OneOfrecord_type::{
             disconnect, mqtt_connect, no_session_context, session_context, stomp_connect,
             websocket_connect,
@@ -39,16 +37,7 @@ impl Serialize for Record {
 
         match &self.record_type {
             no_session_context(context) => {
-                let msg = try_decode_msg(&context.payload);
-                if let Ok(msg) = msg {
-                    state.serialize_field("payload", &msg)?;
-                } else {
-                    Err(serde::ser::Error::custom(format!(
-                        "{:?}",
-                        msg.context("Interpreting USP Record payload as USP Msg")
-                            .unwrap_err()
-                    )))?;
-                }
+                state.serialize_field("no_session_context", context)?;
             }
             session_context(context) => {
                 state.serialize_field("session_context", context)?;
@@ -76,6 +65,17 @@ impl Serialize for mod_Record::PayloadSecurity {
             PLAINTEXT => serializer.serialize_unit_variant("PayloadSecurity", 0, "PLAINTEXT"),
             TLS12 => serializer.serialize_unit_variant("PayloadSecurity", 1, "TLS12"),
         }
+    }
+}
+
+impl Serialize for NoSessionContextRecord {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("NoSessionContextRecord", 1)?;
+        state.serialize_field("payload", &self.payload)?;
+        state.end()
     }
 }
 
