@@ -8,7 +8,7 @@ use rhai::{
         FuncRegistration, ImmutableString, Module, NativeCallContext, PluginFunc, RhaiResult,
         TypeId,
     },
-    Array, Map, Variant,
+    Array, Blob, Map, Variant,
 };
 use rusp_lib::usp::{Body, Msg};
 use rusp_lib::usp_builder;
@@ -3276,6 +3276,34 @@ pub mod rhai_rusp {
             .and_then(|mut f| f.write_all(&data))
             .map_err(|e| e.to_string())?;
         Ok(())
+    }
+
+    /// Extracts the [`Record`]'s payload. Returning [`Dynamic::UNIT`] for Records without payloads
+    ///
+    /// To avoid clones, this function leaves the used [`Record`] with an empty payload
+    #[rhai_fn(global, name = "extract_msg")]
+    pub fn record_extract_msg(record: &mut Record) -> Dynamic {
+        match &mut record.record_type {
+            OneOfrecord_type::session_context(ctx) => {
+                let payload = ctx.payload_flatten();
+                Dynamic::from_blob(mem::take(payload))
+            }
+            OneOfrecord_type::no_session_context(ctx) => {
+                Dynamic::from_blob(mem::take(&mut ctx.payload))
+            }
+            _ => Dynamic::UNIT,
+        }
+    }
+
+    /// Parses a [`Msg`] from the provided Protobuf bytes
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` when the deserialization of the structure from the Protobuf
+    /// format fails
+    #[rhai_fn(global, name = "parse_msg", return_raw)]
+    pub fn parse_msg_protobuf(protobuf: &mut Blob) -> Result<Msg, Box<EvalAltResult>> {
+        try_decode_msg(protobuf).map_err(|e| e.to_string().into())
     }
 
     /// Load a [`Msg`] from a Protobuf file
