@@ -8,8 +8,8 @@ members = [
 
 [workspace.dependencies]
 rhai = { version = "1.16", features = ["serde", "internals"] }
-rusp-lib = { version = "0.96", path = "rusp-lib" }
-rhai-rusp = { version = "0.96", path = "rhai-rusp" }
+rusp-lib = { version = "0.97", path = "rusp-lib" }
+rhai-rusp = { version = "0.97", path = "rhai-rusp" }
 
 anyhow = "1.0"
 serde = "1.0"

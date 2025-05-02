@@ -2,7 +2,7 @@
 authors = ["Daniel Egger <daniel.egger@axiros.com>", "Axiros GmbH"]
 description = "Rhai bindings for the Rust USP toolkit"
 name = "rhai-rusp"
-version = "0.96.2"
+version = "0.97.0"
 edition = "2021"
 license = "BSD-3-Clause"
 readme = "README.md"
