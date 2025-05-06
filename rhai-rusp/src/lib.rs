@@ -2966,9 +2966,7 @@ pub mod rhai_rusp {
     /// This function will return `Err` containing a textual description of the encountered error
     /// if the conversion into a `RecordBuilder` fails.
     #[rhai_fn(global, name = "as_no_session_record_builder", return_raw)]
-    pub fn msg_as_no_session_record_builder(
-        msg: Msg,
-    ) -> Result<RecordBuilder, Box<EvalAltResult>> {
+    pub fn msg_as_no_session_record_builder(msg: Msg) -> Result<RecordBuilder, Box<EvalAltResult>> {
         Ok(RecordBuilder::new().with_no_session_context_payload(&msg))
     }
 
