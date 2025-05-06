@@ -2820,7 +2820,50 @@ pub mod rhai_rusp {
     use std::io::{BufReader, Read, Write as _};
 
     use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
+    use usp_builder::MsgBuilder;
     use usp_record::mod_Record::OneOfrecord_type;
+
+    /// Creates a new [`MsgBuilder`] with the given message [`Body`]. This is a shortcut to directly
+    /// chain operations without using nested calls.
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let msg =
+    ///     rusp::get_builder().with_max_depth(1).with_params(["Device."]).build().as_msg_builder().with_msg_id("id").build();
+    ///  msg.to_string()
+    /// # "#;
+    /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(msg, "{\n  \"Header\": {\n    \"msg_id\": \"id\",\n    \"msg_type\": \"GET\"\n  },\n  \"Body\": {\n    \"Request\": {\n      \"Get\": {\n        \"param_paths\": [\n          \"Device.\"\n        ],\n        \"max_depth\": 1\n      }\n    }\n  }\n}");
+    /// ```
+    ///
+    /// This example will return a JSON output like:
+    /// ```text
+    /// {
+    ///   "Header": {
+    ///     "msg_id": "id",
+    ///     "msg_type": "GET"
+    ///   },
+    ///   "Body": {
+    ///     "Request": {
+    ///       "Get": {
+    ///         "param_paths": [
+    ///           "Device."
+    ///         ],
+    ///         "max_depth": 1
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error if
+    /// the conversion into a MsgBuilder fails.
+    #[rhai_fn(global, return_raw)]
+    pub fn as_msg_builder(body: Body) -> Result<MsgBuilder, Box<EvalAltResult>> {
+        Ok(MsgBuilder::new().with_body(body))
+    }
 
     /// Render a USP Body into JSON format, this function is polymorphic in Rhai and available as `to_string()`
     /// ```
