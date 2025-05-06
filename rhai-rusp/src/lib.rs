@@ -2867,6 +2867,7 @@ pub mod rhai_rusp {
 
     /// Creates a new [`RecordBuilder`] with the given [`MsgBuilder`] as "no_session_context"
     /// payload. This is a shortcut to directly chain operations without using nested calls.
+    /// This function is polymorphic in Rhai and available as `as_no_session_record_builder()`
     /// ```
     /// // Rhai script
     /// # let script = r#"
@@ -2920,6 +2921,7 @@ pub mod rhai_rusp {
 
     /// Creates a new [`RecordBuilder`] with the given [`Msg`] as "no_session_context"
     /// payload. This is a shortcut to directly chain operations without using nested calls.
+    /// This function is polymorphic in Rhai and available as `as_no_session_record_builder()`
     /// ```
     /// // Rhai script
     /// # let script = r#"
