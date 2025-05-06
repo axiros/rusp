@@ -2820,7 +2820,7 @@ pub mod rhai_rusp {
     use std::io::{BufReader, Read, Write as _};
 
     use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
-    use usp_builder::MsgBuilder;
+    use usp_builder::{MsgBuilder, RecordBuilder};
     use usp_record::mod_Record::OneOfrecord_type;
 
     /// Creates a new [`MsgBuilder`] with the given message [`Body`]. This is a shortcut to directly
@@ -2863,6 +2863,111 @@ pub mod rhai_rusp {
     #[rhai_fn(global, return_raw)]
     pub fn as_msg_builder(body: Body) -> Result<MsgBuilder, Box<EvalAltResult>> {
         Ok(MsgBuilder::new().with_body(body))
+    }
+
+    /// Creates a new [`RecordBuilder`] with the given [`MsgBuilder`] as "no_session_context"
+    /// payload. This is a shortcut to directly chain operations without using nested calls.
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let msg =
+    ///     rusp::get_builder().with_params(["Device."]).build().as_msg_builder().with_msg_id("id").as_no_session_record_builder().with_to_id("proto::to").with_from_id("proto::from").build();
+    ///  msg.to_string()
+    /// # "#;
+    /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// ```
+    ///
+    /// This example will return a JSON output like:
+    /// ```text
+    /// {
+    ///   "version": "1.3",
+    ///   "to_id": "proto::to",
+    ///   "from_id": "proto::from",
+    ///   "payload_security": "PLAINTEXT",
+    ///   "mac_signature": [],
+    ///   "sender_cert": [],
+    ///   "payload": {
+    ///     "Header": {
+    ///       "msg_id": "id",
+    ///       "msg_type": "GET"
+    ///     },
+    ///     "Body": {
+    ///       "Request": {
+    ///         "Get": {
+    ///           "param_paths": [
+    ///             "Device."
+    ///           ],
+    ///           "max_depth": 0
+    ///         }
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error if
+    /// the conversion into a `RecordBuilder` fails.
+    #[rhai_fn(global, name = "as_no_session_record_builder", return_raw)]
+    pub fn msg_builder_as_no_session_record_builder(
+        builder: MsgBuilder,
+    ) -> Result<RecordBuilder, Box<EvalAltResult>> {
+        let msg = builder.build().map_err(|e| e.to_string())?;
+        Ok(RecordBuilder::new().with_no_session_context_payload(&msg))
+    }
+
+    /// Creates a new [`RecordBuilder`] with the given [`Msg`] as "no_session_context"
+    /// payload. This is a shortcut to directly chain operations without using nested calls.
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let msg =
+    ///     rusp::get_builder().with_params(["Device."]).build().as_msg_builder().with_msg_id("id").build().as_no_session_record_builder().with_to_id("proto::to").with_from_id("proto::from").build();
+    ///  msg.to_string()
+    /// # "#;
+    /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// ```
+    ///
+    /// This example will return a JSON output like:
+    /// ```text
+    /// {
+    ///   "version": "1.3",
+    ///   "to_id": "proto::to",
+    ///   "from_id": "proto::from",
+    ///   "payload_security": "PLAINTEXT",
+    ///   "mac_signature": [],
+    ///   "sender_cert": [],
+    ///   "payload": {
+    ///     "Header": {
+    ///       "msg_id": "id",
+    ///       "msg_type": "GET"
+    ///     },
+    ///     "Body": {
+    ///       "Request": {
+    ///         "Get": {
+    ///           "param_paths": [
+    ///             "Device."
+    ///           ],
+    ///           "max_depth": 0
+    ///         }
+    ///       }
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error
+    /// if the conversion into a `RecordBuilder` fails.
+    #[rhai_fn(global, name = "as_no_session_record_builder", return_raw)]
+    pub fn msg_as_no_session_record_builder(
+        msg: Msg,
+    ) -> Result<RecordBuilder, Box<EvalAltResult>> {
+        Ok(RecordBuilder::new().with_no_session_context_payload(&msg))
     }
 
     /// Render a USP Body into JSON format, this function is polymorphic in Rhai and available as `to_string()`
