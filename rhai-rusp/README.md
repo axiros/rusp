@@ -15,7 +15,7 @@ Rhai interpreter. To use `rhai-rusp` as a library, you simply need to add the
 
 ```
 [dependencies]
-rhai-rusp = "0.97"
+rhai-rusp = "0.98"
 ```
 
 The usual steps to embed a Rhai interpreter with rusp support are:
@@ -69,6 +69,22 @@ let record = rusp::record_builder()
 ```
 
 builds a body with a **Get** request, wraps it in a USP **Msg** and encapsulates that in a USP **Record**.
+
+The same can since 0.98 also be achieved much more compactly via:
+
+```Rhai
+let record = rusp::get_builder()
+    .with_params(["Device."])
+    .with_max_depth(2)
+    .build()
+    .as_msg_builder()
+    .with_msg_id("Foo")
+    .as_no_session_record_builder()
+    .with_version("1.3")
+    .with_to_id("proto::to")
+    .with_from_id("proto::from")
+    .build();
+```
 
 ## What else?
 
