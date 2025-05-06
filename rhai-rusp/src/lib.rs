@@ -2875,13 +2875,13 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
     /// ```text
     /// {
-    ///   "version": "1.3",
+    ///   "version": "1.4",
     ///   "to_id": "proto::to",
     ///   "from_id": "proto::from",
     ///   "payload_security": "PLAINTEXT",
@@ -2928,13 +2928,13 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
     /// ```text
     /// {
-    ///   "version": "1.3",
+    ///   "version": "1.4",
     ///   "to_id": "proto::to",
     ///   "from_id": "proto::from",
     ///   "payload_security": "PLAINTEXT",

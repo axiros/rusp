@@ -252,7 +252,7 @@ impl RecordBuilder {
 
         let mut record = Record {
             version: if self.version.is_empty() {
-                "1.3".into()
+                "1.4".into()
             } else {
                 self.version
             },
