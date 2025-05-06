@@ -413,7 +413,7 @@ pub mod rhai_rusp_msg {
         builder.with_body(body)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a USP [`Msg`] structure
     ///
     /// # Errors
     ///
