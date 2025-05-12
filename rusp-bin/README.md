@@ -27,7 +27,7 @@ At the moment this mostly allows converting Protobuf encapsulated USP **Record**
 
 Currently, it also still supports synthesizing USP Records via command line, however this feature is going to be phased out soon in favour of the way more flexible `rhai-rusp`.
 
-## How to use the `rhai-rusp` binary?
+## How to use the `rhai-run` binary?
 
 We are now also including a simply binary called `rusp-run`, demonstrating how
 to embed the bindings and allowing you to execute `Rhai` code directly via
@@ -56,6 +56,10 @@ print (msg)'
 ```
 
 More examples can be found at [the Rhai-Rusp repository](https://github.com/axiros/rusp/tree/master/rhai-rusp).
+
+Starting with version 0.98.1, `rusp-run` also supports a `-c` switch, which can
+be used to process a Rhai script embedded in a ```/** */``` comment to e.g. turn
+a comment into an array representing a USP Message or Record in a unittest.
 
 ## What else?
 
