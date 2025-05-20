@@ -50,7 +50,7 @@ where
 ///
 /// The general usage pattern from within a Rhai script is straight forward: First you obtain a
 /// builder type by calling `rusp::record_builder()`, then add data using any of the available
-/// builder methods and in the end obtain the USP [`Record`] structure by calling `build()`.
+/// builder methods and in the end obtain the [`Record`] structure by calling `build()`.
 ///
 /// Here's a full example:
 /// ```
@@ -130,7 +130,7 @@ pub mod rhai_rusp_record {
         builder.with_from_id(id.into())
     }
 
-    /// Assigns the provided USP [`Msg`] as the "no session context" payload of the USP [`Record`]
+    /// Assigns the provided [`Msg`] as the "no session context" payload of the [`Record`]
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type, NoSessionContextRecord, Record};
     ///
@@ -163,7 +163,7 @@ pub mod rhai_rusp_record {
         builder.with_no_session_context_payload(&payload)
     }
 
-    /// Designates the USP [`Record`] to be of type WebSocketConnectRecord
+    /// Designates the [`Record`] to be of type WebSocketConnectRecord
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,WebSocketConnectRecord,Record};
     /// // Rhai script
@@ -186,7 +186,7 @@ pub mod rhai_rusp_record {
         builder.as_websocket_connect_record()
     }
 
-    /// Designates the USP [`Record`] to be of type MQTTConnectRecord
+    /// Designates the [`Record`] to be of type MQTTConnectRecord
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,MQTTConnectRecord,mod_MQTTConnectRecord::MQTTVersion,Record};
     /// // Rhai script
@@ -222,7 +222,7 @@ pub mod rhai_rusp_record {
         Ok(builder.as_mqtt_connect_record(version, subscribed_topic.into()))
     }
 
-    /// Designates the USP [`Record`] to be of type STOMPConnectRecord
+    /// Designates the [`Record`] to be of type STOMPConnectRecord
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,STOMPConnectRecord,mod_STOMPConnectRecord::STOMPVersion,Record};
     /// // Rhai script
@@ -258,7 +258,7 @@ pub mod rhai_rusp_record {
         Ok(builder.as_stomp_connect_record(version, subscribed_destination.into()))
     }
 
-    /// Designates the USP [`Record`] to be of type DisconnectRecord
+    /// Designates the [`Record`] to be of type DisconnectRecord
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,DisconnectRecord,Record};
     /// // Rhai script
@@ -284,7 +284,7 @@ pub mod rhai_rusp_record {
         builder.as_disconnect_record(reason.into(), u32::try_from(reason_code).unwrap_or(7003))
     }
 
-    /// Designates the USP [`Record`] to be of type UDSConnectRecord
+    /// Designates the [`Record`] to be of type UDSConnectRecord
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,UDSConnectRecord,Record};
     /// // Rhai script
@@ -306,7 +306,7 @@ pub mod rhai_rusp_record {
         builder.as_uds_connect_record()
     }
 
-    /// Turns the builder into a USP [`Record`] structure
+    /// Turns the builder into a [`Record`] structure
     ///
     /// # Errors
     ///
@@ -375,7 +375,7 @@ pub mod rhai_rusp_msg {
         MsgBuilder::new()
     }
 
-    /// Sets the `msg_id` of the USP [`Msg`]
+    /// Sets the `msg_id` of the [`Msg`]
     /// ```
     /// # use rusp_lib::usp::Msg;
     /// // Rhai script
@@ -392,7 +392,7 @@ pub mod rhai_rusp_msg {
         builder.with_msg_id(msg_id.into())
     }
 
-    /// Sets the `body` of the USP [`Msg`]
+    /// Sets the `body` of the [`Msg`]
     /// ```
     /// # use rusp_lib::usp::Msg;
     /// // Rhai script
@@ -413,7 +413,7 @@ pub mod rhai_rusp_msg {
         builder.with_body(body)
     }
 
-    /// Turns the builder into a USP [`Msg`] structure
+    /// Turns the builder into a [`Msg`] structure
     ///
     /// # Errors
     ///
@@ -465,7 +465,7 @@ pub mod rhai_rusp_delete {
         builder.with_obj_paths(obj_paths.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -585,7 +585,7 @@ pub mod rhai_rusp_deleteresp {
             .set_success(affected_paths, unaffected_path_errs))
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -630,7 +630,7 @@ pub mod rhai_rusp_deregister {
         builder.with_paths(paths.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -688,7 +688,7 @@ pub mod rhai_rusp_deregisterresp {
         )
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -767,7 +767,7 @@ pub mod rhai_rusp_register {
         builder.with_reg_paths(req_paths.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -825,7 +825,7 @@ pub mod rhai_rusp_registerresp {
         )
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -955,7 +955,7 @@ pub mod rhai_rusp_set {
         Ok(builder)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1137,7 +1137,7 @@ pub mod rhai_rusp_setresp {
         ))
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1228,7 +1228,7 @@ pub mod rhai_rusp_error {
         Ok(builder.with_param_errs(param_errs))
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1280,7 +1280,7 @@ pub mod rhai_rusp_get {
         builder.with_params(params.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1335,7 +1335,7 @@ pub mod rhai_rusp_getresp {
         builder.with_req_path_results(req_path_results.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1483,7 +1483,7 @@ pub mod rhai_rusp_getsupporteddm {
         builder.with_return_unique_key_sets(return_unique_key_sets)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1557,7 +1557,7 @@ pub mod rhai_rusp_getsupporteddmresp {
         builder.with_req_obj_results(req_obj_results.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -1903,7 +1903,7 @@ pub mod rhai_rusp_getinstances {
         builder.with_obj_paths(obj_paths.into_iter().map(Dynamic::cast).collect())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2002,7 +2002,7 @@ pub mod rhai_rusp_getinstancesresp {
         builder.with_unique_keys(unique_keys)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2042,7 +2042,7 @@ pub mod rhai_rusp_getsupportedprotocol {
         GetSupportedProtocolBuilder::new(controller_supported_protocol_versions.into())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2082,7 +2082,7 @@ pub mod rhai_rusp_getsupportedprotocolresp {
         GetSupportedProtocolRespBuilder::new(agent_supported_protocol_versions.into())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2185,7 +2185,7 @@ pub mod rhai_rusp_add {
         Ok(builder)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2310,7 +2310,7 @@ pub mod rhai_rusp_addresp {
         ))
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2598,7 +2598,7 @@ pub mod rhai_rusp_notify {
         builder.with_send_resp(send_resp)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2634,7 +2634,7 @@ pub mod rhai_rusp_notifyresp {
         usp_builder::NotifyRespBuilder::new(subscription_id.into())
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2697,7 +2697,7 @@ pub mod rhai_rusp_operate {
         builder.with_input_args(input_args)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -2787,7 +2787,7 @@ pub mod rhai_rusp_operateresp {
         OperateRespResultBuilder::new(executed_command.into()).set_output_args(output_args)
     }
 
-    /// Turns the builder into a USP [`Body`] structure
+    /// Turns the builder into a [`Body`] structure
     ///
     /// # Errors
     ///
@@ -3050,7 +3050,7 @@ pub mod rhai_rusp {
         msg_to_json(msg)
     }
 
-    /// Render a USP [`Record`] into JSON format, this function is polymorphic in Rhai and available as `to_string()`
+    /// Render a [`Record`] into JSON format, this function is polymorphic in Rhai and available as `to_string()`
     /// ```
     /// // Rhai script
     /// # let script = r#"
@@ -3258,7 +3258,7 @@ pub mod rhai_rusp {
         rhai::serde::to_dynamic(msg)
     }
 
-    /// Render a USP [`Record`] into a Rhai Map, this function is polymorphic in Rhai and available as `to_map()`
+    /// Render a [`Record`] into a Rhai Map, this function is polymorphic in Rhai and available as `to_map()`
     /// ```
     /// // Rhai script
     /// # let script = r#"
@@ -3310,7 +3310,31 @@ pub mod rhai_rusp {
         Ok(record.to_c_str().map_err(|e| e.to_string())?)
     }
 
-    /// Render a [`Msg`] into C array format
+    /// Render a [`Msg`] into C array format, this function is polymorphic in Rhai and available as `to_c_array()`
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let body = rusp::getsupportedprotocol_builder("1.3,1.4")
+    ///     .build();
+    /// rusp::msg_builder()
+    ///     .with_msg_id("Foo")
+    ///     .with_body(body)
+    ///     .build()
+    ///     .to_c_array()
+    /// # "#;
+    /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(msg, "unsigned int pb_len = 24;\nconst char pb[] = {\n  0x0a, 0x07, 0x0a, 0x03, 0x46, 0x6f, 0x6f, 0x10, /* ____Foo_ */\n  0x11, 0x12, 0x0d, 0x0a, 0x0b, 0x4a, 0x09, 0x0a, /* _____J__ */\n  0x07, 0x31, 0x2e, 0x33, 0x2c, 0x31, 0x2e, 0x34, /* _1.3,1.4 */\n};\n");
+    /// ```
+    ///
+    /// This example will return a string like:
+    /// ```C
+    /// unsigned int pb_len = 24;
+    /// const char pb[] = {
+    ///   0x0a, 0x07, 0x0a, 0x03, 0x46, 0x6f, 0x6f, 0x10, /* ____Foo_ */
+    ///   0x11, 0x12, 0x0d, 0x0a, 0x0b, 0x4a, 0x09, 0x0a, /* _____J__ */
+    ///   0x07, 0x31, 0x2e, 0x33, 0x2c, 0x31, 0x2e, 0x34, /* _1.3,1.4 */
+    /// };
+    /// ```
     ///
     /// # Errors
     ///
@@ -3321,7 +3345,67 @@ pub mod rhai_rusp {
         Ok(msg.to_c_array().map_err(|e| e.to_string())?)
     }
 
-    /// Render a [`Record`] into C array format
+    /// Render a [`Msg`] into C array format with a custom variable name, this function is polymorphic in Rhai and available as `to_c_array()`
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let body = rusp::getsupportedprotocol_builder("1.3,1.4")
+    ///     .build();
+    /// rusp::msg_builder()
+    ///     .with_msg_id("Foo")
+    ///     .with_body(body)
+    ///     .build()
+    ///     .to_c_array("msg")
+    /// # "#;
+    /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(msg, "unsigned int msg_len = 24;\nconst char msg[] = {\n  0x0a, 0x07, 0x0a, 0x03, 0x46, 0x6f, 0x6f, 0x10, /* ____Foo_ */\n  0x11, 0x12, 0x0d, 0x0a, 0x0b, 0x4a, 0x09, 0x0a, /* _____J__ */\n  0x07, 0x31, 0x2e, 0x33, 0x2c, 0x31, 0x2e, 0x34, /* _1.3,1.4 */\n};\n");
+    /// ```
+    ///
+    /// This example will return a string like:
+    /// ```C
+    /// unsigned int msg_len = 24;
+    /// const char msg[] = {
+    ///   0x0a, 0x07, 0x0a, 0x03, 0x46, 0x6f, 0x6f, 0x10, /* ____Foo_ */
+    ///   0x11, 0x12, 0x0d, 0x0a, 0x0b, 0x4a, 0x09, 0x0a, /* _____J__ */
+    ///   0x07, 0x31, 0x2e, 0x33, 0x2c, 0x31, 0x2e, 0x34, /* _1.3,1.4 */
+    /// };
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error if
+    /// the serialization of the structure into a C array fails.
+    #[rhai_fn(global, name = "to_c_array", return_raw)]
+    pub fn msg_to_c_array_custom(msg: &mut Msg, name: &str) -> Result<String, Box<EvalAltResult>> {
+        Ok(msg.to_c_array_custom(name).map_err(|e| e.to_string())?)
+    }
+
+    /// Render a [`Record`] into a C array variable, this function is polymorphic in Rhai and available as `to_c_array()`
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// rusp::record_builder()
+    ///   .with_version("1.3")
+    ///   .with_to_id("proto::to")
+    ///   .with_from_id("proto::from")
+    ///   .as_websocket_connect_record()
+    ///   .build()
+    ///   .to_c_array()
+    /// # "#;
+    /// # let record = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(record, "unsigned int pb_len = 31;\nconst char pb[] = {\n  0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x09, 0x70, /* __1.3__p */\n  0x72, 0x6f, 0x74, 0x6f, 0x3a, 0x3a, 0x74, 0x6f, /* roto__to */\n  0x1a, 0x0b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3a, /* __proto_ */\n  0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x4a, 0x00,       /* _fromJ_ */\n};\n");
+    /// ```
+    ///
+    /// This example will return a String like:
+    /// ```C
+    /// unsigned int pb_len = 31;
+    /// const char pb[] = {
+    ///   0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x09, 0x70, /* __1.3__p */
+    ///   0x72, 0x6f, 0x74, 0x6f, 0x3a, 0x3a, 0x74, 0x6f, /* roto__to */
+    ///   0x1a, 0x0b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3a, /* __proto_ */
+    ///   0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x4a, 0x00,       /* _fromJ_ */
+    /// };
+    /// ```
     ///
     /// # Errors
     ///
@@ -3330,6 +3414,45 @@ pub mod rhai_rusp {
     #[rhai_fn(global, name = "to_c_array", return_raw)]
     pub fn record_to_c_array(record: &mut Record) -> Result<String, Box<EvalAltResult>> {
         Ok(record.to_c_array().map_err(|e| e.to_string())?)
+    }
+
+    /// Render a [`Record`] into a C array variable with a custom name, this function is polymorphic in Rhai and available as `to_c_array()`
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// rusp::record_builder()
+    ///   .with_version("1.3")
+    ///   .with_to_id("proto::to")
+    ///   .with_from_id("proto::from")
+    ///   .as_websocket_connect_record()
+    ///   .build()
+    ///   .to_c_array("rec")
+    /// # "#;
+    /// # let record = rhai_rusp::eval_rusp::<String>(script).unwrap();
+    /// # assert_eq!(record, "unsigned int rec_len = 31;\nconst char rec[] = {\n  0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x09, 0x70, /* __1.3__p */\n  0x72, 0x6f, 0x74, 0x6f, 0x3a, 0x3a, 0x74, 0x6f, /* roto__to */\n  0x1a, 0x0b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3a, /* __proto_ */\n  0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x4a, 0x00,       /* _fromJ_ */\n};\n");
+    /// ```
+    ///
+    /// This example will return a String like:
+    /// ```C
+    /// unsigned int rec_len = 31;
+    /// const char rec[] = {
+    ///   0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x09, 0x70, /* __1.3__p */
+    ///   0x72, 0x6f, 0x74, 0x6f, 0x3a, 0x3a, 0x74, 0x6f, /* roto__to */
+    ///   0x1a, 0x0b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x3a, /* __proto_ */
+    ///   0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x4a, 0x00,       /* _fromJ_ */
+    /// };
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error if
+    /// the serialization of the structure into a C array fails.
+    #[rhai_fn(global, name = "to_c_array", return_raw)]
+    pub fn record_to_c_array_custom(
+        record: &mut Record,
+        name: &str,
+    ) -> Result<String, Box<EvalAltResult>> {
+        Ok(record.to_c_array_custom(name).map_err(|e| e.to_string())?)
     }
 
     /// Render a [`Msg`] into C array format and save it to the specified file
