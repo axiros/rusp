@@ -20,7 +20,7 @@ The crate contains is the library part or Rusp, which contains:
 
 ```
 [dependencies]
-rusp-lib = "0.98"
+rusp-lib = "0.99"
 quick-protobuf = "0.8"
 ```
 
@@ -28,7 +28,7 @@ Please note that as of v0.95, the library and the application have been split in
 
 1. Rename all uses of the `rusp` namespace into `rusp_lib` in your source code
 2. Put a `use rusp_lib as rusp;` line at the top of each code file using the `rusp` namespace
-2. Rename the library via `Cargo.toml` by declaring the dependency as `rusp = { version = "0.98", package = "rusp-lib" }`
+2. Rename the library via `Cargo.toml` by declaring the dependency as `rusp = { version = "0.99", package = "rusp-lib" }`
 
 Documentation and examples for its use can be found on [docs.rs](https://docs.rs/rusp/latest/rusp-lib/index.html).
 

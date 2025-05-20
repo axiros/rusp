@@ -57,7 +57,7 @@ print (msg)'
 
 More examples can be found at [the Rhai-Rusp repository](https://github.com/axiros/rusp/tree/master/rhai-rusp).
 
-Starting with version 0.98.1, `rusp-run` also supports a `-c` switch, which can
+Starting with version 0.99, `rusp-run` also supports a `-c` switch, which can
 be used to process a Rhai script embedded in a ```/** */``` comment to e.g. turn
 a comment into an array representing a USP Message or Record in a unittest.
 
