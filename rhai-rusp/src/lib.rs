@@ -555,12 +555,8 @@ pub mod rhai_rusp_deleteresp {
         let unaffected_path_errs = unaffected_path_errs
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -919,12 +915,8 @@ pub mod rhai_rusp_set {
         let param_settings = param_settings
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -1022,12 +1014,8 @@ pub mod rhai_rusp_setresp {
         let param_errs = param_errs
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -1077,12 +1065,8 @@ pub mod rhai_rusp_setresp {
         let param_errs = param_errs
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -1173,12 +1157,8 @@ pub mod rhai_rusp_error {
         let param_errs = param_errs
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -1669,12 +1649,8 @@ pub mod rhai_rusp_getsupporteddmresp {
             .into_iter()
             .map(|p| {
                 p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays of string".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
-                el.iter()
+                    .ok_or("Expected to have an array of arrays of string".to_string())?
+                    .iter()
                     .map(|el| {
                         el.clone()
                             .try_cast::<String>()
@@ -2123,12 +2099,8 @@ pub mod rhai_rusp_add {
         let param_settings = param_settings
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
@@ -2231,12 +2203,8 @@ pub mod rhai_rusp_addresp {
         let param_errs = param_errs
             .into_iter()
             .map(|p| {
-                p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".into())
-            })
-            .collect::<Result<Vec<Array>, Box<EvalAltResult>>>()?
-            .iter()
-            .map(|el| {
+                let el = p.try_cast::<Array>()
+                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or("param (#1) needs to be a string".to_string())?;
