@@ -169,7 +169,7 @@ impl RecordBuilder {
     }
 
     #[must_use]
-    pub fn with_payload_security_tls12(mut self) -> Self {
+    pub const fn with_payload_security_tls12(mut self) -> Self {
         self.payload_security = PayloadSecurity::TLS12;
         self
     }

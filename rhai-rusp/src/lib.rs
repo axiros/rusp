@@ -548,7 +548,7 @@ pub mod rhai_rusp_deleteresp {
             .into_iter()
             .map(|p| {
                 p.try_cast::<String>()
-                    .ok_or("Expected to have an array of Strings".into())
+                    .ok_or_else(|| "Expected to have an array of Strings".into())
             })
             .collect::<Result<Vec<String>, Box<EvalAltResult>>>()?;
 
@@ -556,16 +556,16 @@ pub mod rhai_rusp_deleteresp {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
-                    .ok_or("err_code (#2) needs to be a u32".to_string())?;
+                    .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("err_msg (#3) needs to be a string".to_string())?;
+                    .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
                     Ok(DeleteRespUnaffectedPathError{unaffected_path: el0, err_code: u32::try_from(el1).unwrap_or(7003), err_msg: el2 })
             })
@@ -747,7 +747,10 @@ pub mod rhai_rusp_register {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub const fn with_allow_partial(builder: RegisterBuilder, allow_partial: bool) -> RegisterBuilder {
+    pub const fn with_allow_partial(
+        builder: RegisterBuilder,
+        allow_partial: bool,
+    ) -> RegisterBuilder {
         builder.with_allow_partial(allow_partial)
     }
 
@@ -916,16 +919,16 @@ pub mod rhai_rusp_set {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("value (#2) needs to be a string".to_string())?;
+                    .ok_or_else(|| "value (#2) needs to be a string".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<bool>())
-                    .ok_or("required (#3) needs to be a bool".to_string())?;
+                    .ok_or_else(|| "required (#3) needs to be a bool".to_string())?;
 
                 Ok((el0, el1, el2))
             })
@@ -1015,16 +1018,16 @@ pub mod rhai_rusp_setresp {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
-                    .ok_or("err_code (#2) needs to be a u32".to_string())?;
+                    .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("err_msg (#3) needs to be a string".to_string())?;
+                    .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
                 Ok(SetRespParameterError::new(el0, u32::try_from(el1).unwrap_or(7003), Some(el2)))
             })
@@ -1066,16 +1069,16 @@ pub mod rhai_rusp_setresp {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
-                    .ok_or("err_code (#2) needs to be a u32".to_string())?;
+                    .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("err_msg (#3) needs to be a string".to_string())?;
+                    .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
                 Ok(SetRespParameterError::new(el0, u32::try_from(el1).unwrap_or(7003), Some(el2)))
             })
@@ -1158,16 +1161,16 @@ pub mod rhai_rusp_error {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
-                    .ok_or("err_code (#2) needs to be a u32".to_string())?;
+                    .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("err_msg (#3) needs to be a string".to_string())?;
+                    .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
                 Ok((el0, u32::try_from(el1).unwrap_or(7003), el2))
             })
@@ -1649,12 +1652,12 @@ pub mod rhai_rusp_getsupporteddmresp {
             .into_iter()
             .map(|p| {
                 p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays of string".to_string())?
+                    .ok_or_else(|| "Expected to have an array of arrays of string".to_string())?
                     .iter()
                     .map(|el| {
                         el.clone()
                             .try_cast::<String>()
-                            .ok_or("param needs to be a string".to_string())
+                            .ok_or_else(|| "param needs to be a string".to_string())
                     })
                     .collect::<Result<Vec<String>, _>>()
             })
@@ -2100,16 +2103,16 @@ pub mod rhai_rusp_add {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("value (#2) needs to be a string".to_string())?;
+                    .ok_or_else(|| "value (#2) needs to be a string".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<bool>())
-                    .ok_or("required (#3) needs to be a bool".to_string())?;
+                    .ok_or_else(|| "required (#3) needs to be a bool".to_string())?;
 
                 Ok((el0, el1, el2))
             })
@@ -2204,16 +2207,16 @@ pub mod rhai_rusp_addresp {
             .into_iter()
             .map(|p| {
                 let el = p.try_cast::<Array>()
-                    .ok_or("Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
+                    .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
                 let el0 = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("param (#1) needs to be a string".to_string())?;
+                    .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
                 let el1 = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
-                    .ok_or("err_code (#2) needs to be a u32".to_string())?;
+                    .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
                 let el2 = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
-                    .ok_or("err_msg (#3) needs to be a string".to_string())?;
+                    .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
                 Ok(AddRespParameterError{param: el0, err_code: u32::try_from(el1).unwrap_or(7003) , err_msg: el2 })
             })

@@ -488,13 +488,12 @@ impl Msg {
 impl SessionContextRecord {
     /// Gets the payload of this [`SessionContextRecord`], flattening it if necessary
     pub fn payload_flatten(&mut self) -> &mut Vec<u8> {
-        if self.payload.len() == 1 {
-            &mut self.payload[0]
-        } else {
+        if self.payload.len() != 1 {
             let old = std::mem::take(&mut self.payload);
             self.payload = vec![old.into_iter().flatten().collect()];
-            &mut self.payload[0]
         }
+
+        &mut self.payload[0]
     }
 }
 
