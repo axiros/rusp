@@ -75,7 +75,7 @@ pub mod rhai_rusp_record {
 
     /// Sets up a new USP `RecordBuilder`
     #[must_use]
-    pub fn record_builder() -> RecordBuilder {
+    pub const fn record_builder() -> RecordBuilder {
         RecordBuilder::new()
     }
 
@@ -371,7 +371,7 @@ pub mod rhai_rusp_msg {
 
     /// Sets up a new USP `MsgBuilder`
     #[must_use]
-    pub fn msg_builder() -> MsgBuilder {
+    pub const fn msg_builder() -> MsgBuilder {
         MsgBuilder::new()
     }
 
@@ -449,13 +449,13 @@ pub mod rhai_rusp_delete {
 
     /// Sets up a new USP `DeleteBuilder`
     #[must_use]
-    pub fn delete_builder() -> DeleteBuilder {
+    pub const fn delete_builder() -> DeleteBuilder {
         DeleteBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_allow_partial(builder: DeleteBuilder, allow_partial: bool) -> DeleteBuilder {
+    pub const fn with_allow_partial(builder: DeleteBuilder, allow_partial: bool) -> DeleteBuilder {
         builder.with_allow_partial(allow_partial)
     }
 
@@ -506,7 +506,7 @@ pub mod rhai_rusp_deleteresp {
 
     /// Sets up a new USP `DeleteRespBuilder`
     #[must_use]
-    pub fn deleteresp_builder() -> DeleteRespBuilder {
+    pub const fn deleteresp_builder() -> DeleteRespBuilder {
         DeleteRespBuilder::new()
     }
 
@@ -610,7 +610,7 @@ pub mod rhai_rusp_deregister {
 
     /// Sets up a new USP `DeregisterBuilder`
     #[must_use]
-    pub fn deregister_builder() -> DeregisterBuilder {
+    pub const fn deregister_builder() -> DeregisterBuilder {
         DeregisterBuilder::new()
     }
 
@@ -660,7 +660,7 @@ pub mod rhai_rusp_deregisterresp {
 
     /// Sets up a new USP `DeregisterRespBuilder`
     #[must_use]
-    pub fn deregisterresp_builder() -> DeregisterRespBuilder {
+    pub const fn deregisterresp_builder() -> DeregisterRespBuilder {
         DeregisterRespBuilder::new()
     }
 
@@ -741,13 +741,13 @@ pub mod rhai_rusp_register {
 
     /// Sets up a new USP `RegisterBuilder`
     #[must_use]
-    pub fn register_builder() -> RegisterBuilder {
+    pub const fn register_builder() -> RegisterBuilder {
         RegisterBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_allow_partial(builder: RegisterBuilder, allow_partial: bool) -> RegisterBuilder {
+    pub const fn with_allow_partial(builder: RegisterBuilder, allow_partial: bool) -> RegisterBuilder {
         builder.with_allow_partial(allow_partial)
     }
 
@@ -797,7 +797,7 @@ pub mod rhai_rusp_registerresp {
 
     /// Sets up a new USP `RegisterRespBuilder`
     #[must_use]
-    pub fn registerresp_builder() -> RegisterRespBuilder {
+    pub const fn registerresp_builder() -> RegisterRespBuilder {
         RegisterRespBuilder::new()
     }
 
@@ -880,13 +880,13 @@ pub mod rhai_rusp_set {
 
     /// Sets up a new USP `SetBuilder`
     #[must_use]
-    pub fn set_builder() -> SetBuilder {
+    pub const fn set_builder() -> SetBuilder {
         SetBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_allow_partial(builder: SetBuilder, allow_partial: bool) -> SetBuilder {
+    pub const fn with_allow_partial(builder: SetBuilder, allow_partial: bool) -> SetBuilder {
         builder.with_allow_partial(allow_partial)
     }
 
@@ -979,7 +979,7 @@ pub mod rhai_rusp_setresp {
 
     /// Sets up a new USP `SetRespBuilder`
     #[must_use]
-    pub fn setresp_builder() -> SetRespBuilder {
+    pub const fn setresp_builder() -> SetRespBuilder {
         SetRespBuilder::new()
     }
 
@@ -1132,7 +1132,7 @@ pub mod rhai_rusp_error {
 
     /// Sets up a new USP `ErrorBuilder`
     #[must_use]
-    pub fn error_builder() -> ErrorBuilder {
+    pub const fn error_builder() -> ErrorBuilder {
         ErrorBuilder::new()
     }
 
@@ -1212,7 +1212,7 @@ pub mod rhai_rusp_get {
 
     /// Sets up a new USP `GetBuilder`
     #[must_use]
-    pub fn get_builder() -> GetBuilder {
+    pub const fn get_builder() -> GetBuilder {
         GetBuilder::new()
     }
 
@@ -1270,7 +1270,7 @@ pub mod rhai_rusp_getresp {
 
     /// Sets up a new USP `GetRespBuilder`
     #[must_use]
-    pub fn getresp_builder() -> GetRespBuilder {
+    pub const fn getresp_builder() -> GetRespBuilder {
         GetRespBuilder::new()
     }
 
@@ -1373,13 +1373,13 @@ pub mod rhai_rusp_getsupporteddm {
 
     /// Sets up a new USP `GetSupportedDMBuilder`
     #[must_use]
-    pub fn getsupporteddm_builder() -> GetSupportedDMBuilder {
+    pub const fn getsupporteddm_builder() -> GetSupportedDMBuilder {
         GetSupportedDMBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_first_level_only(
+    pub const fn with_first_level_only(
         builder: GetSupportedDMBuilder,
         first_level_only: bool,
     ) -> GetSupportedDMBuilder {
@@ -1397,7 +1397,7 @@ pub mod rhai_rusp_getsupporteddm {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_return_commands(
+    pub const fn with_return_commands(
         builder: GetSupportedDMBuilder,
         return_commands: bool,
     ) -> GetSupportedDMBuilder {
@@ -1406,7 +1406,7 @@ pub mod rhai_rusp_getsupporteddm {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_return_events(
+    pub const fn with_return_events(
         builder: GetSupportedDMBuilder,
         return_events: bool,
     ) -> GetSupportedDMBuilder {
@@ -1415,7 +1415,7 @@ pub mod rhai_rusp_getsupporteddm {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_return_params(
+    pub const fn with_return_params(
         builder: GetSupportedDMBuilder,
         return_params: bool,
     ) -> GetSupportedDMBuilder {
@@ -1424,7 +1424,7 @@ pub mod rhai_rusp_getsupporteddm {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_return_unique_key_sets(
+    pub const fn with_return_unique_key_sets(
         builder: GetSupportedDMBuilder,
         return_unique_key_sets: bool,
     ) -> GetSupportedDMBuilder {
@@ -1492,7 +1492,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     /// Sets up a new USP `GetSupportedDMRespBuilder`
     #[must_use]
-    pub fn getsupporteddmresp_builder() -> GetSupportedDMRespBuilder {
+    pub const fn getsupporteddmresp_builder() -> GetSupportedDMRespBuilder {
         GetSupportedDMRespBuilder::new()
     }
 
@@ -1561,7 +1561,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_is_multi_instance(
+    pub const fn with_is_multi_instance(
         builder: GSDMSupportedObjectResultBuilder,
         is_multi_instance: bool,
     ) -> GSDMSupportedObjectResultBuilder {
@@ -1570,7 +1570,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_add_only(
+    pub const fn set_access_add_only(
         builder: GSDMSupportedObjectResultBuilder,
     ) -> GSDMSupportedObjectResultBuilder {
         builder.set_access_add_only()
@@ -1578,7 +1578,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_delete_only(
+    pub const fn set_access_delete_only(
         builder: GSDMSupportedObjectResultBuilder,
     ) -> GSDMSupportedObjectResultBuilder {
         builder.set_access_delete_only()
@@ -1586,7 +1586,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global, name = "set_access_read_only")]
     #[must_use]
-    pub fn obj_set_access_read_only(
+    pub const fn obj_set_access_read_only(
         builder: GSDMSupportedObjectResultBuilder,
     ) -> GSDMSupportedObjectResultBuilder {
         builder.set_access_read_only()
@@ -1594,7 +1594,7 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_add_delete(
+    pub const fn set_access_add_delete(
         builder: GSDMSupportedObjectResultBuilder,
     ) -> GSDMSupportedObjectResultBuilder {
         builder.set_access_add_delete()
@@ -1687,13 +1687,13 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_sync(builder: GSDMCommandResult) -> GSDMCommandResult {
+    pub const fn set_sync(builder: GSDMCommandResult) -> GSDMCommandResult {
         builder.set_sync()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_async(builder: GSDMCommandResult) -> GSDMCommandResult {
+    pub const fn set_async(builder: GSDMCommandResult) -> GSDMCommandResult {
         builder.set_async()
     }
 
@@ -1715,91 +1715,91 @@ pub mod rhai_rusp_getsupporteddmresp {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_read_only(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_access_read_only(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_access_read_only()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_write_only(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_access_write_only(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_access_write_only()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_access_read_write(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_access_read_write(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_access_read_write()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_int(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_int(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_int()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_unsigned_int(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_unsigned_int(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_unsigned_int()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_long(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_long(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_long()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_unsigned_long(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_unsigned_long(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_unsigned_long()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_string(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_string(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_string()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_base64(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_base64(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_base64()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_hexbinary(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_hexbinary(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_hexbinary()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_datetime(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_datetime(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_datetime()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_decimal(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_decimal(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_decimal()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_type_boolean(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_type_boolean(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_type_boolean()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_value_change_allowed(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_value_change_allowed(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_value_change_allowed()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn set_value_change_will_ignore(builder: GSDMParamResult) -> GSDMParamResult {
+    pub const fn set_value_change_will_ignore(builder: GSDMParamResult) -> GSDMParamResult {
         builder.set_value_change_will_ignore()
     }
 }
@@ -1828,13 +1828,13 @@ pub mod rhai_rusp_getinstances {
 
     /// Sets up a new USP `GetInstancesBuilder`
     #[must_use]
-    pub fn getinstances_builder() -> GetInstancesBuilder {
+    pub const fn getinstances_builder() -> GetInstancesBuilder {
         GetInstancesBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_first_level_only(
+    pub const fn with_first_level_only(
         builder: GetInstancesBuilder,
         first_level_only: bool,
     ) -> GetInstancesBuilder {
@@ -1889,7 +1889,7 @@ pub mod rhai_rusp_getinstancesresp {
 
     /// Sets up a new USP `GetInstancesRespBuilder`
     #[must_use]
-    pub fn getinstancesresp_builder() -> GetInstancesRespBuilder {
+    pub const fn getinstancesresp_builder() -> GetInstancesRespBuilder {
         GetInstancesRespBuilder::new()
     }
 
@@ -2064,13 +2064,13 @@ pub mod rhai_rusp_add {
 
     /// Sets up a new USP `AddBuilder`
     #[must_use]
-    pub fn add_builder() -> AddBuilder {
+    pub const fn add_builder() -> AddBuilder {
         AddBuilder::new()
     }
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_allow_partial(builder: AddBuilder, allow_partial: bool) -> AddBuilder {
+    pub const fn with_allow_partial(builder: AddBuilder, allow_partial: bool) -> AddBuilder {
         builder.with_allow_partial(allow_partial)
     }
 
@@ -2160,7 +2160,7 @@ pub mod rhai_rusp_addresp {
 
     /// Sets up a new USP `AddRespBuilder`
     #[must_use]
-    pub fn addresp_builder() -> AddRespBuilder {
+    pub const fn addresp_builder() -> AddRespBuilder {
         AddRespBuilder::new()
     }
 
@@ -2518,7 +2518,7 @@ pub mod rhai_rusp_notify {
     /// ```
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_send_resp(builder: NotifyBuilder, send_resp: bool) -> NotifyBuilder {
+    pub const fn with_send_resp(builder: NotifyBuilder, send_resp: bool) -> NotifyBuilder {
         builder.with_send_resp(send_resp)
     }
 
@@ -2607,7 +2607,7 @@ pub mod rhai_rusp_operate {
 
     #[rhai_fn(global)]
     #[must_use]
-    pub fn with_send_resp(builder: OperateBuilder, send_resp: bool) -> OperateBuilder {
+    pub const fn with_send_resp(builder: OperateBuilder, send_resp: bool) -> OperateBuilder {
         builder.with_send_resp(send_resp)
     }
 
@@ -2661,7 +2661,7 @@ pub mod rhai_rusp_operateresp {
 
     /// Sets up a new USP `OperateRespBuilder`
     #[must_use]
-    pub fn operateresp_builder() -> OperateRespBuilder {
+    pub const fn operateresp_builder() -> OperateRespBuilder {
         OperateRespBuilder::new()
     }
 
