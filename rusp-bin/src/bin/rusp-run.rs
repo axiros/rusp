@@ -152,20 +152,24 @@ fn main() {
     } else if args.comment {
         let filename = "<comment>";
 
-        let mut buffer = String::new();
-        std::io::stdin().read_to_string(&mut buffer).unwrap();
+        let mut input = String::new();
+        std::io::stdin().read_to_string(&mut input).unwrap();
 
-        let pos = buffer.find("/**");
+        let pos = input.find("/**");
         if let Some(pos) = pos {
-            let mut buffer = buffer.split_off(pos + 3);
-            let pos = buffer.find("*/");
+            let mut code = input.clone().split_off(pos + 3);
+            let pos = code.find("*/");
             if let Some(pos) = pos {
-                _ = buffer.split_off(pos);
+                _ = code.split_off(pos);
+                /* Can't panic, we've already established that there's a end of comment marker in
+                 * the string */
+                _ = input.split_off(input.find("*/").unwrap() + 2);
 
-                println!("/**{buffer}*/");
+                /* Put back the exact read input until the end of the comment */
+                println!("{input}");
 
                 if let Err(err) = engine
-                    .compile(&buffer)
+                    .compile(&code)
                     .map_err(Into::into)
                     .and_then(|mut ast| {
                         ast.set_source(filename);
@@ -177,13 +181,13 @@ fn main() {
                     eprintln!("{:=<1$}", "", filename.len());
                     eprintln!();
 
-                    eprint_error(&buffer, *err);
+                    eprint_error(&code, *err);
                 }
             } else {
-                eprintln!("Couldn't find */ in \"{buffer}\"");
+                eprintln!("Couldn't find */ in \"{input}\"");
             }
         } else {
-            eprintln!("Couldn't find /** in \"{buffer}\"");
+            eprintln!("Couldn't find /** in \"{input}\"");
         }
     } else {
         eprintln!("You will either have to supply a filename, or you can use the --script option");
