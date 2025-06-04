@@ -3546,7 +3546,7 @@ pub mod rhai_rusp {
             .map_err(|e| e.to_string())?;
         let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
         if record.record_type == OneOfrecord_type::None {
-            Err("Protobuf file doesn't contain a valid USP Record")?
+            Err("Protobuf file doesn't contain a valid USP Record")?;
         }
         Ok(record)
     }

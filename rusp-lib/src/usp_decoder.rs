@@ -671,16 +671,13 @@ mod tests {
         let payload = record.payload_flatten().unwrap().clone();
         assert!(!payload.is_empty());
 
-        let splitted = payload.chunks(2).map(Vec::from).collect::<Vec<_>>();
-        assert!(splitted.len() > 1);
+        let split = payload.chunks(2).map(Vec::from).collect::<Vec<_>>();
+        assert!(split.len() > 1);
 
-        let session = match &mut record.record_type {
-            OneOfrecord_type::session_context(session) => session,
-            _ => {
-                panic!("Record should be of type SessionContext");
-            }
+        let OneOfrecord_type::session_context(session) = &mut record.record_type else {
+            panic!("Record should be of type SessionContext");
         };
-        session.payload = splitted;
+        session.payload = split;
 
         let flatten = record.payload_flatten().unwrap();
         assert_eq!(flatten, &payload);
