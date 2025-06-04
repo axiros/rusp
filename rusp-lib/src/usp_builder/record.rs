@@ -1,6 +1,6 @@
 use crate::usp::Msg;
 use crate::usp_record::mod_MQTTConnectRecord::MQTTVersion;
-use crate::usp_record::mod_Record::OneOfrecord_type;
+use crate::usp_record::mod_Record::{OneOfrecord_type, PayloadSecurity};
 use crate::usp_record::mod_SessionContextRecord::PayloadSARState;
 use crate::usp_record::NoSessionContextRecord;
 use crate::usp_record::Record;
@@ -9,7 +9,6 @@ use crate::usp_record::{
     DisconnectRecord, MQTTConnectRecord, STOMPConnectRecord, UDSConnectRecord,
     WebSocketConnectRecord,
 };
-use crate::usp_types::PayloadSecurity;
 
 use anyhow::anyhow;
 use anyhow::{Context, Result};
