@@ -57,9 +57,6 @@ pub mod usp_encoder;
 /// [`USP Records Protobuf schema`]: <https://usp.technology/specification/usp-record-1-3.proto>
 pub mod usp_record;
 
-/// Helper types to simplify handling of commonly used notifications
-pub mod usp_types;
-
 /// Helper functions for checking and conversion of USP error codes and messages
 pub mod usp_errors;
 
