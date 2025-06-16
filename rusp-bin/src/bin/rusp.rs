@@ -3,8 +3,6 @@
 use rusp_lib as rusp;
 
 use clap::{Parser, Subcommand};
-use rusp::usp_builder;
-use rusp::usp_record::mod_MQTTConnectRecord::MQTTVersion;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{stdin, stdout, BufReader, Read, Write};
@@ -29,7 +27,12 @@ enum OutputFormat {
 }
 
 #[derive(Parser)]
-#[command(author, version, name = "rusp", about = "the Rust USP toolkit")]
+#[command(
+    author,
+    version,
+    name = "rusp",
+    about = "The Rust USP toolkit, deprecated in 1.0, use rusp-run instead"
+)]
 struct Rusp {
     #[arg(
         long = "carray",
@@ -61,7 +64,7 @@ struct Rusp {
         conflicts_with = "carray",
         conflicts_with = "cstr"
     )]
-    /// Output binary as native Protobuf binary
+    /// Not available anymore since 1.0
     protobuf: bool,
     #[command(subcommand)]
     action: RuspAction,
@@ -108,74 +111,74 @@ enum RuspAction {
         /// Output filename of USP Protobuf message to write into, use `-` for stdout
         out_file: PathBuf,
     },
-    /// Encode Msg payload provided via stdin into a single no-session context USP Record
+    /// Not available anymore since 1.0
     #[command(name = "encode_no_session_record")]
     EncodeNoSessionRecord {
         #[arg(long = "version", default_value = "1.3")]
         /// USP specification version
-        version: String,
+        _version: Option<String>,
         #[arg(long = "from", default_value = "doc::from")]
         /// Sender Id
-        from: String,
+        _from: Option<String>,
         #[arg(long = "to", default_value = "doc::to")]
         /// Recipient Id
-        to: String,
+        _to: Option<String>,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
         /// Output filename of file to encode USP Protobuf record to
-        filename: Option<PathBuf>,
+        _filename: Option<PathBuf>,
     },
-    /// Encode Msg payload provided via stdin into a single session context USP Record
+    /// Not available anymore since 1.0
     #[command(name = "encode_session_record")]
     EncodeSessionRecord {
         #[arg(long = "version", default_value = "1.3")]
         /// USP specification version
-        version: String,
+        _version: Option<String>,
         #[arg(long = "from", default_value = "doc::from")]
         /// Sender Id
-        from: String,
+        _from: Option<String>,
         #[arg(long = "to", default_value = "doc::to")]
         /// Recipient Id
-        to: String,
+        _to: String,
         #[arg(long = "session_id", default_value = "1234")]
         /// The ID of the context session
-        session_id: u64,
+        _session_id: u64,
         #[arg(long = "sequence_id", default_value = "1")]
         /// The sequence number within the context session
-        sequence_id: u64,
+        _sequence_id: u64,
         #[arg(long = "expected_id", default_value = "2")]
         /// The expected next sequence number within the context session
-        expected_id: u64,
+        _expected_id: u64,
         #[arg(long = "retransmit_id", default_value = "0")]
         /// The sequence number of the part which is being retransmitted
-        retransmit_id: u64,
+        _retransmit_id: u64,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
         /// Output filename of file to encode USP Protobuf record to
-        filename: Option<PathBuf>,
+        _filename: Option<PathBuf>,
     },
-    /// Encode a USP Record of type MQTT Connect
+    /// Not available anymore since 1.0
     #[command(name = "create_mqtt_connect_record")]
     CreateMQTTConnectRecord {
         #[arg(long = "version", default_value = "1.3")]
         /// USP specification version
-        version: String,
+        _version: String,
         #[arg(long = "from", default_value = "doc::from")]
         /// Sender Id
-        from: String,
+        _from: String,
         #[arg(long = "to", default_value = "doc::to")]
         /// Recipient Id
-        to: String,
+        _to: String,
         /// Indicate that we're using MQTT v3.11 instead of the default MQTT 5
         #[arg(short = '4', long = "mqtt311")]
-        mqtt311: bool,
+        _mqtt311: bool,
         /// The subscribed topic the MQTT client is expecting to receive the messages for
         #[arg(short = 's')]
-        subscribed_topic: String,
+        _subscribed_topic: Option<String>,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
         /// Output filename of file to encode USP Protobuf record to
-        filename: Option<PathBuf>,
+        _filename: Option<PathBuf>,
     },
 }
 
@@ -385,95 +388,12 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result
     Ok(())
 }
 
-fn encode_no_session_record(
-    version: String,
-    from: String,
-    to: String,
-    filename: Option<PathBuf>,
-    format: &OutputFormat,
-) -> Result<()> {
-    let mut msg = Vec::new();
-    stdin().read_to_end(&mut msg)?;
-
-    let record = usp_builder::RecordBuilder::new()
-        .with_version(version)
-        .with_to_id(to)
-        .with_from_id(from)
-        .with_no_session_context_payload_bytes(msg)
-        .build()?;
-
-    // Open output stream
-    let out = get_out_stream(filename)?;
-
-    write_record(&record, out, format)
-}
-
-#[allow(clippy::too_many_arguments)]
-fn encode_session_record(
-    version: String,
-    from: String,
-    to: String,
-    session_id: u64,
-    sequence_id: u64,
-    expected_id: u64,
-    retransmit_id: u64,
-    filename: Option<PathBuf>,
-    format: &OutputFormat,
-) -> Result<()> {
-    let mut msg = Vec::new();
-    stdin().read_to_end(&mut msg)?;
-
-    let sc = usp_builder::SessionContextBuilder::new()
-        .with_session_id(session_id)
-        .with_sequence_id(sequence_id)
-        .with_expected_id(expected_id)
-        .with_retransmit_id(retransmit_id)
-        .with_payload(msg);
-
-    let record = usp_builder::RecordBuilder::new()
-        .with_version(version)
-        .with_to_id(to)
-        .with_from_id(from)
-        .with_session_context_builder(sc)
-        .build()?;
-
-    // Open output stream
-    let out = get_out_stream(filename)?;
-
-    write_record(&record, out, format)
-}
-
-fn create_mqtt_connect_record(
-    version: String,
-    from: String,
-    to: String,
-    filename: Option<PathBuf>,
-    mqtt311: bool,
-    subscribed_topic: String,
-    format: &OutputFormat,
-) -> Result<()> {
-    let record = usp_builder::RecordBuilder::new()
-        .with_version(version)
-        .with_to_id(to)
-        .with_from_id(from)
-        .as_mqtt_connect_record(
-            if mqtt311 {
-                MQTTVersion::V3_1_1
-            } else {
-                MQTTVersion::V5
-            },
-            subscribed_topic,
-        )
-        .build()?;
-
-    // Open output stream
-    let out = get_out_stream(filename)?;
-
-    write_record(&record, out, format)
-}
-
 fn main() -> Result<()> {
     let args = Rusp::parse();
+
+    println!(
+        "The rusp binary is deprecated and will be removed in future versions, please use rusp-run instead"
+    );
 
     // Pass on the user chosen format to use for the output
     let format = {
@@ -487,6 +407,12 @@ fn main() -> Result<()> {
             OutputFormat::Json
         }
     };
+
+    if format == OutputFormat::Protobuf {
+        return Err(anyhow::anyhow!(
+            "Support for protobuf output has been removed in rusp 1.0, use the new rusp-run command instead"
+        ));
+    }
 
     match args.action {
         RuspAction::DecodeRecordFiles { files } => decode_record_files(files, &format),
@@ -502,47 +428,35 @@ fn main() -> Result<()> {
         )),
         RuspAction::ExtractMsg { in_file, out_file } => extract_msg(&in_file, &out_file, &format),
         RuspAction::EncodeNoSessionRecord {
-            version,
-            from,
-            to,
-            filename,
-        } => encode_no_session_record(version, from, to, filename, &format),
+            _version,
+            _from,
+            _to,
+            _filename,
+        } => Err(anyhow::anyhow!(
+            "Support for encoding messages has been removed in rusp 1.0, use the new rusp-run command instead"
+        )),
         RuspAction::EncodeSessionRecord {
-            version,
-            from,
-            to,
-            filename,
-            session_id,
-            sequence_id,
-            expected_id,
-            retransmit_id,
-        } => encode_session_record(
-            version,
-            from,
-            to,
-            session_id,
-            sequence_id,
-            expected_id,
-            retransmit_id,
-            filename,
-            &format,
-        ),
+            _version,
+            _from,
+            _to,
+            _filename,
+            _session_id,
+            _sequence_id,
+            _expected_id,
+            _retransmit_id,
+        } =>Err(anyhow::anyhow!(
+            "Support for encoding messages has been removed in rusp 1.0, use the new rusp-run command instead"
+        )),
         RuspAction::CreateMQTTConnectRecord {
-            version,
-            from,
-            to,
-            mqtt311,
-            subscribed_topic,
-            filename,
-        } => create_mqtt_connect_record(
-            version,
-            from,
-            to,
-            filename,
-            mqtt311,
-            subscribed_topic,
-            &format,
-        ),
+            _version,
+            _from,
+            _to,
+            _mqtt311,
+            _subscribed_topic,
+            _filename,
+        } => Err(anyhow::anyhow!(
+            "Support for encoding messages has been removed in rusp 1.0, use the new rusp-run command instead"
+        )),
     }?;
 
     Ok(())
