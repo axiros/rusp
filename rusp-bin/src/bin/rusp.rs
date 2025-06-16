@@ -93,12 +93,11 @@ enum RuspAction {
     #[command(name = "encode_msg")]
     EncodeMsg {
         /// The message ID to use in the USP Msg header
-        _msgid: String,
+        _msgid: Option<String>,
         /// Filename (will output to standard output if omitted)
         #[arg(short = 'f', long = "file")]
         /// Output filename of file to encode USP Protobuf message to
         _filename: Option<PathBuf>,
-        #[arg(required = true)]
         _command: Vec<String>,
     },
     /// Extract the USP message from an USP record
