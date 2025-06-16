@@ -64,7 +64,6 @@ mod tests {
     use crate::usp::mod_Response::OneOfresp_type;
     use crate::usp::Response;
     use crate::usp_decoder::try_decode_msg;
-    use crate::usp_encoder::try_encode_msg;
 
     #[test]
     fn bytes_conversion() {
@@ -74,7 +73,7 @@ mod tests {
         ";
 
         let msg = try_decode_msg(bytes).unwrap();
-        let bytes2 = try_encode_msg(&msg).unwrap();
+        let bytes2 = msg.to_vec().unwrap();
         assert_eq!(bytes, &*bytes2);
         assert_eq!(msg.msg_id(), "add");
 
@@ -109,13 +108,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "add");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -132,13 +131,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "delete");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -155,13 +154,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "get");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -178,13 +177,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "get_instances");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -204,13 +203,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "get_supported_dm");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -225,13 +224,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "gsp");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -249,13 +248,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "operate");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -274,13 +273,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "set");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -292,13 +291,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(rmsg.msg_id(), "notif-foo");
         assert_eq!(rmsg, msg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -323,13 +322,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -352,13 +351,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -380,13 +379,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -407,13 +406,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -449,13 +448,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -470,13 +469,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -502,13 +501,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
@@ -533,13 +532,13 @@ mod tests {
             .with_body(body)
             .build()
             .unwrap();
-        let bytes = try_encode_msg(&msg).expect("serialisation failed");
+        let bytes = msg.to_vec().expect("serialisation failed");
 
         let rmsg = try_decode_msg(&bytes).expect("deserialisation failed");
         assert_eq!(msg.msg_id(), rmsg.msg_id());
         assert_eq!(msg, rmsg);
 
-        let bytes2 = try_encode_msg(&rmsg).expect("2nd serialisation failed");
+        let bytes2 = rmsg.to_vec().expect("2nd serialisation failed");
         assert_eq!(bytes, bytes2);
     }
 
