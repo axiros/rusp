@@ -9,8 +9,7 @@ This crate contains the application part of Rusp, which contains:
   * Decoding of **USP** Msg Protobuf bytestreams from file(s)
   * Decoding of **USP** Record Protobuf bytestreams from standard input
   * Decoding of **USP** Record Protobuf bytestreams from file(s)
-  * Extraction of **USP** Msg Protobuf bytestreams from the payload of a **USP** Record Protobuf bytestream
-  * Generation of **USP** Msg Protobuf bytestreams and C char arrays for selected messages and Error
+  * Extraction of a **USP** Msg from the payload of a **USP** Record Protobuf bytestream
 * A `rusp-run` application, providing a simple frontend to the `rhai-rusp` bindings via an embedded [Rhai][] interpreter
 
 In order to download, compile and install the `rusp` binary it is sufficient to have a stable [Rust][] environment and run:
@@ -19,13 +18,13 @@ In order to download, compile and install the `rusp` binary it is sufficient to 
 # cargo install rusp
 ```
 
-## How to use the `rusp` binary?
+## How to use the deprecated `rusp` binary?
 
 **rusp** includes a binary with the same name demonstrating some of the uses.
 
 At the moment this mostly allows converting Protobuf encapsulated USP **Record** and **Msg** structures into human-readable text and other useful formats like code and to extracting a **Msg** structure from a **Record**.
 
-Currently, it also still supports synthesizing USP Records via command line, however this feature is going to be phased out soon in favour of the way more flexible `rhai-rusp`.
+Starting from version 1.0, the `rusp` binary is deprecated and will be removed in a future version altogether. All encoding functionality and Protobuf output have been removed, the latter due being incompatible with the notice printed about the upcoming removal of the tool. Please use `rhai-run` instead.
 
 ## How to use the `rhai-run` binary?
 
