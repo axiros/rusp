@@ -29,54 +29,6 @@ impl SessionContextRecord {
 
 /// Implementation of some extension methods for `Record`s
 impl Record {
-    /// Render the `Record` into JSON
-    ///
-    /// # Arguments
-    ///
-    /// * `self` - A USP `Record` structure
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use rusp_lib::usp_decoder::try_decode_record;
-    /// let record =
-    ///     try_decode_record(&[
-    ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
-    ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
-    ///         0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f,
-    ///         0x6d, 0x52, 0x09, 0x08, 0x01, 0x12, 0x05, 0x74,
-    ///         0x6f, 0x70, 0x69, 0x63,
-    ///     ]).unwrap();
-    /// assert_eq!(record.to_json().unwrap(), "{\"version\":\"1.3\",\"to_id\":\"doc::to\",\"from_id\":\"doc::from\",\"payload_security\":\"PLAINTEXT\",\"mac_signature\":[],\"sender_cert\":[],\"mqtt_connect\":{\"version\":\"V5\",\"subscribed_topic\":\"topic\"}}");
-    /// ```
-    pub fn to_json(&self) -> Result<String> {
-        serde_json::to_string(self).context("Failed serializing USP Record to JSON")
-    }
-
-    /// Render the `Record` into pretty printed JSON
-    ///
-    /// # Arguments
-    ///
-    /// * `self` - A USP `Record` structure
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use rusp_lib::usp_decoder::try_decode_record;
-    /// let record =
-    ///     try_decode_record(&[
-    ///         0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64,
-    ///         0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f, 0x1a, 0x09,
-    ///         0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f,
-    ///         0x6d, 0x52, 0x09, 0x08, 0x01, 0x12, 0x05, 0x74,
-    ///         0x6f, 0x70, 0x69, 0x63,
-    ///     ]).unwrap();
-    /// assert_eq!(record.to_json_pretty().unwrap(), "{\n  \"version\": \"1.3\",\n  \"to_id\": \"doc::to\",\n  \"from_id\": \"doc::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"mqtt_connect\": {\n    \"version\": \"V5\",\n    \"subscribed_topic\": \"topic\"\n  }\n}");
-    /// ```
-    pub fn to_json_pretty(&self) -> Result<String> {
-        serde_json::to_string_pretty(self).context("Failed serializing USP Record to JSON")
-    }
-
     /// Encode the Record into a Protobuf byte stream returned as `Vec<[u8]>`
     ///
     /// # Arguments
@@ -249,58 +201,6 @@ impl Record {
 
 /// Implementation of some extension methods for `Msg`s
 impl Msg {
-    /// Encode the Msg as JSON format
-    ///
-    /// # Arguments
-    ///
-    /// * `self` - A decoded USP Msg structure
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use rusp_lib::usp_decoder::try_decode_msg;
-    /// let msg =
-    ///     try_decode_msg(&[
-    ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
-    ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,
-    ///         0x0a, 0x05, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x10,
-    ///         0x01, 0x42, 0x19, 0x0a, 0x06, 0x30, 0x30, 0x34,
-    ///         0x34, 0x46, 0x46, 0x12, 0x03, 0x46, 0x6f, 0x6f,
-    ///         0x1a, 0x05, 0x30, 0x31, 0x32, 0x33, 0x34, 0x22,
-    ///         0x03, 0x31, 0x2e, 0x33,
-    ///     ]).unwrap();
-    /// assert_eq!(msg.to_json().unwrap(), "{\"Header\":{\"msg_id\":\"test\",\"msg_type\":\"NOTIFY\"},\"Body\":{\"Request\":{\"Notify\":{\"subscription_id\":\"notif\",\"send_resp\":true,\"on_board_req\":{\"oui\":\"0044FF\",\"product_class\":\"Foo\",\"serial_number\":\"01234\",\"agent_supported_protocol_versions\":\"1.3\"}}}}}");
-    /// ```
-    pub fn to_json(&self) -> Result<String> {
-        serde_json::to_string(self).context("Failed serializing USP Msg to JSON")
-    }
-
-    /// Encode the Msg in pretty printed JSON format
-    ///
-    /// # Arguments
-    ///
-    /// * `self` - A decoded USP Msg structure
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use rusp_lib::usp_decoder::try_decode_msg;
-    /// let msg =
-    ///     try_decode_msg(&[
-    ///         0x0a, 0x08, 0x0a, 0x04, 0x74, 0x65, 0x73, 0x74,
-    ///         0x10, 0x03, 0x12, 0x28, 0x0a, 0x26, 0x42, 0x24,
-    ///         0x0a, 0x05, 0x6e, 0x6f, 0x74, 0x69, 0x66, 0x10,
-    ///         0x01, 0x42, 0x19, 0x0a, 0x06, 0x30, 0x30, 0x34,
-    ///         0x34, 0x46, 0x46, 0x12, 0x03, 0x46, 0x6f, 0x6f,
-    ///         0x1a, 0x05, 0x30, 0x31, 0x32, 0x33, 0x34, 0x22,
-    ///         0x03, 0x31, 0x2e, 0x33,
-    ///     ]).unwrap();
-    /// assert_eq!(msg.to_json_pretty().unwrap(), "{\n  \"Header\": {\n    \"msg_id\": \"test\",\n    \"msg_type\": \"NOTIFY\"\n  },\n  \"Body\": {\n    \"Request\": {\n      \"Notify\": {\n        \"subscription_id\": \"notif\",\n        \"send_resp\": true,\n        \"on_board_req\": {\n          \"oui\": \"0044FF\",\n          \"product_class\": \"Foo\",\n          \"serial_number\": \"01234\",\n          \"agent_supported_protocol_versions\": \"1.3\"\n        }\n      }\n    }\n  }\n}");
-    /// ```
-    pub fn to_json_pretty(&self) -> Result<String> {
-        serde_json::to_string_pretty(self).context("Failed serializing USP Msg to JSON")
-    }
-
     /// Encode the Msg into a Protobuf byte stream returned as `Vec<[u8]>`
     ///
     /// # Arguments

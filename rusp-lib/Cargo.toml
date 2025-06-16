@@ -16,4 +16,6 @@ repository = "axiros/rusp"
 anyhow = { workspace = true }
 quick-protobuf = "0.8"
 serde = "1.0"
+
+[dev-dependencies]
 serde_json = { workspace = true }
