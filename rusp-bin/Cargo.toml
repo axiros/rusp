@@ -16,11 +16,8 @@ repository = "axiros/rusp"
 rhai = { workspace = true }
 anyhow = { workspace = true }
 clap = { version = "4", features = ["derive"] }
-quick-protobuf = { workspace = true }
 rusp-lib = { workspace = true }
 rhai-rusp = { workspace = true }
-serde = { workspace = true }
-serde_derive = { workspace = true }
 serde_json = { workspace = true }
 rhai-rand = "0.1.6"
 argh = { version = "0.1", default-features = false, features = ["help"] }
