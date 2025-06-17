@@ -2744,7 +2744,7 @@ pub mod rhai_rusp_operateresp {
 /// ```
 #[export_module]
 pub mod rhai_rusp {
-    use std::io::{BufReader, Read, Write as _};
+    use std::io::{Read, Write as _};
 
     use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
     use usp_builder::{MsgBuilder, RecordBuilder};
@@ -2786,7 +2786,7 @@ pub mod rhai_rusp {
     /// # Errors
     ///
     /// This function will return `Err` containing a textual description of the encountered error if
-    /// the conversion into a MsgBuilder fails.
+    /// the conversion into a `MsgBuilder` fails.
     #[rhai_fn(global, return_raw)]
     pub fn as_msg_builder(body: Body) -> Result<MsgBuilder, Box<EvalAltResult>> {
         Ok(MsgBuilder::new().with_body(body))
@@ -3504,7 +3504,22 @@ pub mod rhai_rusp {
         try_decode_msg(protobuf).map_err(|e| e.to_string().into())
     }
 
-    /// Load a [`Msg`] from a Protobuf file
+    /// Read a [`Msg`] in Protobuf format from stdin. In Rhai this function is called `read_msg`.
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error
+    /// if the deserialization of the structure from Protobuf format fails.
+    #[rhai_fn(global, name = "read_msg", return_raw)]
+    pub fn read_msg_protobuf() -> Result<Msg, Box<EvalAltResult>> {
+        let mut contents = Vec::new();
+        std::io::stdin()
+            .read_to_end(&mut contents)
+            .map_err(|e| e.to_string())?;
+        Ok(try_decode_msg(&contents).map_err(|e| e.to_string())?)
+    }
+
+    /// Load a [`Msg`] from a Protobuf file. In Rhai this function is called `load_msg`
     ///
     /// # Errors
     ///
@@ -3513,13 +3528,37 @@ pub mod rhai_rusp {
     /// deserialization of the structure from Protobuf format fails.
     #[rhai_fn(global, name = "load_msg", return_raw)]
     pub fn load_msg_protobuf(filename: &str) -> Result<Msg, Box<EvalAltResult>> {
-        let contents = std::fs::File::open(filename)
-            .map(BufReader::new)
-            .map_err(|e| e.to_string())?
-            .bytes()
-            .collect::<Result<Vec<u8>, _>>()
+        let mut contents = Vec::new();
+        let _ = std::fs::File::open(filename)
+            .map(|mut f| f.read_to_end(&mut contents))
             .map_err(|e| e.to_string())?;
         Ok(try_decode_msg(&contents).map_err(|e| e.to_string())?)
+    }
+
+    /// Read a [`Record`] in Protobuf format from stdin. In Rhai this function is called `read_record`.
+    /// ```
+    /// // Rhai script
+    /// # let script = r#"
+    /// let record = rusp::read_record();
+    /// record.to_string()
+    /// # "#;
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// This function will return `Err` containing a textual description of the encountered error
+    /// if the deserialization of the structure from Protobuf format fails.
+    #[rhai_fn(global, name = "read_record", return_raw)]
+    pub fn read_record_protobuf() -> Result<Record, Box<EvalAltResult>> {
+        let mut contents = Vec::new();
+        std::io::stdin()
+            .read_to_end(&mut contents)
+            .map_err(|e| e.to_string())?;
+        let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
+        if record.record_type == OneOfrecord_type::None {
+            Err("Protobuf file doesn't contain a valid USP Record")?;
+        }
+        Ok(record)
     }
 
     /// Load a [`Record`] from a Protobuf file, in Rhai this function is called `load_record`.
@@ -3538,11 +3577,9 @@ pub mod rhai_rusp {
     /// deserialization of the structure from Protobuf format fails.
     #[rhai_fn(global, name = "load_record", return_raw)]
     pub fn load_record_protobuf(filename: &str) -> Result<Record, Box<EvalAltResult>> {
-        let contents = std::fs::File::open(filename)
-            .map(BufReader::new)
-            .map_err(|e| e.to_string())?
-            .bytes()
-            .collect::<Result<Vec<u8>, _>>()
+        let mut contents = Vec::new();
+        let _ = std::fs::File::open(filename)
+            .map(|mut f| f.read_to_end(&mut contents))
             .map_err(|e| e.to_string())?;
         let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
         if record.record_type == OneOfrecord_type::None {

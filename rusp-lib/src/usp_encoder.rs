@@ -1,3 +1,5 @@
+use quick_protobuf::{message::MessageWrite, Writer};
+
 use crate::usp::Msg;
 use crate::usp_record::{Record, SessionContextRecord};
 
@@ -50,8 +52,6 @@ impl Record {
     /// assert_eq!(record.to_vec().unwrap(), bytes);
     /// ```
     pub fn to_vec(&self) -> Result<Vec<u8>> {
-        use quick_protobuf::{message::MessageWrite, Writer};
-
         let mut buf = Vec::new();
         let mut writer = Writer::new(&mut buf);
         self.write_message(&mut writer)
@@ -224,8 +224,6 @@ impl Msg {
     /// assert_eq!(msg.to_vec().unwrap(), bytes);
     /// ```
     pub fn to_vec(&self) -> Result<Vec<u8>> {
-        use quick_protobuf::{message::MessageWrite, Writer};
-
         let mut buf = Vec::new();
         let mut writer = Writer::new(&mut buf);
         self.write_message(&mut writer)
