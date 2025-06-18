@@ -20,7 +20,7 @@ The crate contains is the library part or Rusp, which contains:
 
 ```
 [dependencies]
-rusp-lib = "0.99"
+rusp-lib = "1"
 quick-protobuf = "0.8"
 ```
 

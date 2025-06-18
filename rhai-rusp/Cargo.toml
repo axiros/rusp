@@ -2,11 +2,11 @@
 authors = ["Daniel Egger <daniel.egger@axiros.com>", "Axiros GmbH"]
 description = "Rhai bindings for the Rust USP toolkit"
 name = "rhai-rusp"
-version = "0.99.0"
 edition = "2021"
 license = "BSD-3-Clause"
 readme = "README.md"
 repository = "https://github.com/axiros/rusp"
+version = "1.0.0"
 
 [dependencies]
 rhai = { workspace = true }
