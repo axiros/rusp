@@ -1,10 +1,12 @@
 ![Continuous integration](https://github.com/axiros/rusp/workflows/Continuous%20integration/badge.svg)
 
-# rusp
+# rusp-bin
 
-This crate contains the application part of Rusp, which contains:
+`rusp-bin` (published on crates.io as `rusp` for backwards compatibility) contains the application part of the **rusp** ecosystem, which is based on the [rusp-lib](https://crates.io/crates/rusp-lib) and [rhai-rusp](https://crates.io/crates/rhai-rusp) crates.
 
-* A `rusp` application, granting access to library functionality via command line. Included functionality at the moment are:
+This crate provides:
+
+* A `rusp` application, granting access to library functionality via command line. As of version 1.0, this application is **deprecated** and superseded by the `rusp-run` application. At the moment this application supports:
   * Decoding of **USP** Msg Protobuf bytestreams from standard input
   * Decoding of **USP** Msg Protobuf bytestreams from file(s)
   * Decoding of **USP** Record Protobuf bytestreams from standard input
@@ -12,7 +14,7 @@ This crate contains the application part of Rusp, which contains:
   * Extraction of a **USP** Msg from the payload of a **USP** Record Protobuf bytestream
 * A `rusp-run` application, providing a simple frontend to the `rhai-rusp` bindings via an embedded [Rhai][] interpreter
 
-In order to download, compile and install the `rusp` binary it is sufficient to have a stable [Rust][] environment and run:
+In order to download, compile and install the binaries, it is sufficient to have a stable [Rust][] environment and run:
 
 ```
 # cargo install rusp
