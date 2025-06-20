@@ -2,6 +2,9 @@
 
 # rusp-bin
 
+This crate has been proudly sponsored by [Axiros][], a market leader in device management and monitoring solutions:
+![Axiros logo](https://raw.github.com/axiros/rusp/master/Axiros_logo.svg)
+
 `rusp-bin` (published on crates.io as `rusp` for backwards compatibility) contains the application part of the **rusp** ecosystem, which is based on the [rusp-lib](https://crates.io/crates/rusp-lib) and [rhai-rusp](https://crates.io/crates/rhai-rusp) crates.
 
 This crate provides:

@@ -2,13 +2,14 @@
 
 # rusp
 
-**rusp** is the **Rust USP** toolkit, brought to you by Axiros!
+This is **rusp**, the **Rust USP** toolkit.
 
 [Rust][] is a fast and safe systems programming language.
 
 [USP][] (or User Services Platform) is a new protocol for management of connected devices, maintained and developed by the [Broadband Forum][BBF].
 
-[Axiros][] is a leading company for device management.
+This repository has been proudly sponsored by [Axiros][], a market leader in device management and monitoring solutions:
+![Axiros logo](https://raw.github.com/axiros/rusp/master/Axiros_logo.svg)
 
 ## What is rusp?
 
