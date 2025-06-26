@@ -5,6 +5,8 @@
 This crate has been proudly sponsored by [Axiros][], a market leader in device management and monitoring solutions:
 ![Axiros logo](https://raw.github.com/axiros/rusp/master/Axiros_logo.svg)
 
+##
+
 The crate contains is the library part or Rusp, which contains:
 
 * Generated low-level Rust Protobuf bindings

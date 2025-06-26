@@ -11,6 +11,8 @@ This is **rusp**, the **Rust USP** toolkit.
 This repository has been proudly sponsored by [Axiros][], a market leader in device management and monitoring solutions:
 ![Axiros logo](https://raw.github.com/axiros/rusp/master/Axiros_logo.svg)
 
+##
+
 ## What is rusp?
 
 **rusp** is a toolkit, written in **Rust**, providing support to work with **USP** records and messages which are encoded in Protobuf bytestreams.

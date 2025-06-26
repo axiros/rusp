@@ -5,6 +5,8 @@
 This crate has been proudly sponsored by [Axiros][], a market leader in device management and monitoring solutions:
 ![Axiros logo](https://raw.github.com/axiros/rusp/master/Axiros_logo.svg)
 
+##
+
 `rhai-rusp` is a new approach to address your [USP][] protocol needs by
 providing [Rhai][] bindings for the [rusp-lib crate](https://crates.io/crates/rusp-lib), thus providing scripting capabilities
 to USP in Rhai for either standalone runners or [Rust][] applications which can
