@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-msg-1-4.proto' file
+// Automatically generated rust module for 'usp-msg-1-5.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]

@@ -33,6 +33,8 @@ impl Serialize for Record {
         state.serialize_field("version", &self.version)?;
         state.serialize_field("to_id", &self.to_id)?;
         state.serialize_field("from_id", &self.from_id)?;
+        state.serialize_field("originator_id", &self.originator_id)?;
+        state.serialize_field("destination_id", &self.destination_id)?;
         state.serialize_field("payload_security", &self.payload_security)?;
         state.serialize_field("mac_signature", &self.mac_signature)?;
         state.serialize_field("sender_cert", &self.sender_cert)?;
