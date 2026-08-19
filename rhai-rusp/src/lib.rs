@@ -130,6 +130,43 @@ pub mod rhai_rusp_record {
         builder.with_from_id(id.into())
     }
 
+    /// Sets the originator endpoint id of the [`Record`]
+    /// ```
+    /// # use rusp_lib::usp_record::Record;
+    /// // Rhai script
+    /// # let script = r#"
+    /// rusp::record_builder()
+    ///   .with_originator_id("proto::agent")
+    ///   .build()
+    /// # "#;
+    /// # let record = rhai_rusp::eval_rusp::<Record>(script);
+    /// ```
+    #[rhai_fn(global)]
+    #[must_use]
+    pub fn with_originator_id(builder: RecordBuilder, id: &str) -> RecordBuilder {
+        builder.with_originator_id(id.into())
+    }
+
+    /// Sets the destination endpoint id of the [`Record`]
+    ///
+    /// Not to be confused with the `to_id` field. The `destination_id` is related to USP Record
+    /// routing, for e.g. USP Internal Services. It indicates the last hop of the routing.
+    /// ```
+    /// # use rusp_lib::usp_record::Record;
+    /// // Rhai script
+    /// # let script = r#"
+    /// rusp::record_builder()
+    ///   .with_destination_id("proto::agent")
+    ///   .build()
+    /// # "#;
+    /// # let record = rhai_rusp::eval_rusp::<Record>(script);
+    /// ```
+    #[rhai_fn(global)]
+    #[must_use]
+    pub fn with_destination_id(builder: RecordBuilder, id: &str) -> RecordBuilder {
+        builder.with_destination_id(id.into())
+    }
+
     /// Assigns the provided [`Msg`] as the "no session context" payload of the [`Record`]
     /// ```
     /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type, NoSessionContextRecord, Record};
@@ -2740,7 +2777,7 @@ pub mod rhai_rusp_operateresp {
 /// "#;
 /// let record = rhai_rusp::eval_rusp::<String>(script).unwrap();
 ///
-/// assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
+/// assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
 /// ```
 #[export_module]
 pub mod rhai_rusp {
@@ -2803,7 +2840,7 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
@@ -2857,7 +2894,7 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
@@ -2990,7 +3027,7 @@ pub mod rhai_rusp {
     ///   .to_string()
     /// # "#;
     /// # let record = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
+    /// # assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
@@ -3106,7 +3143,7 @@ pub mod rhai_rusp {
     ///   .to_json()
     /// # "#;
     /// # let record = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
+    /// # assert_eq!(record, "{\n  \"version\": \"1.3\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"websocket_connect\": null\n}");
     /// ```
     ///
     /// This example will return a JSON output like:

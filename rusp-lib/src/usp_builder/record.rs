@@ -115,6 +115,8 @@ pub struct RecordBuilder {
     version: String,
     to_id: Option<String>,
     from_id: Option<String>,
+    originator_id: String,
+    destination_id: String,
     sender_cert: Vec<u8>,
     mac_signature: Vec<u8>,
     payload_security: PayloadSecurity,
@@ -129,6 +131,8 @@ impl RecordBuilder {
             version: String::new(),
             to_id: None,
             from_id: None,
+            originator_id: String::new(),
+            destination_id: String::new(),
             sender_cert: vec![],
             mac_signature: vec![],
             payload_security: PayloadSecurity::PLAINTEXT,
@@ -152,6 +156,22 @@ impl RecordBuilder {
     #[must_use]
     pub fn with_from_id(mut self, id: String) -> Self {
         self.from_id = Some(id);
+        self
+    }
+
+    #[must_use]
+    pub fn with_originator_id(mut self, id: String) -> Self {
+        self.originator_id = id;
+        self
+    }
+
+    /// Sets the destination EndpointID of the Record
+    ///
+    /// Not to be confused with the `to_id` field. The `destination_id` is related to USP Record
+    /// routing, for e.g. USP Internal Services. It indicates the last hop of the routing.
+    #[must_use]
+    pub fn with_destination_id(mut self, id: String) -> Self {
+        self.destination_id = id;
         self
     }
 
@@ -257,6 +277,8 @@ impl RecordBuilder {
             },
             to_id,
             from_id,
+            originator_id: self.originator_id,
+            destination_id: self.destination_id,
             sender_cert: self.sender_cert,
             mac_signature: self.mac_signature,
             payload_security: self.payload_security,

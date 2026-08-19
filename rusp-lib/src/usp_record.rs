@@ -1,4 +1,4 @@
-// Automatically generated rust module for 'usp-record-1-4.proto' file
+// Automatically generated rust module for 'usp-record-1-5.proto' file
 
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
@@ -19,6 +19,8 @@ pub struct Record {
     pub version: String,
     pub to_id: String,
     pub from_id: String,
+    pub originator_id: String,
+    pub destination_id: String,
     pub payload_security: usp_record::mod_Record::PayloadSecurity,
     pub mac_signature: Vec<u8>,
     pub sender_cert: Vec<u8>,
@@ -33,6 +35,8 @@ impl<'a> MessageRead<'a> for Record {
                 Ok(10) => msg.version = r.read_string(bytes)?.to_owned(),
                 Ok(18) => msg.to_id = r.read_string(bytes)?.to_owned(),
                 Ok(26) => msg.from_id = r.read_string(bytes)?.to_owned(),
+                Ok(114) => msg.originator_id = r.read_string(bytes)?.to_owned(),
+                Ok(122) => msg.destination_id = r.read_string(bytes)?.to_owned(),
                 Ok(32) => msg.payload_security = r.read_enum(bytes)?,
                 Ok(42) => msg.mac_signature = r.read_bytes(bytes)?.to_owned(),
                 Ok(50) => msg.sender_cert = r.read_bytes(bytes)?.to_owned(),
@@ -57,6 +61,8 @@ impl MessageWrite for Record {
         + if self.version == String::default() { 0 } else { 1 + sizeof_len((&self.version).len()) }
         + if self.to_id == String::default() { 0 } else { 1 + sizeof_len((&self.to_id).len()) }
         + if self.from_id == String::default() { 0 } else { 1 + sizeof_len((&self.from_id).len()) }
+        + if self.originator_id == String::default() { 0 } else { 1 + sizeof_len((&self.originator_id).len()) }
+        + if self.destination_id == String::default() { 0 } else { 1 + sizeof_len((&self.destination_id).len()) }
         + if self.payload_security == usp_record::mod_Record::PayloadSecurity::PLAINTEXT { 0 } else { 1 + sizeof_varint(*(&self.payload_security) as u64) }
         + if self.mac_signature.is_empty() { 0 } else { 1 + sizeof_len((&self.mac_signature).len()) }
         + if self.sender_cert.is_empty() { 0 } else { 1 + sizeof_len((&self.sender_cert).len()) }
@@ -75,6 +81,8 @@ impl MessageWrite for Record {
         if self.version != String::default() { w.write_with_tag(10, |w| w.write_string(&**&self.version))?; }
         if self.to_id != String::default() { w.write_with_tag(18, |w| w.write_string(&**&self.to_id))?; }
         if self.from_id != String::default() { w.write_with_tag(26, |w| w.write_string(&**&self.from_id))?; }
+        if self.originator_id != String::default() { w.write_with_tag(114, |w| w.write_string(&**&self.originator_id))?; }
+        if self.destination_id != String::default() { w.write_with_tag(122, |w| w.write_string(&**&self.destination_id))?; }
         if self.payload_security != usp_record::mod_Record::PayloadSecurity::PLAINTEXT { w.write_with_tag(32, |w| w.write_enum(*&self.payload_security as i32))?; }
         if !self.mac_signature.is_empty() { w.write_with_tag(42, |w| w.write_bytes(&**&self.mac_signature))?; }
         if !self.sender_cert.is_empty() { w.write_with_tag(50, |w| w.write_bytes(&**&self.sender_cert))?; }
