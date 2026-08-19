@@ -3,11 +3,7 @@
 //! manipulation of [`USP`](https://usp.technology) protocol communication primitives.
 use rhai::def_package;
 use rhai::{
-    plugin::{
-        combine_with_exported_module, export_module, mem, Dynamic, EvalAltResult, FnNamespace,
-        FuncRegistration, ImmutableString, Module, NativeCallContext, PluginFunc, RhaiResult,
-        TypeId,
-    },
+    plugin::{combine_with_exported_module, export_module, mem, Dynamic, EvalAltResult},
     Array, Blob, Map, Variant,
 };
 use rusp_lib::usp::{Body, Msg};
