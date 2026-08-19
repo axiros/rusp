@@ -1,6 +1,7 @@
 mod tests {
     use quick_protobuf::{BytesReader, MessageRead};
     use rusp_lib::usp_record::Record;
+    use serde_json::{json, Value};
 
     #[test]
     fn simple_notify() {
@@ -19,41 +20,40 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        let serialized = serde_json::to_string_pretty(&record).unwrap();
-        println!("serialized = {serialized}");
-        assert_eq!(
-            serialized,
-            r#"{
-  "version": "1.0",
-  "to_id": "",
-  "from_id": "proto::ax-usp-agent-nossl-websocket",
-  "originator_id": "",
-  "destination_id": "",
-  "payload_security": "PLAINTEXT",
-  "mac_signature": [],
-  "sender_cert": [],
-  "payload": {
-    "Header": {
-      "msg_id": "test",
-      "msg_type": "NOTIFY"
-    },
-    "Body": {
-      "Request": {
-        "Notify": {
-          "subscription_id": "subscription_id",
-          "send_resp": false,
-          "on_board_req": {
-            "oui": "oui",
-            "product_class": "product_class",
-            "serial_number": "serial_number",
-            "agent_supported_protocol_versions": "1.0"
-          }
-        }
-      }
-    }
-  }
-}"#
-        );
+        let serialized = serde_json::to_string(&record).unwrap();
+        let parsed: Value = serde_json::from_str(&serialized).unwrap();
+        let expected = json!({
+            "version": "1.0",
+            "to_id": "",
+            "from_id": "proto::ax-usp-agent-nossl-websocket",
+            "originator_id": "",
+            "destination_id": "",
+            "payload_security": "PLAINTEXT",
+            "mac_signature": [],
+            "sender_cert": [],
+            "payload": {
+              "Header": {
+                "msg_id": "test",
+                "msg_type": "NOTIFY"
+              },
+              "Body": {
+                "Request": {
+                  "Notify": {
+                    "subscription_id": "subscription_id",
+                    "send_resp": false,
+                    "on_board_req": {
+                      "oui": "oui",
+                      "product_class": "product_class",
+                      "serial_number": "serial_number",
+                      "agent_supported_protocol_versions": "1.0"
+                    }
+                  }
+                }
+              }
+            }
+        });
+
+        assert_eq!(parsed, expected);
     }
 
     #[test]
@@ -78,50 +78,50 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        let serialized = serde_json::to_string_pretty(&record).unwrap();
-        assert_eq!(
-            serialized,
-            r#"{
-  "version": "1.0",
-  "to_id": "proto::ax-usp-agent-nossl-websocket",
-  "from_id": "proto::ax-usp-controller-nossl",
-  "originator_id": "",
-  "destination_id": "",
-  "payload_security": "PLAINTEXT",
-  "mac_signature": [],
-  "sender_cert": [],
-  "payload": {
-    "Header": {
-      "msg_id": "AXSS-1544114083.761508",
-      "msg_type": "ADD"
-    },
-    "Body": {
-      "Request": {
-        "Add": {
-          "allow_partial": true,
-          "create_objs": [
-            {
-              "obj_path": "Device.LocalAgent.Controller.",
-              "param_settings": [
-                {
-                  "param": "Alias",
-                  "value": "test",
-                  "required": true
-                },
-                {
-                  "param": "EndpointID",
-                  "value": "test",
-                  "required": true
+        let serialized = serde_json::to_string(&record).unwrap();
+        let parsed: Value = serde_json::from_str(&serialized).unwrap();
+        let expected = json!({
+            "version": "1.0",
+            "to_id": "proto::ax-usp-agent-nossl-websocket",
+            "from_id": "proto::ax-usp-controller-nossl",
+            "originator_id": "",
+            "destination_id": "",
+            "payload_security": "PLAINTEXT",
+            "mac_signature": [],
+            "sender_cert": [],
+            "payload": {
+              "Header": {
+                "msg_id": "AXSS-1544114083.761508",
+                "msg_type": "ADD"
+              },
+              "Body": {
+                "Request": {
+                  "Add": {
+                    "allow_partial": true,
+                    "create_objs": [
+                      {
+                        "obj_path": "Device.LocalAgent.Controller.",
+                        "param_settings": [
+                          {
+                            "param": "Alias",
+                            "value": "test",
+                            "required": true
+                          },
+                          {
+                            "param": "EndpointID",
+                            "value": "test",
+                            "required": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
                 }
-              ]
+              }
             }
-          ]
-        }
-      }
-    }
-  }
-}"#
-        );
+        });
+
+        assert_eq!(parsed, expected);
     }
 
     #[test]
@@ -143,36 +143,36 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        let serialized = serde_json::to_string_pretty(&record).unwrap();
-        assert_eq!(
-            serialized,
-            r#"{
-  "version": "1.0",
-  "to_id": "proto::ax-usp-agent-nossl-websocket",
-  "from_id": "proto::ax-usp-controller-nossl",
-  "originator_id": "",
-  "destination_id": "",
-  "payload_security": "PLAINTEXT",
-  "mac_signature": [],
-  "sender_cert": [],
-  "payload": {
-    "Header": {
-      "msg_id": "AXSS-1544114102.668439",
-      "msg_type": "DELETE"
-    },
-    "Body": {
-      "Request": {
-        "Delete": {
-          "allow_partial": true,
-          "obj_paths": [
-            "Device.LocalAgent.MTP.1.WebSocket."
-          ]
-        }
-      }
-    }
-  }
-}"#
-        );
+        let serialized = serde_json::to_string(&record).unwrap();
+        let parsed: Value = serde_json::from_str(&serialized).unwrap();
+        let expected = json!({
+            "version": "1.0",
+            "to_id": "proto::ax-usp-agent-nossl-websocket",
+            "from_id": "proto::ax-usp-controller-nossl",
+            "originator_id": "",
+            "destination_id": "",
+            "payload_security": "PLAINTEXT",
+            "mac_signature": [],
+            "sender_cert": [],
+            "payload": {
+              "Header": {
+                "msg_id": "AXSS-1544114102.668439",
+                "msg_type": "DELETE"
+              },
+              "Body": {
+                "Request": {
+                  "Delete": {
+                    "allow_partial": true,
+                    "obj_paths": [
+                      "Device.LocalAgent.MTP.1.WebSocket."
+                    ]
+                  }
+                }
+              }
+            }
+        });
+
+        assert_eq!(parsed, expected);
     }
 
     #[test]
@@ -194,36 +194,35 @@ mod tests {
         let mut reader = BytesReader::from_bytes(&bytes);
         let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
 
-        let serialized = serde_json::to_string_pretty(&record).unwrap();
-        println!("serialized = {serialized}");
-        assert_eq!(
-            serialized,
-            r#"{
-  "version": "1.0",
-  "to_id": "proto::ax-usp-agent-nossl-websocket",
-  "from_id": "proto::ax-usp-controller-nossl",
-  "originator_id": "",
-  "destination_id": "",
-  "payload_security": "PLAINTEXT",
-  "mac_signature": [],
-  "sender_cert": [],
-  "payload": {
-    "Header": {
-      "msg_id": "AXSS-1544114045.442596",
-      "msg_type": "GET"
-    },
-    "Body": {
-      "Request": {
-        "Get": {
-          "param_paths": [
-            "Device.LocalAgent.MTP.1.WebSocket."
-          ],
-          "max_depth": 0
-        }
-      }
-    }
-  }
-}"#
-        );
+        let serialized = serde_json::to_string(&record).unwrap();
+        let parsed: Value = serde_json::from_str(&serialized).unwrap();
+        let expected = json!({
+            "version": "1.0",
+            "to_id": "proto::ax-usp-agent-nossl-websocket",
+            "from_id": "proto::ax-usp-controller-nossl",
+            "originator_id": "",
+            "destination_id": "",
+            "payload_security": "PLAINTEXT",
+            "mac_signature": [],
+            "sender_cert": [],
+            "payload": {
+              "Header": {
+                "msg_id": "AXSS-1544114045.442596",
+                "msg_type": "GET"
+              },
+              "Body": {
+                "Request": {
+                  "Get": {
+                    "param_paths": [
+                      "Device.LocalAgent.MTP.1.WebSocket."
+                    ],
+                    "max_depth": 0
+                  }
+                }
+              }
+            }
+        });
+
+        assert_eq!(parsed, expected);
     }
 }
