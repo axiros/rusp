@@ -1,9 +1,8 @@
 use anyhow::{anyhow, Context, Result};
-use quick_protobuf::message::MessageRead;
-use quick_protobuf::BytesReader;
+use prost::Message;
 
 use crate::usp::{self, Error, Msg, Notify};
-use crate::usp_record::mod_Record::OneOfrecord_type;
+use crate::usp_record::record::RecordType;
 use crate::usp_record::{NoSessionContextRecord, Record, SessionContextRecord};
 
 /// Decodes a slice of bytes containing a Protobuf encoded USP Record into a Record structure for
@@ -31,8 +30,7 @@ use crate::usp_record::{NoSessionContextRecord, Record, SessionContextRecord};
 ///     ]);
 /// ```
 pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
-    let mut reader = BytesReader::from_bytes(bytes);
-    Record::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Record")
+    Record::decode(bytes).context("while parsing protobuf as USP Record")
 }
 
 /// Decodes a slice of bytes containing a Protobuf encoded USP Msg into a Msg structure for further
@@ -60,8 +58,7 @@ pub fn try_decode_record(bytes: &[u8]) -> Result<Record> {
 ///     ]);
 /// ```
 pub fn try_decode_msg(bytes: &[u8]) -> Result<Msg> {
-    let mut reader = BytesReader::from_bytes(bytes);
-    Msg::from_reader(&mut reader, bytes).context("while parsing protobuf as USP Message")
+    Msg::decode(bytes).context("while parsing protobuf as USP Message")
 }
 
 /// Implementation of some extension methods for `Msg`s
@@ -457,9 +454,7 @@ impl Msg {
     /// assert!(msg.check_validity().is_err());
     /// ```
     pub fn check_validity(&self) -> Result<()> {
-        use crate::usp::mod_Body::OneOfmsg_body;
-        use crate::usp::mod_Request::OneOfreq_type;
-        use crate::usp::mod_Response::OneOfresp_type;
+        use crate::usp::body::MsgBody;
         use crate::usp::{Request, Response};
 
         self.header
@@ -470,16 +465,15 @@ impl Msg {
         let body = self
             .body
             .as_ref()
-            .filter(|b| !matches!(b.msg_body, OneOfmsg_body::None))
             .ok_or_else(|| anyhow!("Invalid message body"))?;
 
         match body.msg_body {
-            OneOfmsg_body::request(Request {
-                req_type: OneOfreq_type::None,
-            }) => Err(anyhow!("Invalid Request message")),
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::None,
-            }) => Err(anyhow!("Invalid Response message")),
+            Some(MsgBody::Request(Request { req_type: None })) => {
+                Err(anyhow!("Invalid Request message"))
+            }
+            Some(MsgBody::Response(Response { resp_type: None })) => {
+                Err(anyhow!("Invalid Response message"))
+            }
             _ => Ok(()),
         }
     }

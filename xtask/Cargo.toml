@@ -1,0 +1,11 @@
+[package]
+name = "xtask"
+edition = "2021"
+license = "BSD-3-Clause"
+version = "0.0.1"
+publish = false
+
+[dependencies]
+argh.workspace = true
+
+prost-build = "0.14.4"

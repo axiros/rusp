@@ -20,7 +20,7 @@ rusp-lib = { workspace = true }
 rhai-rusp = { workspace = true }
 serde_json = { workspace = true }
 rhai-rand = "0.1.6"
-argh = { version = "0.1", default-features = false, features = ["help"] }
+argh = { workspace = true }
 
 [[bin]]
 name = "rusp"
