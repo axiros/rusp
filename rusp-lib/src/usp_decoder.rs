@@ -1,7 +1,9 @@
 use anyhow::{anyhow, Context, Result};
 use prost::Message;
 
-use crate::usp::{self, Error, Msg, Notify};
+use crate::usp::body::MsgBody;
+use crate::usp::request::ReqType;
+use crate::usp::{Error, Msg, Notify};
 use crate::usp_record::record::RecordType;
 use crate::usp_record::{NoSessionContextRecord, Record, SessionContextRecord};
 
@@ -169,7 +171,7 @@ impl Msg {
     #[must_use]
     pub const fn is_request(&self) -> bool {
         if let Some(body) = self.body.as_ref() {
-            matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::request(_))
+            matches!(&body.msg_body, Some(MsgBody::Request(_)))
         } else {
             false
         }
@@ -261,13 +263,12 @@ impl Msg {
     #[must_use]
     pub const fn get_notify_request(&self) -> Option<&Notify> {
         if let Some(body) = self.body.as_ref() {
-            if let usp::mod_Body::OneOfmsg_body::request(request) = &body.msg_body {
-                if let usp::mod_Request::OneOfreq_type::notify(notify) = &request.req_type {
+            if let Some(MsgBody::Request(request)) = &body.msg_body {
+                if let Some(ReqType::Notify(notify)) = &request.req_type {
                     return Some(notify);
                 }
             }
         }
-
         None
     }
 
@@ -313,7 +314,7 @@ impl Msg {
     #[must_use]
     pub const fn is_response(&self) -> bool {
         if let Some(body) = self.body.as_ref() {
-            matches!(&body.msg_body, usp::mod_Body::OneOfmsg_body::response(_))
+            matches!(&body.msg_body, Some(MsgBody::Response(_)))
         } else {
             false
         }
@@ -371,7 +372,7 @@ impl Msg {
     /// assert_eq!(msg.is_error(), true);
     /// ```
     #[must_use]
-    pub fn is_error(&self) -> bool {
+    pub const fn is_error(&self) -> bool {
         self.get_error().is_some()
     }
 
@@ -427,10 +428,10 @@ impl Msg {
     /// assert!(msg.get_error().is_some());
     /// ```
     #[must_use]
-    pub fn get_error(&self) -> Option<Error> {
+    pub const fn get_error(&self) -> Option<&Error> {
         if let Some(body) = self.body.as_ref() {
-            if let usp::mod_Body::OneOfmsg_body::error(error) = &body.msg_body {
-                return Some(error.clone());
+            if let Some(MsgBody::Error(error)) = &body.msg_body {
+                return Some(error);
             }
         }
 
@@ -454,7 +455,6 @@ impl Msg {
     /// assert!(msg.check_validity().is_err());
     /// ```
     pub fn check_validity(&self) -> Result<()> {
-        use crate::usp::body::MsgBody;
         use crate::usp::{Request, Response};
 
         self.header
@@ -486,7 +486,6 @@ impl SessionContextRecord {
             let old = std::mem::take(&mut self.payload);
             self.payload = vec![old.into_iter().flatten().collect()];
         }
-
         &mut self.payload[0]
     }
 }
@@ -556,8 +555,8 @@ impl Record {
         }
 
         match &self.record_type {
-            OneOfrecord_type::None => Err(anyhow!("Invalid Record type")),
-            OneOfrecord_type::no_session_context(NoSessionContextRecord { payload })
+            None => Err(anyhow!("Invalid Record type")),
+            Some(RecordType::NoSessionContext(NoSessionContextRecord { payload }))
                 if payload.is_empty() =>
             {
                 Err(anyhow!(
@@ -572,11 +571,9 @@ impl Record {
     ///
     /// This function will return [`None`] for Record types that do not contain a payload
     pub fn payload_flatten(&mut self) -> Option<&mut Vec<u8>> {
-        use crate::usp_record::mod_Record::OneOfrecord_type;
-
         match &mut self.record_type {
-            OneOfrecord_type::no_session_context(no_session) => Some(&mut no_session.payload),
-            OneOfrecord_type::session_context(session) => Some(session.payload_flatten()),
+            Some(RecordType::NoSessionContext(no_session)) => Some(&mut no_session.payload),
+            Some(RecordType::SessionContext(session)) => Some(session.payload_flatten()),
             _ => None,
         }
     }
@@ -613,7 +610,7 @@ mod tests {
             .expect("raw should be a valid Record according to the protobuf schema");
         assert!(record.check_validity().is_err());
 
-        let OneOfrecord_type::no_session_context(NoSessionContextRecord { payload: msg_raw }) =
+        let Some(RecordType::NoSessionContext(NoSessionContextRecord { payload: msg_raw })) =
             record.record_type
         else {
             panic!("Record should have a NoSessionContext type");
@@ -637,7 +634,7 @@ mod tests {
             .expect("raw should be a valid Record according to the protobuf schema");
         assert!(record.check_validity().is_err());
 
-        let OneOfrecord_type::no_session_context(NoSessionContextRecord { payload: msg_raw }) =
+        let Some(RecordType::NoSessionContext(NoSessionContextRecord { payload: msg_raw })) =
             record.record_type
         else {
             panic!("Record should have a NoSessionContext type");
@@ -650,8 +647,6 @@ mod tests {
 
     #[test]
     fn flat_record() {
-        use crate::usp_record::mod_Record::OneOfrecord_type;
-
         let raw = [
             0x0a, 0x03, 0x31, 0x2e, 0x33, 0x12, 0x07, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x74, 0x6f,
             0x1a, 0x09, 0x64, 0x6f, 0x63, 0x3a, 0x3a, 0x66, 0x72, 0x6f, 0x6d, 0x42, 0x3c, 0x08,
@@ -668,7 +663,7 @@ mod tests {
         let split = payload.chunks(2).map(Vec::from).collect::<Vec<_>>();
         assert!(split.len() > 1);
 
-        let OneOfrecord_type::session_context(session) = &mut record.record_type else {
+        let Some(RecordType::SessionContext(session)) = &mut record.record_type else {
             panic!("Record should be of type SessionContext");
         };
         session.payload = split;

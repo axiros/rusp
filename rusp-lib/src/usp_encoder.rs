@@ -1,4 +1,4 @@
-use quick_protobuf::{message::MessageWrite, Writer};
+use prost::Message as _;
 
 use crate::usp::Msg;
 use crate::usp_record::{Record, SessionContextRecord};
@@ -15,16 +15,17 @@ impl SessionContextRecord {
         retransmit_id: u64,
         payload: Vec<u8>,
     ) -> Self {
-        use crate::usp_record::mod_SessionContextRecord::PayloadSARState;
+        use crate::usp_record::session_context_record::PayloadSarState;
 
         Self {
             session_id,
             sequence_id,
             expected_id,
             retransmit_id,
-            payload_sar_state: PayloadSARState::NONE,
-            payloadrec_sar_state: PayloadSARState::NONE,
+            payload_sar_state: PayloadSarState::None as i32,
+            payloadrec_sar_state: PayloadSarState::None as i32,
             payload: vec![payload],
+            ..Default::default()
         }
     }
 }
@@ -58,8 +59,7 @@ impl Record {
     /// the `Record` cannot be serialized into a Protobuf representation
     pub fn to_vec(&self) -> Result<Vec<u8>> {
         let mut buf = Vec::new();
-        let mut writer = Writer::new(&mut buf);
-        self.write_message(&mut writer)
+        self.encode(&mut buf)
             .context("Failed serializing USP Record to Protobuf")?;
 
         Ok(buf)
@@ -250,8 +250,7 @@ impl Msg {
     /// the `Msg` cannot be serialized into a Protobuf representation
     pub fn to_vec(&self) -> Result<Vec<u8>> {
         let mut buf = Vec::new();
-        let mut writer = Writer::new(&mut buf);
-        self.write_message(&mut writer)
+        self.encode(&mut buf)
             .context("Failed serializing USP Msg to Protobuf")?;
 
         Ok(buf)
