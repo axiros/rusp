@@ -50,20 +50,26 @@ where
 ///
 /// Here's a full example:
 /// ```
-/// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,MQTTConnectRecord,mod_MQTTConnectRecord::MQTTVersion,Record};
-/// // Rhai script
-/// # let script = r#"
-/// rusp::record_builder()
-///   .with_version("1.3")
-///   .with_to_id("proto::to")
-///   .with_from_id("proto::from")
-///   .as_mqtt_connect_record("V5", "/topic")
-///   .build()
-/// # "#;
-/// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
-/// # assert_eq!(record.to_id, "proto::to");
-/// # assert_eq!(record.from_id, "proto::from");
-/// # assert_eq!(record.record_type, OneOfrecord_type::mqtt_connect(MQTTConnectRecord { subscribed_topic: "/topic".into(), version: MQTTVersion::V5 }));
+    /// # use rusp_lib::usp_record::mqtt_connect_record::MqttVersion;
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::Record;
+    /// // Rhai script
+    /// # let script = r#"
+    /// rusp::record_builder()
+    ///   .with_version("1.3")
+    ///   .with_to_id("proto::to")
+    ///   .with_from_id("proto::from")
+    ///   .as_mqtt_connect_record("V5", "/topic")
+    ///   .build()
+    /// # "#;
+    /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
+    /// # assert_eq!(record.to_id, "proto::to");
+    /// # assert_eq!(record.from_id, "proto::from");
+    /// # assert!(matches!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::MqttConnect(mqtt))
+    /// #         if mqtt.subscribed_topic == "/topic" && mqtt.version == MqttVersion::V5 as i32
+    /// # ));
 /// ```
 #[export_module]
 pub mod rhai_rusp_record {
@@ -165,7 +171,8 @@ pub mod rhai_rusp_record {
 
     /// Assigns the provided [`Msg`] as the "no session context" payload of the [`Record`]
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type, NoSessionContextRecord, Record};
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::{NoSessionContextRecord, Record};
     ///
     /// // Rhai script
     /// # let script = r#"
@@ -188,7 +195,10 @@ pub mod rhai_rusp_record {
     /// # assert_eq!(record.version, "1.2");
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert!(matches!(record.record_type, OneOfrecord_type::no_session_context(NoSessionContextRecord { .. })));
+    /// # assert!(matches!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::NoSessionContext(NoSessionContextRecord { .. }))),
+    /// # );
     /// ```
     #[rhai_fn(global)]
     #[must_use]
@@ -198,7 +208,8 @@ pub mod rhai_rusp_record {
 
     /// Designates the [`Record`] to be of type WebSocketConnectRecord
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,WebSocketConnectRecord,Record};
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::{Record, WebSocketConnectRecord};
     /// // Rhai script
     /// # let script = r#"
     /// rusp::record_builder()
@@ -211,7 +222,10 @@ pub mod rhai_rusp_record {
     /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert_eq!(record.record_type, OneOfrecord_type::websocket_connect(WebSocketConnectRecord { }));
+    /// # assert_eq!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::WebsocketConnect(WebSocketConnectRecord::default())),
+    /// # );
     /// ```
     #[rhai_fn(global)]
     #[must_use]
@@ -221,7 +235,9 @@ pub mod rhai_rusp_record {
 
     /// Designates the [`Record`] to be of type MQTTConnectRecord
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,MQTTConnectRecord,mod_MQTTConnectRecord::MQTTVersion,Record};
+    /// # use rusp_lib::usp_record::mqtt_connect_record::MqttVersion;
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::Record;
     /// // Rhai script
     /// # let script = r#"
     /// rusp::record_builder()
@@ -233,7 +249,11 @@ pub mod rhai_rusp_record {
     /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert_eq!(record.record_type, OneOfrecord_type::mqtt_connect(MQTTConnectRecord { subscribed_topic: "/topic".into(), version: MQTTVersion::V5 }));
+    /// # assert!(matches!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::MqttConnect(mqtt))
+    /// #         if mqtt.subscribed_topic == "/topic" && mqtt.version == MqttVersion::V5 as i32
+    /// # ));
     /// ```
     ///
     /// # Errors
@@ -245,19 +265,18 @@ pub mod rhai_rusp_record {
         version: &str,
         subscribed_topic: &str,
     ) -> Result<RecordBuilder, Box<EvalAltResult>> {
-        use usp_record::mod_MQTTConnectRecord::MQTTVersion;
+        use usp_record::mqtt_connect_record::MqttVersion;
 
-        let version = match version {
-            "V3_1_1" | "V5" => MQTTVersion::from(version),
-            _ => return Err("MQTT version must be either V3_1_1 or V5".into()),
-        };
-
+        let version = MqttVersion::from_str_name(version)
+            .ok_or("MQTT version must be either V3_1_1 or V5")?;
         Ok(builder.as_mqtt_connect_record(version, subscribed_topic.into()))
     }
 
     /// Designates the [`Record`] to be of type STOMPConnectRecord
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,STOMPConnectRecord,mod_STOMPConnectRecord::STOMPVersion,Record};
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::stomp_connect_record::StompVersion;
+    /// # use rusp_lib::usp_record::Record;
     /// // Rhai script
     /// # let script = r#"
     /// rusp::record_builder()
@@ -269,7 +288,12 @@ pub mod rhai_rusp_record {
     /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert_eq!(record.record_type, OneOfrecord_type::stomp_connect(STOMPConnectRecord { subscribed_destination: "/dest".into(), version: STOMPVersion::V1_2 }));
+    /// # assert!(matches!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::StompConnect(stomp))
+    /// #         if stomp.subscribed_destination == "/dest"
+    /// #             && stomp.version == StompVersion::V12 as i32
+    /// # ));
     /// ```
     ///
     /// # Errors
@@ -281,19 +305,16 @@ pub mod rhai_rusp_record {
         version: &str,
         subscribed_destination: &str,
     ) -> Result<RecordBuilder, Box<EvalAltResult>> {
-        use usp_record::mod_STOMPConnectRecord::STOMPVersion;
+        use usp_record::stomp_connect_record::StompVersion;
 
-        let version = match version {
-            "V1_2" => STOMPVersion::from(version),
-            _ => return Err("STOMP version must be V1_2".into()),
-        };
-
+        let version = StompVersion::from_str_name(version).ok_or("STOMP version must be V1_2")?;
         Ok(builder.as_stomp_connect_record(version, subscribed_destination.into()))
     }
 
     /// Designates the [`Record`] to be of type DisconnectRecord
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,DisconnectRecord,Record};
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::Record;
     /// // Rhai script
     /// # let script = r#"
     /// rusp::record_builder()
@@ -305,7 +326,11 @@ pub mod rhai_rusp_record {
     /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert_eq!(record.record_type, OneOfrecord_type::disconnect(DisconnectRecord { reason: "Bye".into(), reason_code: 0 }));
+    /// # assert!(matches!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::Disconnect(disc))
+    /// #         if disc.reason == "Bye" && disc.reason_code == 0
+    /// # ));
     /// ```
     #[rhai_fn(global)]
     #[must_use]
@@ -319,7 +344,8 @@ pub mod rhai_rusp_record {
 
     /// Designates the [`Record`] to be of type UDSConnectRecord
     /// ```
-    /// # use rusp_lib::usp_record::{mod_Record::OneOfrecord_type,UDSConnectRecord,Record};
+    /// # use rusp_lib::usp_record::record::RecordType;
+    /// # use rusp_lib::usp_record::{Record, UdsConnectRecord};
     /// // Rhai script
     /// # let script = r#"
     /// rusp::record_builder()
@@ -331,7 +357,10 @@ pub mod rhai_rusp_record {
     /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
     /// # assert_eq!(record.to_id, "proto::to");
     /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert_eq!(record.record_type, OneOfrecord_type::uds_connect(UDSConnectRecord {}));
+    /// # assert_eq!(
+    /// #     record.record_type,
+    /// #     Some(RecordType::UdsConnect(UdsConnectRecord::default())),
+    /// # );
     /// ```
     #[rhai_fn(global)]
     #[must_use]
@@ -2781,7 +2810,7 @@ pub mod rhai_rusp {
 
     use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
     use usp_builder::{MsgBuilder, RecordBuilder};
-    use usp_record::mod_Record::OneOfrecord_type;
+    use usp_record::record::RecordType;
 
     /// Creates a new [`MsgBuilder`] with the given message [`Body`]. This is a shortcut to directly
     /// chain operations without using nested calls.
@@ -2836,13 +2865,13 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.5\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
     /// ```text
     /// {
-    ///   "version": "1.4",
+    ///   "version": "1.5",
     ///   "to_id": "proto::to",
     ///   "from_id": "proto::from",
     ///   "payload_security": "PLAINTEXT",
@@ -2890,13 +2919,13 @@ pub mod rhai_rusp {
     ///  msg.to_string()
     /// # "#;
     /// # let msg = rhai_rusp::eval_rusp::<String>(script).unwrap();
-    /// # assert_eq!(msg, "{\n  \"version\": \"1.4\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
+    /// # assert_eq!(msg, "{\n  \"version\": \"1.5\",\n  \"to_id\": \"proto::to\",\n  \"from_id\": \"proto::from\",\n  \"originator_id\": \"\",\n  \"destination_id\": \"\",\n  \"payload_security\": \"PLAINTEXT\",\n  \"mac_signature\": [],\n  \"sender_cert\": [],\n  \"payload\": {\n    \"Header\": {\n      \"msg_id\": \"id\",\n      \"msg_type\": \"GET\"\n    },\n    \"Body\": {\n      \"Request\": {\n        \"Get\": {\n          \"param_paths\": [\n            \"Device.\"\n          ],\n          \"max_depth\": 0\n        }\n      }\n    }\n  }\n}");
     /// ```
     ///
     /// This example will return a JSON output like:
     /// ```text
     /// {
-    ///   "version": "1.4",
+    ///   "version": "1.5",
     ///   "to_id": "proto::to",
     ///   "from_id": "proto::from",
     ///   "payload_security": "PLAINTEXT",
@@ -3515,11 +3544,11 @@ pub mod rhai_rusp {
     #[rhai_fn(global, name = "extract_msg")]
     pub fn record_extract_msg(record: &mut Record) -> Dynamic {
         match &mut record.record_type {
-            OneOfrecord_type::session_context(ctx) => {
+            Some(RecordType::SessionContext(ctx)) => {
                 let payload = ctx.payload_flatten();
                 Dynamic::from_blob(mem::take(payload))
             }
-            OneOfrecord_type::no_session_context(ctx) => {
+            Some(RecordType::NoSessionContext(ctx)) => {
                 Dynamic::from_blob(mem::take(&mut ctx.payload))
             }
             _ => Dynamic::UNIT,
@@ -3588,7 +3617,7 @@ pub mod rhai_rusp {
             .read_to_end(&mut contents)
             .map_err(|e| e.to_string())?;
         let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
-        if record.record_type == OneOfrecord_type::None {
+        if record.record_type.is_none() {
             Err("Protobuf file doesn't contain a valid USP Record")?;
         }
         Ok(record)
@@ -3615,7 +3644,7 @@ pub mod rhai_rusp {
             .map(|mut f| f.read_to_end(&mut contents))
             .map_err(|e| e.to_string())?;
         let record = try_decode_record(&contents).map_err(|e| e.to_string())?;
-        if record.record_type == OneOfrecord_type::None {
+        if record.record_type.is_none() {
             Err("Protobuf file doesn't contain a valid USP Record")?;
         }
         Ok(record)

@@ -41,7 +41,11 @@ impl Serialize for Record {
         state.serialize_field("from_id", &self.from_id)?;
         state.serialize_field("originator_id", &self.originator_id)?;
         state.serialize_field("destination_id", &self.destination_id)?;
-        state.serialize_field("payload_security", &self.payload_security)?;
+        if let Ok(typ) = PayloadSecurity::try_from(self.payload_security) {
+            state.serialize_field("payload_security", &typ)?
+        } else {
+            state.serialize_field("payload_security", &self.payload_security)?;
+        }
         state.serialize_field("mac_signature", &self.mac_signature)?;
         state.serialize_field("sender_cert", &self.sender_cert)?;
 

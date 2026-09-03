@@ -1,6 +1,5 @@
 mod tests {
-    use quick_protobuf::{BytesReader, MessageRead};
-    use rusp_lib::usp_record::Record;
+    use rusp_lib::usp_decoder::try_decode_record;
     use serde_json::{json, Value};
 
     #[test]
@@ -17,8 +16,7 @@ mod tests {
             0x6d, 0x62, 0x65, 0x72, 0x22, 0x03, 0x31, 0x2e, 0x30,
         ];
 
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string(&record).unwrap();
         let parsed: Value = serde_json::from_str(&serialized).unwrap();
@@ -75,8 +73,7 @@ mod tests {
             0x73, 0x74, 0x18, 0x01,
         ];
 
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string(&record).unwrap();
         let parsed: Value = serde_json::from_str(&serialized).unwrap();
@@ -140,8 +137,7 @@ mod tests {
             0x57, 0x65, 0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string(&record).unwrap();
         let parsed: Value = serde_json::from_str(&serialized).unwrap();
@@ -191,8 +187,7 @@ mod tests {
             0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         let serialized = serde_json::to_string(&record).unwrap();
         let parsed: Value = serde_json::from_str(&serialized).unwrap();

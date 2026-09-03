@@ -360,7 +360,7 @@ fn write_record<W: Write>(
 }
 
 fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result<()> {
-    use rusp::usp_record::mod_Record::OneOfrecord_type;
+    use rusp::usp_record::record::RecordType;
 
     let fp = File::open(in_file)?;
     let mut buf_reader = BufReader::new(fp);
@@ -370,22 +370,22 @@ fn extract_msg(in_file: &Path, out_file: &Path, format: &OutputFormat) -> Result
     let record = try_decode_record(&contents)?;
 
     match record.record_type {
-        OneOfrecord_type::no_session_context(context) => {
+        Some(RecordType::NoSessionContext(context)) => {
             let msg = try_decode_msg(&context.payload)?;
             // Open output stream
             let out = get_out_stream(Some(out_file.to_path_buf()))?;
-            write_msg(&msg, out, format)?;
+            write_msg(&msg, out, format)
         }
-        OneOfrecord_type::session_context(_)
-        | OneOfrecord_type::websocket_connect(_)
-        | OneOfrecord_type::mqtt_connect(_)
-        | OneOfrecord_type::stomp_connect(_)
-        | OneOfrecord_type::uds_connect(_)
-        | OneOfrecord_type::disconnect(_)
-        | OneOfrecord_type::None => unreachable!(),
+        Some(RecordType::SessionContext(mut ctx)) => {
+            let payload = ctx.payload_flatten();
+            let msg = try_decode_msg(payload)?;
+            let out = get_out_stream(Some(out_file.to_path_buf()))?;
+            write_msg(&msg, out, format)
+        }
+        _ => Err(anyhow::anyhow!(
+            "Tried to extract message from Record without payload"
+        )),
     }
-
-    Ok(())
 }
 
 fn main() -> Result<()> {

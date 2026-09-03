@@ -1,7 +1,10 @@
 mod tests {
-    use quick_protobuf::{BytesReader, MessageRead};
-    use rusp_lib::usp::{mod_Body::OneOfmsg_body::request, Msg};
-    use rusp_lib::usp_record::{mod_Record::OneOfrecord_type::no_session_context, Record};
+    use rusp_lib::usp::body::MsgBody;
+    use rusp_lib::usp::header::MsgType;
+    use rusp_lib::usp::notify::Notification;
+    use rusp_lib::usp::request::ReqType;
+    use rusp_lib::usp_decoder::{try_decode_msg, try_decode_record};
+    use rusp_lib::usp_record::record::{PayloadSecurity, RecordType};
 
     #[test]
     fn simple_notify() {
@@ -17,39 +20,35 @@ mod tests {
             0x6d, 0x62, 0x65, 0x72, 0x22, 0x03, 0x31, 0x2e, 0x30,
         ];
 
-        use rusp_lib::usp::{
-            mod_Header::MsgType::NOTIFY, mod_Notify::OneOfnotification::on_board_req,
-            mod_Request::OneOfreq_type::notify,
-        };
-
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         assert!(record.version == "1.0");
         assert!(record.from_id == "proto::ax-usp-agent-nossl-websocket");
-        assert!(record.payload_security == "".into());
+        assert!(record.payload_security == PayloadSecurity::Plaintext as i32);
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(matches!(record.record_type, no_session_context(_)));
+        assert!(matches!(
+            record.record_type,
+            Some(RecordType::NoSessionContext(_))
+        ));
 
-        if let no_session_context(context) = record.record_type {
-            let mut reader = BytesReader::from_bytes(&context.payload);
-            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+        if let Some(RecordType::NoSessionContext(context)) = record.record_type {
+            let msg = try_decode_msg(&context.payload).expect("Cannot read Msg");
             assert!(msg.header.is_some());
 
             if let Some(header) = msg.header {
                 assert!(header.msg_id == "test");
-                assert!(header.msg_type == NOTIFY);
+                assert!(header.msg_type == MsgType::Notify as i32);
             }
 
             if let Some(body) = msg.body {
-                if let request(req) = body.msg_body {
-                    assert!(matches!(req.req_type, notify(_)));
+                if let Some(MsgBody::Request(req)) = body.msg_body {
+                    assert!(matches!(req.req_type, Some(ReqType::Notify(_))));
 
-                    if let notify(a) = req.req_type {
+                    if let Some(ReqType::Notify(a)) = req.req_type {
                         assert!(a.subscription_id == "subscription_id");
                         assert!(!a.send_resp);
-                        if let on_board_req(n) = a.notification {
+                        if let Some(Notification::OnBoardReq(n)) = a.notification {
                             assert!(n.oui == "oui");
                             assert!(n.product_class == "product_class");
                             assert!(n.serial_number == "serial_number");
@@ -80,34 +79,33 @@ mod tests {
             0x73, 0x74, 0x18, 0x01,
         ];
 
-        use rusp_lib::usp::{mod_Header::MsgType::ADD, mod_Request::OneOfreq_type::add};
-
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         assert!(record.version == "1.0");
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
-        assert!(record.payload_security == "".into());
+        assert!(record.payload_security == PayloadSecurity::Plaintext as i32);
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(matches!(record.record_type, no_session_context(_)));
+        assert!(matches!(
+            record.record_type,
+            Some(RecordType::NoSessionContext(_))
+        ));
 
-        if let no_session_context(context) = record.record_type {
-            let mut reader = BytesReader::from_bytes(&context.payload);
-            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+        if let Some(RecordType::NoSessionContext(context)) = record.record_type {
+            let msg = try_decode_msg(&context.payload).expect("Cannot read Msg");
             assert!(msg.header.is_some());
 
             if let Some(header) = msg.header {
                 assert!(header.msg_id == "AXSS-1544114083.761508");
-                assert!(header.msg_type == ADD);
+                assert!(header.msg_type == MsgType::Add as i32);
             }
 
             if let Some(body) = msg.body {
-                if let request(req) = body.msg_body {
-                    assert!(matches!(req.req_type, add(_)));
+                if let Some(MsgBody::Request(req)) = body.msg_body {
+                    assert!(matches!(req.req_type, Some(ReqType::Add(_))));
 
-                    if let add(a) = req.req_type {
+                    if let Some(ReqType::Add(a)) = req.req_type {
                         assert!(a.allow_partial);
                         assert!(a.create_objs.len() == 1);
                         let createobj = &a.create_objs[0];
@@ -144,34 +142,33 @@ mod tests {
             0x57, 0x65, 0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        use rusp_lib::usp::{mod_Header::MsgType::DELETE, mod_Request::OneOfreq_type::delete};
-
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         assert!(record.version == "1.0");
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
-        assert!(record.payload_security == "".into());
+        assert!(record.payload_security == PayloadSecurity::Plaintext as i32);
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(matches!(record.record_type, no_session_context(_)));
+        assert!(matches!(
+            record.record_type,
+            Some(RecordType::NoSessionContext(_))
+        ));
 
-        if let no_session_context(context) = record.record_type {
-            let mut reader = BytesReader::from_bytes(&context.payload);
-            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+        if let Some(RecordType::NoSessionContext(context)) = record.record_type {
+            let msg = try_decode_msg(&context.payload).expect("Cannot read Msg");
             assert!(msg.header.is_some());
 
             if let Some(header) = msg.header {
                 assert!(header.msg_id == "AXSS-1544114102.668439");
-                assert!(header.msg_type == DELETE);
+                assert!(header.msg_type == MsgType::Delete as i32);
             }
 
             if let Some(body) = msg.body {
-                if let request(req) = body.msg_body {
-                    assert!(matches!(req.req_type, delete(_)));
+                if let Some(MsgBody::Request(req)) = body.msg_body {
+                    assert!(matches!(req.req_type, Some(ReqType::Delete(_))));
 
-                    if let delete(a) = req.req_type {
+                    if let Some(ReqType::Delete(a)) = req.req_type {
                         assert!(a.allow_partial);
                         assert!(a.obj_paths.len() == 1);
                         assert!(&a.obj_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
@@ -197,34 +194,33 @@ mod tests {
             0x62, 0x53, 0x6f, 0x63, 0x6b, 0x65, 0x74, 0x2e,
         ];
 
-        use rusp_lib::usp::{mod_Header::MsgType::GET, mod_Request::OneOfreq_type::get};
-
-        let mut reader = BytesReader::from_bytes(&bytes);
-        let record = Record::from_reader(&mut reader, &bytes).expect("Cannot read Record");
+        let record = try_decode_record(&bytes).expect("Cannot read Record");
 
         assert!(record.version == "1.0");
         assert!(record.to_id == "proto::ax-usp-agent-nossl-websocket");
         assert!(record.from_id == "proto::ax-usp-controller-nossl");
-        assert!(record.payload_security == "".into());
+        assert!(record.payload_security == PayloadSecurity::Plaintext as i32);
         assert!(record.mac_signature.clone().is_empty());
         assert!(record.sender_cert.clone().is_empty());
-        assert!(matches!(record.record_type, no_session_context(_)));
+        assert!(matches!(
+            record.record_type,
+            Some(RecordType::NoSessionContext(_))
+        ));
 
-        if let no_session_context(context) = record.record_type {
-            let mut reader = BytesReader::from_bytes(&context.payload);
-            let msg = Msg::from_reader(&mut reader, &context.payload).expect("Cannot read Msg");
+        if let Some(RecordType::NoSessionContext(context)) = record.record_type {
+            let msg = try_decode_msg(&context.payload).expect("Cannot read Msg");
             assert!(msg.header.is_some());
 
             if let Some(header) = msg.header {
                 assert!(header.msg_id == "AXSS-1544114045.442596");
-                assert!(header.msg_type == GET);
+                assert!(header.msg_type == MsgType::Get as i32);
             }
 
             if let Some(body) = msg.body {
-                if let request(req) = body.msg_body {
-                    assert!(matches!(req.req_type, get(_)));
+                if let Some(MsgBody::Request(req)) = body.msg_body {
+                    assert!(matches!(req.req_type, Some(ReqType::Get(_))));
 
-                    if let get(a) = req.req_type {
+                    if let Some(ReqType::Get(a)) = req.req_type {
                         assert!(a.param_paths.len() == 1);
                         assert!(&a.param_paths[0] == "Device.LocalAgent.MTP.1.WebSocket.");
                     }
