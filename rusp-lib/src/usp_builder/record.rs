@@ -269,7 +269,7 @@ impl RecordBuilder {
 
         let mut record = Record {
             version: if self.version.is_empty() {
-                "1.4".into()
+                "1.5".into()
             } else {
                 self.version
             },
@@ -303,8 +303,9 @@ impl RecordBuilder {
                     Some(record::RecordType::SessionContext(session_context.build()?));
             }
             RecordType::WebSocketConnect => {
-                record.record_type =
-                    Some(record::RecordType::WebsocketConnect(WebSocketConnectRecord {}));
+                record.record_type = Some(record::RecordType::WebsocketConnect(
+                    WebSocketConnectRecord {},
+                ));
             }
             RecordType::MQTTConnect {
                 version,
@@ -320,12 +321,11 @@ impl RecordBuilder {
                 version,
                 subscribed_destination,
             } => {
-                record.record_type =
-                    Some(record::RecordType::StompConnect(StompConnectRecord {
-                        version: version as i32,
-                        subscribed_destination,
-                        ..Default::default()
-                    }));
+                record.record_type = Some(record::RecordType::StompConnect(StompConnectRecord {
+                    version: version as i32,
+                    subscribed_destination,
+                    ..Default::default()
+                }));
             }
             RecordType::Disconnect {
                 reason,
