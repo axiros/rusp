@@ -60,8 +60,8 @@ mod tests {
 
     use std::collections::HashMap;
 
-    use crate::usp::mod_Body::OneOfmsg_body;
-    use crate::usp::mod_Response::OneOfresp_type;
+    use crate::usp::body::MsgBody;
+    use crate::usp::response::RespType;
     use crate::usp::Response;
     use crate::usp_decoder::try_decode_msg;
 
@@ -614,9 +614,9 @@ mod tests {
         let msg = try_decode_msg(data).expect("deserialisation failed");
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::get_instances_resp(_)
-            })
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::GetInstancesResp(_))
+            }))
         ));
     }
 
@@ -632,9 +632,9 @@ mod tests {
         let msg = try_decode_msg(data).expect("deserialisation failed");
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::add_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::AddResp(_))
+            })),
         ));
     }
 
@@ -648,9 +648,9 @@ mod tests {
         let msg = try_decode_msg(data).expect("deserialisation failed");
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::delete_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::DeleteResp(_))
+            })),
         ));
     }
 
@@ -665,9 +665,9 @@ mod tests {
         let msg = try_decode_msg(data).expect("deserialisation failed");
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::delete_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::DeleteResp(_))
+            })),
         ));
     }
 
@@ -703,9 +703,9 @@ mod tests {
 
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::get_supported_dm_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::GetSupportedDmResp(_))
+            })),
         ));
     }
 
@@ -719,9 +719,9 @@ mod tests {
 
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::operate_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::OperateResp(_))
+            })),
         ));
     }
 
@@ -736,9 +736,9 @@ mod tests {
 
         assert!(matches!(
             msg.body.unwrap().msg_body,
-            OneOfmsg_body::response(Response {
-                resp_type: OneOfresp_type::set_resp(_)
-            }),
+            Some(MsgBody::Response(Response {
+                resp_type: Some(RespType::SetResp(_))
+            })),
         ));
     }
 }
