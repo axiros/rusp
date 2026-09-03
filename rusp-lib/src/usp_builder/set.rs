@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::usp::mod_Set::{UpdateObject, UpdateParamSetting};
-use crate::usp::mod_SetResp::mod_UpdatedObjectResult::mod_OperationStatus::{
-    OneOfoper_status::{oper_failure, oper_success},
-    OperationFailure, OperationSuccess,
-};
-use crate::usp::mod_SetResp::ParameterError;
-use crate::usp::mod_SetResp::{mod_UpdatedObjectResult::OperationStatus, UpdatedObjectResult};
-use crate::usp::mod_SetResp::{UpdatedInstanceFailure, UpdatedInstanceResult};
+use crate::usp::body::MsgBody;
+use crate::usp::set::UpdateObject;
+use crate::usp::set::UpdateParamSetting;
+use crate::usp::set_resp::updated_object_result::OperationStatus;
+use crate::usp::set_resp::{ParameterError, UpdatedInstanceFailure, UpdatedInstanceResult};
+use crate::usp::set_resp::UpdatedObjectResult;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Request, Response, Set, SetResp};
 use crate::usp_errors;
 
@@ -42,12 +42,14 @@ impl UpdateObjectBuilder {
                 param: n,
                 value: v,
                 required: r,
+                ..Default::default()
             })
             .collect();
 
         Ok(UpdateObject {
             obj_path: self.obj_path,
             param_settings,
+            ..Default::default()
         })
     }
 }
@@ -80,9 +82,6 @@ impl SetBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
-        use crate::usp::mod_Body::OneOfmsg_body::request;
-        use crate::usp::mod_Request::OneOfreq_type::set;
-
         let update_objs = self
             .update_objs
             .into_iter()
@@ -90,16 +89,19 @@ impl SetBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: set({
+                    req_type: Some(ReqType::Set({
                         Set {
                             allow_partial: self.allow_partial,
                             update_objs,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -214,9 +216,13 @@ impl SetOperationStatus {
     }
 
     pub fn build(self) -> Result<OperationStatus> {
+        use crate::usp::set_resp::updated_object_result::operation_status::{
+            OperStatus, OperationFailure, OperationSuccess,
+        };
+
         match self {
             Self::Failure(f) => Ok(OperationStatus {
-                oper_status: oper_failure(OperationFailure {
+                oper_status: Some(OperStatus::OperFailure(OperationFailure {
                     err_code: f.err_code,
                     err_msg: f.err_msg,
                     updated_inst_failures: f
@@ -235,14 +241,18 @@ impl SetOperationStatus {
                                     } else {
                                         p.err_msg
                                     },
+                                    ..Default::default()
                                 })
                                 .collect(),
+                            ..Default::default()
                         })
                         .collect(),
-                }),
+                    ..Default::default()
+                })),
+                ..Default::default()
             }),
             Self::Success(s) => Ok(OperationStatus {
-                oper_status: oper_success(OperationSuccess {
+                oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                     updated_inst_results: s
                         .into_iter()
                         .map(|s| UpdatedInstanceResult {
@@ -258,12 +268,16 @@ impl SetOperationStatus {
                                     } else {
                                         e.err_msg
                                     },
+                                    ..Default::default()
                                 })
                                 .collect(),
                             updated_params: s.updated_params.into_iter().collect(),
+                            ..Default::default()
                         })
                         .collect(),
-                }),
+                    ..Default::default()
+                })),
+                ..Default::default()
             }),
             Self::None => Err(anyhow::anyhow!("")),
         }
@@ -289,6 +303,7 @@ impl UpdatedObjectResultsBuilder {
         Ok(UpdatedObjectResult {
             requested_path: self.requested_path,
             oper_status: Some(self.oper_status.build()?),
+            ..Default::default()
         })
     }
 }
@@ -316,9 +331,6 @@ impl SetRespBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
-        use crate::usp::mod_Body::OneOfmsg_body::response;
-        use crate::usp::mod_Response::OneOfresp_type::set_resp;
-
         let updated_obj_results = self
             .updated_obj_results
             .into_iter()
@@ -326,15 +338,18 @@ impl SetRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: set_resp({
+                    resp_type: Some(RespType::SetResp({
                         SetResp {
                             updated_obj_results,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

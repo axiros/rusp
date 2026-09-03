@@ -1,6 +1,6 @@
-use crate::usp::mod_Body::OneOfmsg_body;
-use crate::usp::mod_Request::OneOfreq_type;
-use crate::usp::mod_Response::OneOfresp_type;
+use crate::usp::body::MsgBody;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::Body;
 use crate::usp::Header;
 use crate::usp::Msg;
@@ -36,22 +36,7 @@ impl MsgBuilder {
     }
 
     pub fn build(self) -> Result<Msg> {
-        use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-        use crate::usp::mod_Header::MsgType::{
-            ADD, ADD_RESP, DELETE, DELETE_RESP, DEREGISTER, DEREGISTER_RESP, ERROR, GET,
-            GET_INSTANCES, GET_INSTANCES_RESP, GET_RESP, GET_SUPPORTED_DM, GET_SUPPORTED_DM_RESP,
-            GET_SUPPORTED_PROTO, GET_SUPPORTED_PROTO_RESP, NOTIFY, NOTIFY_RESP, OPERATE,
-            OPERATE_RESP, REGISTER, REGISTER_RESP, SET, SET_RESP,
-        };
-        use crate::usp::mod_Request::OneOfreq_type::{
-            add, delete, deregister, get, get_instances, get_supported_dm, get_supported_protocol,
-            notify, operate, register, set,
-        };
-        use crate::usp::mod_Response::OneOfresp_type::{
-            add_resp, delete_resp, deregister_resp, get_instances_resp, get_resp,
-            get_supported_dm_resp, get_supported_protocol_resp, notify_resp, operate_resp,
-            register_resp, set_resp,
-        };
+        use crate::usp::header::MsgType;
 
         let msg_id = self
             .msg_id
@@ -61,41 +46,46 @@ impl MsgBuilder {
             .with_context(|| "Cannot produce USP Msg without msg_body")?;
 
         let msg_type = match &body.msg_body {
-            request(ref req) => match &req.req_type {
-                get(_) => GET,
-                get_supported_dm(_) => GET_SUPPORTED_DM,
-                get_instances(_) => GET_INSTANCES,
-                set(_) => SET,
-                add(_) => ADD,
-                delete(_) => DELETE,
-                operate(_) => OPERATE,
-                notify(_) => NOTIFY,
-                get_supported_protocol(_) => GET_SUPPORTED_PROTO,
-                register(_) => REGISTER,
-                deregister(_) => DEREGISTER,
-                OneOfreq_type::None => anyhow::bail!("Request type can't be None"),
+            Some(MsgBody::Request(req)) => match &req.req_type {
+                Some(ReqType::Get(_)) => MsgType::Get,
+                Some(ReqType::GetSupportedDm(_)) => MsgType::GetSupportedDm,
+                Some(ReqType::GetInstances(_)) => MsgType::GetInstances,
+                Some(ReqType::Set(_)) => MsgType::Set,
+                Some(ReqType::Add(_)) => MsgType::Add,
+                Some(ReqType::Delete(_)) => MsgType::Delete,
+                Some(ReqType::Operate(_)) => MsgType::Operate,
+                Some(ReqType::Notify(_)) => MsgType::Notify,
+                Some(ReqType::GetSupportedProtocol(_)) => MsgType::GetSupportedProto,
+                Some(ReqType::Register(_)) => MsgType::Register,
+                Some(ReqType::Deregister(_)) => MsgType::Deregister,
+                None => anyhow::bail!("Request type can't be None"),
             },
-            response(ref resp) => match &resp.resp_type {
-                get_resp(_) => GET_RESP,
-                get_supported_dm_resp(_) => GET_SUPPORTED_DM_RESP,
-                get_instances_resp(_) => GET_INSTANCES_RESP,
-                set_resp(_) => SET_RESP,
-                add_resp(_) => ADD_RESP,
-                delete_resp(_) => DELETE_RESP,
-                operate_resp(_) => OPERATE_RESP,
-                notify_resp(_) => NOTIFY_RESP,
-                get_supported_protocol_resp(_) => GET_SUPPORTED_PROTO_RESP,
-                register_resp(_) => REGISTER_RESP,
-                deregister_resp(_) => DEREGISTER_RESP,
-                OneOfresp_type::None => Err(anyhow!("Response type can't be None"))?,
+            Some(MsgBody::Response(resp)) => match &resp.resp_type {
+                Some(RespType::GetResp(_)) => MsgType::GetResp,
+                Some(RespType::GetSupportedDmResp(_)) => MsgType::GetSupportedDmResp,
+                Some(RespType::GetInstancesResp(_)) => MsgType::GetInstancesResp,
+                Some(RespType::SetResp(_)) => MsgType::SetResp,
+                Some(RespType::AddResp(_)) => MsgType::AddResp,
+                Some(RespType::DeleteResp(_)) => MsgType::DeleteResp,
+                Some(RespType::OperateResp(_)) => MsgType::OperateResp,
+                Some(RespType::NotifyResp(_)) => MsgType::NotifyResp,
+                Some(RespType::GetSupportedProtocolResp(_)) => MsgType::GetSupportedProtoResp,
+                Some(RespType::RegisterResp(_)) => MsgType::RegisterResp,
+                Some(RespType::DeregisterResp(_)) => MsgType::DeregisterResp,
+                None => Err(anyhow!("Response type can't be None"))?,
             },
-            OneOfmsg_body::error(_) => ERROR,
-            OneOfmsg_body::None => Err(anyhow!("Body type can't be None"))?,
+            Some(MsgBody::Error(_)) => MsgType::Error,
+            None => Err(anyhow!("Body type can't be None"))?,
         };
 
         Ok(Msg {
-            header: Some(Header { msg_id, msg_type }),
+            header: Some(Header {
+                msg_id,
+                msg_type: msg_type as i32,
+                ..Default::default()
+            }),
             body: Some(body),
+            ..Default::default()
         })
     }
 }

@@ -1,6 +1,6 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_Request::OneOfreq_type::get_supported_protocol;
-use crate::usp::mod_Response::OneOfresp_type::get_supported_protocol_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, GetSupportedProtocol, GetSupportedProtocolResp, Request, Response};
 
 use anyhow::Result;
@@ -20,16 +20,19 @@ impl GetSupportedProtocolBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: get_supported_protocol({
+                    req_type: Some(ReqType::GetSupportedProtocol({
                         GetSupportedProtocol {
                             controller_supported_protocol_versions: self
                                 .controller_supported_protocol_versions,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -49,16 +52,19 @@ impl GetSupportedProtocolRespBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: get_supported_protocol_resp({
+                    resp_type: Some(RespType::GetSupportedProtocolResp({
                         GetSupportedProtocolResp {
                             agent_supported_protocol_versions: self
                                 .agent_supported_protocol_versions,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

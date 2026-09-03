@@ -1,13 +1,11 @@
 use crate::usp::Msg;
-use crate::usp_record::mod_MQTTConnectRecord::MQTTVersion;
-use crate::usp_record::mod_Record::{OneOfrecord_type, PayloadSecurity};
-use crate::usp_record::mod_SessionContextRecord::PayloadSARState;
-use crate::usp_record::NoSessionContextRecord;
-use crate::usp_record::Record;
-use crate::usp_record::SessionContextRecord;
+use crate::usp_record::mqtt_connect_record::MqttVersion;
+use crate::usp_record::record::{self, PayloadSecurity};
+use crate::usp_record::session_context_record::PayloadSarState;
+use crate::usp_record::stomp_connect_record::StompVersion;
 use crate::usp_record::{
-    DisconnectRecord, MQTTConnectRecord, STOMPConnectRecord, UDSConnectRecord,
-    WebSocketConnectRecord,
+    DisconnectRecord, MqttConnectRecord, NoSessionContextRecord, Record, SessionContextRecord,
+    StompConnectRecord, UdsConnectRecord, WebSocketConnectRecord,
 };
 
 use anyhow::anyhow;
@@ -22,11 +20,11 @@ enum RecordType {
     },
     WebSocketConnect,
     MQTTConnect {
-        version: MQTTVersion,
+        version: MqttVersion,
         subscribed_topic: String,
     },
     STOMPConnect {
-        version: crate::usp_record::mod_STOMPConnectRecord::STOMPVersion,
+        version: StompVersion,
         subscribed_destination: String,
     },
     Disconnect {
@@ -100,10 +98,11 @@ impl SessionContextBuilder {
                 .ok_or_else(|| anyhow!("Need to supply a expected ID for a session context"))?,
             retransmit_id: self.retransmit_id,
             // FIXME
-            payload_sar_state: PayloadSARState::NONE,
+            payload_sar_state: PayloadSarState::None as i32,
             // FIXME
-            payloadrec_sar_state: PayloadSARState::NONE,
+            payloadrec_sar_state: PayloadSarState::None as i32,
             payload: self.payload.map_or_else(Vec::new, |payload| vec![payload]),
+            ..Default::default()
         };
 
         Ok(scr)
@@ -135,7 +134,7 @@ impl RecordBuilder {
             destination_id: String::new(),
             sender_cert: vec![],
             mac_signature: vec![],
-            payload_security: PayloadSecurity::PLAINTEXT,
+            payload_security: PayloadSecurity::Plaintext,
             payload: None,
             typ: RecordType::None,
         }
@@ -189,7 +188,7 @@ impl RecordBuilder {
 
     #[must_use]
     pub const fn with_payload_security_tls12(mut self) -> Self {
-        self.payload_security = PayloadSecurity::TLS12;
+        self.payload_security = PayloadSecurity::Tls12;
         self
     }
 
@@ -202,8 +201,7 @@ impl RecordBuilder {
     #[must_use]
     pub fn with_no_session_context_payload(self, msg: &Msg) -> Self {
         let mut buf = Vec::new();
-        let mut writer = quick_protobuf::Writer::new(&mut buf);
-        let _ = quick_protobuf::MessageWrite::write_message(msg, &mut writer);
+        let _ = prost::Message::encode(msg, &mut buf);
         self.with_no_session_context_payload_bytes(buf)
     }
 
@@ -223,7 +221,7 @@ impl RecordBuilder {
     #[must_use]
     pub fn as_mqtt_connect_record(
         mut self,
-        version: MQTTVersion,
+        version: MqttVersion,
         subscribed_topic: String,
     ) -> Self {
         self.typ = RecordType::MQTTConnect {
@@ -236,7 +234,7 @@ impl RecordBuilder {
     #[must_use]
     pub fn as_stomp_connect_record(
         mut self,
-        version: crate::usp_record::mod_STOMPConnectRecord::STOMPVersion,
+        version: StompVersion,
         subscribed_destination: String,
     ) -> Self {
         self.typ = RecordType::STOMPConnect {
@@ -281,8 +279,9 @@ impl RecordBuilder {
             destination_id: self.destination_id,
             sender_cert: self.sender_cert,
             mac_signature: self.mac_signature,
-            payload_security: self.payload_security,
-            record_type: OneOfrecord_type::None,
+            payload_security: self.payload_security as i32,
+            record_type: None,
+            ..Default::default()
         };
 
         match self.typ {
@@ -292,44 +291,54 @@ impl RecordBuilder {
                     .payload
                     .with_context(|| "Cannot produce USP Record without payload")?;
 
-                record.record_type =
-                    OneOfrecord_type::no_session_context(NoSessionContextRecord { payload });
+                record.record_type = Some(record::RecordType::NoSessionContext(
+                    NoSessionContextRecord {
+                        payload,
+                        ..Default::default()
+                    },
+                ));
             }
             RecordType::SessionContext { session_context } => {
-                record.record_type = OneOfrecord_type::session_context(session_context.build()?);
+                record.record_type =
+                    Some(record::RecordType::SessionContext(session_context.build()?));
             }
             RecordType::WebSocketConnect => {
-                record.record_type = OneOfrecord_type::websocket_connect(WebSocketConnectRecord {});
+                record.record_type =
+                    Some(record::RecordType::WebsocketConnect(WebSocketConnectRecord {}));
             }
             RecordType::MQTTConnect {
                 version,
                 subscribed_topic,
             } => {
-                record.record_type = OneOfrecord_type::mqtt_connect(MQTTConnectRecord {
-                    version,
+                record.record_type = Some(record::RecordType::MqttConnect(MqttConnectRecord {
+                    version: version as i32,
                     subscribed_topic,
-                });
+                    ..Default::default()
+                }));
             }
             RecordType::STOMPConnect {
                 version,
                 subscribed_destination,
             } => {
-                record.record_type = OneOfrecord_type::stomp_connect(STOMPConnectRecord {
-                    version,
-                    subscribed_destination,
-                });
+                record.record_type =
+                    Some(record::RecordType::StompConnect(StompConnectRecord {
+                        version: version as i32,
+                        subscribed_destination,
+                        ..Default::default()
+                    }));
             }
             RecordType::Disconnect {
                 reason,
                 reason_code,
             } => {
-                record.record_type = OneOfrecord_type::disconnect(DisconnectRecord {
+                record.record_type = Some(record::RecordType::Disconnect(DisconnectRecord {
                     reason,
                     reason_code,
-                });
+                    ..Default::default()
+                }));
             }
             RecordType::UDSConnect => {
-                record.record_type = OneOfrecord_type::uds_connect(UDSConnectRecord {});
+                record.record_type = Some(record::RecordType::UdsConnect(UdsConnectRecord {}));
             }
         }
 

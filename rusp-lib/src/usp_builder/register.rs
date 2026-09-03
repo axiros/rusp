@@ -1,12 +1,9 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_Register::RegistrationPath;
-use crate::usp::mod_RegisterResp::mod_RegisteredPathResult::mod_OperationStatus::{
-    OneOfoper_status, OperationFailure, OperationSuccess,
-};
-use crate::usp::mod_RegisterResp::mod_RegisteredPathResult::OperationStatus;
-use crate::usp::mod_RegisterResp::RegisteredPathResult;
-use crate::usp::mod_Request::OneOfreq_type::register;
-use crate::usp::mod_Response::OneOfresp_type::register_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::register::RegistrationPath;
+use crate::usp::register_resp::registered_path_result::OperationStatus;
+use crate::usp::register_resp::RegisteredPathResult;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Register, RegisterResp, Request, Response};
 
 use crate::usp_errors;
@@ -42,20 +39,26 @@ impl RegisterBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: register({
+                    req_type: Some(ReqType::Register({
                         Register {
                             allow_partial: self.allow_partial,
                             reg_paths: self
                                 .reg_paths
                                 .into_iter()
-                                .map(|p| RegistrationPath { path: p })
+                                .map(|p| RegistrationPath {
+                                    path: p,
+                                    ..Default::default()
+                                })
                                 .collect(),
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -98,22 +101,29 @@ impl RegisteredPathResultBuilder {
     }
 
     pub fn build(self) -> Result<RegisteredPathResult> {
+        use crate::usp::register_resp::registered_path_result::operation_status::{
+            OperStatus, OperationFailure, OperationSuccess,
+        };
+
         Ok(RegisteredPathResult {
             requested_path: self.requested_path,
             oper_status: Some(match self.oper_status {
-                RegisterOperationStatus::Failure { err_code, err_msg } => Ok(OperationStatus {
-                    oper_status: OneOfoper_status::oper_failure(OperationFailure {
+                RegisterOperationStatus::Failure { err_code, err_msg } => OperationStatus {
+                    oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,
                         err_msg,
-                    }),
-                }),
-                RegisterOperationStatus::Success(s) => Ok(OperationStatus {
-                    oper_status: OneOfoper_status::oper_success(OperationSuccess {
+                        ..Default::default()
+                    })),
+                },
+                RegisterOperationStatus::Success(s) => OperationStatus {
+                    oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                         registered_path: s,
-                    }),
-                }),
-                RegisterOperationStatus::None => Err(anyhow::anyhow!("")),
-            }?),
+                        ..Default::default()
+                    })),
+                },
+                RegisterOperationStatus::None => Err(anyhow::anyhow!(""))?,
+            }),
+            ..Default::default()
         })
     }
 }
@@ -148,13 +158,16 @@ impl RegisterRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: register_resp(RegisterResp {
+                    resp_type: Some(RespType::RegisterResp(RegisterResp {
                         registered_path_results,
-                    }),
+                        ..Default::default()
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

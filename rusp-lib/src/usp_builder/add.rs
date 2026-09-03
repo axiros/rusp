@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
-use crate::usp::mod_Add::{CreateObject, CreateParamSetting};
-use crate::usp::mod_AddResp::{mod_CreatedObjectResult::OperationStatus, CreatedObjectResult};
+use crate::usp::add::{CreateObject, CreateParamSetting};
+use crate::usp::add_resp::{created_object_result::OperationStatus, CreatedObjectResult};
+use crate::usp::body::MsgBody;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Add, AddResp, Body, Request, Response};
 use crate::usp_errors;
 
@@ -74,9 +77,6 @@ impl AddBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
-        use crate::usp::mod_Body::OneOfmsg_body::request;
-        use crate::usp::mod_Request::OneOfreq_type::add;
-
         let create_objs = self
             .create_objs
             .into_iter()
@@ -84,16 +84,19 @@ impl AddBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: add({
+                    req_type: Some(ReqType::Add({
                         Add {
                             allow_partial: self.allow_partial,
                             create_objs,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -154,20 +157,20 @@ impl AddOperationStatus {
     }
 
     pub fn build(self) -> Result<OperationStatus> {
-        use crate::usp::mod_AddResp::mod_CreatedObjectResult::mod_OperationStatus::{
-            OneOfoper_status::{oper_failure, oper_success},
-            OperationFailure, OperationSuccess,
+        use crate::usp::add_resp::created_object_result::operation_status::{
+            OperStatus, OperationFailure, OperationSuccess,
         };
-        use crate::usp::mod_AddResp::ParameterError;
+        use crate::usp::add_resp::ParameterError;
         match self {
             Self::Failure(f) => Ok(OperationStatus {
-                oper_status: oper_failure(OperationFailure {
+                oper_status: Some(OperStatus::OperFailure(OperationFailure {
                     err_code: f.err_code,
                     err_msg: f.err_msg,
-                }),
+                    ..Default::default()
+                })),
             }),
             Self::Success(s) => Ok(OperationStatus {
-                oper_status: oper_success(OperationSuccess {
+                oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                     instantiated_path: s.instantiated_path,
                     param_errs: s
                         .param_errs
@@ -183,7 +186,8 @@ impl AddOperationStatus {
                         })
                         .collect(),
                     unique_keys: s.unique_keys.into_iter().collect(),
-                }),
+                    ..Default::default()
+                })),
             }),
             Self::None => Err(anyhow::anyhow!("")),
         }
@@ -236,9 +240,6 @@ impl AddRespBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
-        use crate::usp::mod_Body::OneOfmsg_body::response;
-        use crate::usp::mod_Response::OneOfresp_type::add_resp;
-
         let created_obj_results = self
             .created_obj_results
             .into_iter()
@@ -246,15 +247,18 @@ impl AddRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: add_resp({
+                    resp_type: Some(RespType::AddResp({
                         AddResp {
                             created_obj_results,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

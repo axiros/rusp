@@ -1,9 +1,8 @@
+use crate::usp::body::MsgBody;
+use crate::usp::error::ParamError;
 use crate::usp::{Body, Error};
 
 use crate::usp_errors;
-
-use crate::usp::mod_Body::OneOfmsg_body::error;
-use crate::usp::mod_Error::ParamError;
 
 use anyhow::Result;
 
@@ -46,7 +45,7 @@ impl ErrorBuilder {
         let param_errs = self.param_errs;
 
         Ok(Body {
-            msg_body: error({
+            msg_body: Some(MsgBody::Error({
                 Error {
                     err_code: self.code,
                     err_msg: message,
@@ -58,8 +57,10 @@ impl ErrorBuilder {
                             err_msg,
                         })
                         .collect(),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

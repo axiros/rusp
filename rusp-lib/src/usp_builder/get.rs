@@ -1,7 +1,7 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_GetResp::{RequestedPathResult, ResolvedPathResult};
-use crate::usp::mod_Request::OneOfreq_type::get;
-use crate::usp::mod_Response::OneOfresp_type::get_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::get_resp::{RequestedPathResult, ResolvedPathResult};
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Get, GetResp, Request, Response};
 
 use crate::usp_errors;
@@ -37,16 +37,19 @@ impl GetBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: get({
+                    req_type: Some(ReqType::Get({
                         Get {
                             max_depth: self.max_depth,
                             param_paths: self.params,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -78,6 +81,7 @@ impl ResolvedPathResultBuilder {
         Ok(ResolvedPathResult {
             resolved_path: self.resolved_path,
             result_params,
+            ..Default::default()
         })
     }
 }
@@ -134,6 +138,7 @@ impl ReqPathResultBuilder {
             err_code: self.err_code,
             err_msg,
             resolved_path_results,
+            ..Default::default()
         })
     }
 }
@@ -165,11 +170,18 @@ impl GetRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: get_resp(GetResp { req_path_results }),
+                    resp_type: Some(RespType::GetResp({
+                        GetResp {
+                            req_path_results,
+                            ..Default::default()
+                        }
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

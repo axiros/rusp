@@ -1,12 +1,8 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_DeleteResp::mod_DeletedObjectResult::mod_OperationStatus::{
-    OneOfoper_status::{oper_failure, oper_success},
-    OperationFailure, OperationSuccess,
-};
-use crate::usp::mod_DeleteResp::UnaffectedPathError;
-use crate::usp::mod_DeleteResp::{mod_DeletedObjectResult::OperationStatus, DeletedObjectResult};
-use crate::usp::mod_Request::OneOfreq_type::delete;
-use crate::usp::mod_Response::OneOfresp_type::delete_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::delete_resp::deleted_object_result::OperationStatus;
+use crate::usp::delete_resp::{DeletedObjectResult, UnaffectedPathError};
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Delete, DeleteResp, Request, Response};
 use crate::usp_errors;
 
@@ -41,16 +37,19 @@ impl DeleteBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: delete({
+                    req_type: Some(ReqType::Delete({
                         Delete {
                             allow_partial: self.allow_partial,
                             obj_paths: self.obj_paths,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -113,11 +112,15 @@ impl DeletedObjectResultsBuilder {
     }
 
     pub fn build(self) -> Result<DeletedObjectResult> {
+        use crate::usp::delete_resp::deleted_object_result::operation_status::{
+            OperStatus, OperationFailure, OperationSuccess,
+        };
+
         Ok(DeletedObjectResult {
             requested_path: self.requested_path,
             oper_status: match self.oper_status {
                 DeleteRespOperationStatus::Success(s) => Some(OperationStatus {
-                    oper_status: oper_success(OperationSuccess {
+                    oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                         affected_paths: s.affected_paths,
                         unaffected_path_errs: s
                             .unaffected_path_errs
@@ -132,10 +135,15 @@ impl DeletedObjectResultsBuilder {
                                 },
                             })
                             .collect(),
-                    }),
+                        ..Default::default()
+                    })),
                 }),
                 DeleteRespOperationStatus::Failure { err_code, err_msg } => Some(OperationStatus {
-                    oper_status: oper_failure(OperationFailure { err_code, err_msg }),
+                    oper_status: Some(OperStatus::OperFailure(OperationFailure {
+                        err_code,
+                        err_msg,
+                        ..Default::default()
+                    })),
                 }),
                 DeleteRespOperationStatus::None => Err(anyhow::anyhow!(""))?,
             },
@@ -167,19 +175,22 @@ impl DeleteRespBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: delete_resp({
+                    resp_type: Some(RespType::DeleteResp({
                         DeleteResp {
                             deleted_obj_results: self
                                 .deleted_obj_results
                                 .into_iter()
                                 .map(DeletedObjectResultsBuilder::build)
                                 .collect::<Result<Vec<_>>>()?,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

@@ -1,7 +1,7 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_GetInstancesResp::{CurrInstance, RequestedPathResult};
-use crate::usp::mod_Request::OneOfreq_type::get_instances;
-use crate::usp::mod_Response::OneOfresp_type::get_instances_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::get_instances_resp::{CurrInstance, RequestedPathResult};
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, GetInstances, GetInstancesResp, Request, Response};
 
 use crate::usp_errors;
@@ -37,16 +37,19 @@ impl GetInstancesBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: get_instances({
+                    req_type: Some(ReqType::GetInstances({
                         GetInstances {
                             obj_paths: self.obj_paths,
                             first_level_only: self.first_level_only,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -78,6 +81,7 @@ impl CurrInstanceBuilder {
         Ok(CurrInstance {
             instantiated_obj_path: self.instantiated_obj_path,
             unique_keys,
+            ..Default::default()
         })
     }
 }
@@ -131,6 +135,7 @@ impl ReqPathResultBuilder {
             err_code: self.err_code,
             err_msg,
             curr_insts,
+            ..Default::default()
         })
     }
 }
@@ -162,11 +167,18 @@ impl GetInstancesRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: get_instances_resp(GetInstancesResp { req_path_results }),
+                    resp_type: Some(RespType::GetInstancesResp({
+                        GetInstancesResp {
+                            req_path_results,
+                            ..Default::default()
+                        }
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

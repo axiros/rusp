@@ -1,14 +1,11 @@
 use crate::usp_errors;
 use std::collections::HashMap;
 
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_OperateResp::mod_OperationResult::OutputArgs;
-use crate::usp::mod_OperateResp::{
-    mod_OperationResult::{CommandFailure, OneOfoperation_resp},
-    OperationResult,
-};
-use crate::usp::mod_Request::OneOfreq_type::operate;
-use crate::usp::mod_Response::OneOfresp_type::operate_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::operate_resp::operation_result::OutputArgs;
+use crate::usp::operate_resp::OperationResult;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Operate, OperateResp, Request, Response};
 
 use anyhow::Result;
@@ -52,18 +49,21 @@ impl OperateBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: operate({
+                    req_type: Some(ReqType::Operate({
                         Operate {
                             command: self.command,
                             command_key: self.command_key,
                             send_resp: self.send_resp,
                             input_args: self.input_args.into_iter().collect(),
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -122,26 +122,33 @@ impl OperateRespResultBuilder {
     }
 
     pub fn build(self) -> Result<OperationResult> {
+        use crate::usp::operate_resp::operation_result::{CommandFailure, OperationResp};
+
         match self.operation_result {
             OperateRespOperationResult::OutputArgs { output_args } => Ok(OperationResult {
-                operation_resp: OneOfoperation_resp::req_output_args(OutputArgs {
+                operation_resp: Some(OperationResp::ReqOutputArgs(OutputArgs {
                     output_args: output_args.into_iter().collect::<HashMap<_, _>>(),
-                }),
+                    ..Default::default()
+                })),
                 executed_command: self.executed_command,
+                ..Default::default()
             }),
             OperateRespOperationResult::Failure { err_code, err_msg } => Ok(OperationResult {
-                operation_resp: OneOfoperation_resp::cmd_failure(CommandFailure {
+                operation_resp: Some(OperationResp::CmdFailure(CommandFailure {
                     err_code,
                     err_msg,
-                }),
+                    ..Default::default()
+                })),
                 executed_command: self.executed_command,
+                ..Default::default()
             }),
             OperateRespOperationResult::None => Err(anyhow::anyhow!(
                 "Need to have either OutputArgs or Path or Failure"
             )),
             OperateRespOperationResult::Path { req_obj_path } => Ok(OperationResult {
-                operation_resp: OneOfoperation_resp::req_obj_path(req_obj_path),
+                operation_resp: Some(OperationResp::ReqObjPath(req_obj_path)),
                 executed_command: self.executed_command,
+                ..Default::default()
             }),
         }
     }
@@ -171,17 +178,22 @@ impl OperateRespBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: operate_resp(OperateResp {
-                        operation_results: self
-                            .operation_results
-                            .into_iter()
-                            .map(OperateRespResultBuilder::build)
-                            .collect::<Result<Vec<_>>>()?,
-                    }),
+                    resp_type: Some(RespType::OperateResp({
+                        OperateResp {
+                            operation_results: self
+                                .operation_results
+                                .into_iter()
+                                .map(OperateRespResultBuilder::build)
+                                .collect::<Result<Vec<_>>>()?,
+                            ..Default::default()
+                        }
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

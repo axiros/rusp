@@ -1,11 +1,8 @@
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_DeregisterResp::mod_DeregisteredPathResult::mod_OperationStatus::{
-    OneOfoper_status, OperationFailure, OperationSuccess,
-};
-use crate::usp::mod_DeregisterResp::mod_DeregisteredPathResult::OperationStatus;
-use crate::usp::mod_DeregisterResp::DeregisteredPathResult;
-use crate::usp::mod_Request::OneOfreq_type::deregister;
-use crate::usp::mod_Response::OneOfresp_type::deregister_resp;
+use crate::usp::body::MsgBody;
+use crate::usp::deregister_resp::deregistered_path_result::OperationStatus;
+use crate::usp::deregister_resp::DeregisteredPathResult;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::{Body, Deregister, DeregisterResp, Request, Response};
 
 use crate::usp_errors;
@@ -31,11 +28,16 @@ impl DeregisterBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: deregister(Deregister { paths: self.paths }),
+                    req_type: Some(ReqType::Deregister(Deregister {
+                        paths: self.paths,
+                        ..Default::default()
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -78,22 +80,28 @@ impl DeregisteredPathResultBuilder {
     }
 
     pub fn build(self) -> Result<DeregisteredPathResult> {
+        use crate::usp::deregister_resp::deregistered_path_result::operation_status::{
+            OperStatus, OperationFailure, OperationSuccess,
+        };
+
         Ok(DeregisteredPathResult {
             requested_path: self.requested_path,
             oper_status: Some(match self.oper_status {
-                DeregisterOperationStatus::Failure { err_code, err_msg } => Ok(OperationStatus {
-                    oper_status: OneOfoper_status::oper_failure(OperationFailure {
+                DeregisterOperationStatus::Failure { err_code, err_msg } => OperationStatus {
+                    oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,
                         err_msg,
-                    }),
-                }),
-                DeregisterOperationStatus::Success(s) => Ok(OperationStatus {
-                    oper_status: OneOfoper_status::oper_success(OperationSuccess {
+                        ..Default::default()
+                    })),
+                },
+                DeregisterOperationStatus::Success(s) => OperationStatus {
+                    oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                         deregistered_path: s,
-                    }),
-                }),
-                DeregisterOperationStatus::None => Err(anyhow::anyhow!("")),
-            }?),
+                        ..Default::default()
+                    })),
+                },
+                DeregisterOperationStatus::None => Err(anyhow::anyhow!(""))?,
+            }),
         })
     }
 }
@@ -128,13 +136,16 @@ impl DeregisterRespBuilder {
             .collect::<Result<Vec<_>>>()?;
 
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: deregister_resp(DeregisterResp {
+                    resp_type: Some(RespType::DeregisterResp(DeregisterResp {
                         deregistered_path_results,
-                    }),
+                        ..Default::default()
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }

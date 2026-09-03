@@ -1,17 +1,12 @@
 use std::collections::HashMap;
 
-use crate::usp::mod_Body::OneOfmsg_body::{request, response};
-use crate::usp::mod_Notify::mod_OperationComplete::OneOfoperation_resp;
-use crate::usp::mod_Notify::OneOfnotification::{
-    event, obj_creation, obj_deletion, on_board_req, oper_complete, value_change,
-};
-use crate::usp::mod_Notify::{
+use crate::usp::body::MsgBody;
+use crate::usp::notify::{
     Event, ObjectCreation, ObjectDeletion, OnBoardRequest, OperationComplete, ValueChange,
 };
-use crate::usp::mod_Request::OneOfreq_type::notify;
-use crate::usp::mod_Response::OneOfresp_type::notify_resp;
-use crate::usp::{Body, Notify, Request};
-use crate::usp::{NotifyResp, Response};
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
+use crate::usp::{Body, Notify, NotifyResp, Request, Response};
 
 use anyhow::{Context, Result};
 
@@ -198,6 +193,9 @@ impl NotifyBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
+        use crate::usp::notify::Notification;
+        use crate::usp::notify::operation_complete::{CommandFailure, OperationResp, OutputArgs};
+
         let notify_type = self
             .notify_type
             .context("Must specify a notification type")?;
@@ -208,75 +206,88 @@ impl NotifyBuilder {
                 product_class,
                 serial_number,
                 agent_supported_protocol_versions,
-            } => on_board_req(OnBoardRequest {
+            } => Notification::OnBoardReq(OnBoardRequest {
                 oui,
                 product_class,
                 serial_number,
                 agent_supported_protocol_versions,
+                ..Default::default()
             }),
             NotifyType::ValueChange {
                 param_path,
                 param_value,
-            } => value_change(ValueChange {
+            } => Notification::ValueChange(ValueChange {
                 param_path,
                 param_value,
+                ..Default::default()
             }),
             NotifyType::Event {
                 obj_path,
                 event_name,
                 params,
-            } => event(Event {
+            } => Notification::Event(Event {
                 obj_path,
                 event_name,
                 params: params.into_iter().collect::<HashMap<_, _>>(),
+                ..Default::default()
             }),
             NotifyType::ObjectCreation {
                 obj_path,
                 unique_keys,
-            } => obj_creation(ObjectCreation {
+            } => Notification::ObjCreation(ObjectCreation {
                 obj_path,
                 unique_keys: unique_keys.into_iter().collect::<HashMap<_, _>>(),
+                ..Default::default()
             }),
-            NotifyType::ObjectDeletion { obj_path } => obj_deletion(ObjectDeletion { obj_path }),
+            NotifyType::ObjectDeletion { obj_path } => {
+                Notification::ObjDeletion(ObjectDeletion {
+                    obj_path,
+                    ..Default::default()
+                })
+            }
             NotifyType::OperationComplete {
                 obj_path,
                 command_name,
                 command_key,
                 operation_resp,
-            } => oper_complete(OperationComplete {
+            } => Notification::OperComplete(OperationComplete {
                 obj_path,
                 command_name,
                 command_key,
-                operation_resp: match operation_resp {
-                    OperationCompleteType::OutputArgs(h) => OneOfoperation_resp::req_output_args(
-                        crate::usp::mod_Notify::mod_OperationComplete::OutputArgs {
+                operation_resp: Some(match operation_resp {
+                    OperationCompleteType::OutputArgs(h) => OperationResp::ReqOutputArgs(
+                        OutputArgs {
                             output_args: h.into_iter().collect::<HashMap<_, _>>(),
+                            ..Default::default()
                         },
                     ),
                     OperationCompleteType::CommandFailure(code, msg) => {
-                        OneOfoperation_resp::cmd_failure(
-                            crate::usp::mod_Notify::mod_OperationComplete::CommandFailure {
-                                err_code: code,
-                                err_msg: msg,
-                            },
-                        )
+                        OperationResp::CmdFailure(CommandFailure {
+                            err_code: code,
+                            err_msg: msg,
+                            ..Default::default()
+                        })
                     }
-                },
+                }),
+                ..Default::default()
             }),
         };
 
         Ok(Body {
-            msg_body: request({
+            msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: notify({
+                    req_type: Some(ReqType::Notify({
                         Notify {
                             subscription_id: self.subscription_id,
                             send_resp: self.send_resp,
-                            notification: notify_type,
+                            notification: Some(notify_type),
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
@@ -294,15 +305,18 @@ impl NotifyRespBuilder {
 
     pub fn build(self) -> Result<Body> {
         Ok(Body {
-            msg_body: response({
+            msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: notify_resp({
+                    resp_type: Some(RespType::NotifyResp({
                         NotifyResp {
                             subscription_id: self.subscription_id,
+                            ..Default::default()
                         }
-                    }),
+                    })),
+                    ..Default::default()
                 }
-            }),
+            })),
+            ..Default::default()
         })
     }
 }
