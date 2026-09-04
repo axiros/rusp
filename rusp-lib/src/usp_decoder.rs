@@ -468,12 +468,19 @@ impl Msg {
             .ok_or_else(|| anyhow!("Invalid message body"))?;
 
         match body.msg_body {
+            None => Err(anyhow!("Invalid Message Body")),
             Some(MsgBody::Request(Request { req_type: None })) => {
                 Err(anyhow!("Invalid Request message"))
             }
             Some(MsgBody::Response(Response { resp_type: None })) => {
                 Err(anyhow!("Invalid Response message"))
             }
+            Some(MsgBody::Request(Request {
+                req_type:
+                    Some(ReqType::Notify(Notify {
+                        notification: None, ..
+                    })),
+            })) => Err(anyhow!("Invalid Notify Request")),
             _ => Ok(()),
         }
     }
