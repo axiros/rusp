@@ -211,7 +211,6 @@ impl NotifyBuilder {
                 product_class,
                 serial_number,
                 agent_supported_protocol_versions,
-                ..Default::default()
             }),
             NotifyType::ValueChange {
                 param_path,
@@ -219,7 +218,6 @@ impl NotifyBuilder {
             } => Notification::ValueChange(ValueChange {
                 param_path,
                 param_value,
-                ..Default::default()
             }),
             NotifyType::Event {
                 obj_path,
@@ -229,7 +227,6 @@ impl NotifyBuilder {
                 obj_path,
                 event_name,
                 params: params.into_iter().collect::<HashMap<_, _>>(),
-                ..Default::default()
             }),
             NotifyType::ObjectCreation {
                 obj_path,
@@ -237,12 +234,10 @@ impl NotifyBuilder {
             } => Notification::ObjCreation(ObjectCreation {
                 obj_path,
                 unique_keys: unique_keys.into_iter().collect::<HashMap<_, _>>(),
-                ..Default::default()
             }),
             NotifyType::ObjectDeletion { obj_path } => {
                 Notification::ObjDeletion(ObjectDeletion {
                     obj_path,
-                    ..Default::default()
                 })
             }
             NotifyType::OperationComplete {
@@ -258,18 +253,15 @@ impl NotifyBuilder {
                     OperationCompleteType::OutputArgs(h) => OperationResp::ReqOutputArgs(
                         OutputArgs {
                             output_args: h.into_iter().collect::<HashMap<_, _>>(),
-                            ..Default::default()
                         },
                     ),
                     OperationCompleteType::CommandFailure(code, msg) => {
                         OperationResp::CmdFailure(CommandFailure {
                             err_code: code,
                             err_msg: msg,
-                            ..Default::default()
                         })
                     }
                 }),
-                ..Default::default()
             }),
         };
 
@@ -281,13 +273,10 @@ impl NotifyBuilder {
                             subscription_id: self.subscription_id,
                             send_resp: self.send_resp,
                             notification: Some(notify_type),
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -310,13 +299,10 @@ impl NotifyRespBuilder {
                     resp_type: Some(RespType::NotifyResp({
                         NotifyResp {
                             subscription_id: self.subscription_id,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

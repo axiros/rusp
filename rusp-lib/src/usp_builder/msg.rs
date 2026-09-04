@@ -82,10 +82,8 @@ impl MsgBuilder {
             header: Some(Header {
                 msg_id,
                 msg_type: msg_type as i32,
-                ..Default::default()
             }),
             body: Some(body),
-            ..Default::default()
         })
     }
 }

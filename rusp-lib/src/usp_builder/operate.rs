@@ -57,13 +57,10 @@ impl OperateBuilder {
                             command_key: self.command_key,
                             send_resp: self.send_resp,
                             input_args: self.input_args.into_iter().collect(),
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -128,19 +125,15 @@ impl OperateRespResultBuilder {
             OperateRespOperationResult::OutputArgs { output_args } => Ok(OperationResult {
                 operation_resp: Some(OperationResp::ReqOutputArgs(OutputArgs {
                     output_args: output_args.into_iter().collect::<HashMap<_, _>>(),
-                    ..Default::default()
                 })),
                 executed_command: self.executed_command,
-                ..Default::default()
             }),
             OperateRespOperationResult::Failure { err_code, err_msg } => Ok(OperationResult {
                 operation_resp: Some(OperationResp::CmdFailure(CommandFailure {
                     err_code,
                     err_msg,
-                    ..Default::default()
                 })),
                 executed_command: self.executed_command,
-                ..Default::default()
             }),
             OperateRespOperationResult::None => Err(anyhow::anyhow!(
                 "Need to have either OutputArgs or Path or Failure"
@@ -148,7 +141,6 @@ impl OperateRespResultBuilder {
             OperateRespOperationResult::Path { req_obj_path } => Ok(OperationResult {
                 operation_resp: Some(OperationResp::ReqObjPath(req_obj_path)),
                 executed_command: self.executed_command,
-                ..Default::default()
             }),
         }
     }
@@ -187,13 +179,10 @@ impl OperateRespBuilder {
                                 .into_iter()
                                 .map(OperateRespResultBuilder::build)
                                 .collect::<Result<Vec<_>>>()?,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

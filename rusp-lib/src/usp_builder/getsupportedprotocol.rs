@@ -26,13 +26,10 @@ impl GetSupportedProtocolBuilder {
                         GetSupportedProtocol {
                             controller_supported_protocol_versions: self
                                 .controller_supported_protocol_versions,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -58,13 +55,10 @@ impl GetSupportedProtocolRespBuilder {
                         GetSupportedProtocolResp {
                             agent_supported_protocol_versions: self
                                 .agent_supported_protocol_versions,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

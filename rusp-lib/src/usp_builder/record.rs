@@ -102,7 +102,6 @@ impl SessionContextBuilder {
             // FIXME
             payloadrec_sar_state: PayloadSarState::None as i32,
             payload: self.payload.map_or_else(Vec::new, |payload| vec![payload]),
-            ..Default::default()
         };
 
         Ok(scr)
@@ -281,7 +280,6 @@ impl RecordBuilder {
             mac_signature: self.mac_signature,
             payload_security: self.payload_security as i32,
             record_type: None,
-            ..Default::default()
         };
 
         match self.typ {
@@ -294,7 +292,6 @@ impl RecordBuilder {
                 record.record_type = Some(record::RecordType::NoSessionContext(
                     NoSessionContextRecord {
                         payload,
-                        ..Default::default()
                     },
                 ));
             }
@@ -314,7 +311,6 @@ impl RecordBuilder {
                 record.record_type = Some(record::RecordType::MqttConnect(MqttConnectRecord {
                     version: version as i32,
                     subscribed_topic,
-                    ..Default::default()
                 }));
             }
             RecordType::STOMPConnect {
@@ -324,7 +320,6 @@ impl RecordBuilder {
                 record.record_type = Some(record::RecordType::StompConnect(StompConnectRecord {
                     version: version as i32,
                     subscribed_destination,
-                    ..Default::default()
                 }));
             }
             RecordType::Disconnect {
@@ -334,7 +329,6 @@ impl RecordBuilder {
                 record.record_type = Some(record::RecordType::Disconnect(DisconnectRecord {
                     reason,
                     reason_code,
-                    ..Default::default()
                 }));
             }
             RecordType::UDSConnect => {

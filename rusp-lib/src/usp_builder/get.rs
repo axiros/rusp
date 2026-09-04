@@ -43,13 +43,10 @@ impl GetBuilder {
                         Get {
                             max_depth: self.max_depth,
                             param_paths: self.params,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -81,7 +78,6 @@ impl ResolvedPathResultBuilder {
         Ok(ResolvedPathResult {
             resolved_path: self.resolved_path,
             result_params,
-            ..Default::default()
         })
     }
 }
@@ -138,7 +134,6 @@ impl ReqPathResultBuilder {
             err_code: self.err_code,
             err_msg,
             resolved_path_results,
-            ..Default::default()
         })
     }
 }
@@ -175,13 +170,10 @@ impl GetRespBuilder {
                     resp_type: Some(RespType::GetResp({
                         GetResp {
                             req_path_results,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

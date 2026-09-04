@@ -25,7 +25,6 @@ impl SessionContextRecord {
             payload_sar_state: PayloadSarState::None as i32,
             payloadrec_sar_state: PayloadSarState::None as i32,
             payload: vec![payload],
-            ..Default::default()
         }
     }
 }

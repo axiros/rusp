@@ -42,14 +42,12 @@ impl UpdateObjectBuilder {
                 param: n,
                 value: v,
                 required: r,
-                ..Default::default()
             })
             .collect();
 
         Ok(UpdateObject {
             obj_path: self.obj_path,
             param_settings,
-            ..Default::default()
         })
     }
 }
@@ -95,13 +93,10 @@ impl SetBuilder {
                         Set {
                             allow_partial: self.allow_partial,
                             update_objs,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -241,15 +236,11 @@ impl SetOperationStatus {
                                     } else {
                                         p.err_msg
                                     },
-                                    ..Default::default()
                                 })
                                 .collect(),
-                            ..Default::default()
                         })
                         .collect(),
-                    ..Default::default()
                 })),
-                ..Default::default()
             }),
             Self::Success(s) => Ok(OperationStatus {
                 oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
@@ -268,16 +259,12 @@ impl SetOperationStatus {
                                     } else {
                                         e.err_msg
                                     },
-                                    ..Default::default()
                                 })
                                 .collect(),
                             updated_params: s.updated_params.into_iter().collect(),
-                            ..Default::default()
                         })
                         .collect(),
-                    ..Default::default()
                 })),
-                ..Default::default()
             }),
             Self::None => Err(anyhow::anyhow!("")),
         }
@@ -303,7 +290,6 @@ impl UpdatedObjectResultsBuilder {
         Ok(UpdatedObjectResult {
             requested_path: self.requested_path,
             oper_status: Some(self.oper_status.build()?),
-            ..Default::default()
         })
     }
 }
@@ -343,13 +329,10 @@ impl SetRespBuilder {
                     resp_type: Some(RespType::SetResp({
                         SetResp {
                             updated_obj_results,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

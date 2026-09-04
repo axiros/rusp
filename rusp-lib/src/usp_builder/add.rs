@@ -90,13 +90,10 @@ impl AddBuilder {
                         Add {
                             allow_partial: self.allow_partial,
                             create_objs,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -166,7 +163,6 @@ impl AddOperationStatus {
                 oper_status: Some(OperStatus::OperFailure(OperationFailure {
                     err_code: f.err_code,
                     err_msg: f.err_msg,
-                    ..Default::default()
                 })),
             }),
             Self::Success(s) => Ok(OperationStatus {
@@ -186,7 +182,6 @@ impl AddOperationStatus {
                         })
                         .collect(),
                     unique_keys: s.unique_keys.into_iter().collect(),
-                    ..Default::default()
                 })),
             }),
             Self::None => Err(anyhow::anyhow!("")),
@@ -252,13 +247,10 @@ impl AddRespBuilder {
                     resp_type: Some(RespType::AddResp({
                         AddResp {
                             created_obj_results,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

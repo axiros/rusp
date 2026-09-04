@@ -57,10 +57,8 @@ impl ErrorBuilder {
                             err_msg,
                         })
                         .collect(),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

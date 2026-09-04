@@ -43,13 +43,10 @@ impl GetInstancesBuilder {
                         GetInstances {
                             obj_paths: self.obj_paths,
                             first_level_only: self.first_level_only,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -81,7 +78,6 @@ impl CurrInstanceBuilder {
         Ok(CurrInstance {
             instantiated_obj_path: self.instantiated_obj_path,
             unique_keys,
-            ..Default::default()
         })
     }
 }
@@ -135,7 +131,6 @@ impl ReqPathResultBuilder {
             err_code: self.err_code,
             err_msg,
             curr_insts,
-            ..Default::default()
         })
     }
 }
@@ -172,13 +167,10 @@ impl GetInstancesRespBuilder {
                     resp_type: Some(RespType::GetInstancesResp({
                         GetInstancesResp {
                             req_path_results,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

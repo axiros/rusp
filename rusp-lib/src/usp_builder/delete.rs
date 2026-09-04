@@ -43,13 +43,10 @@ impl DeleteBuilder {
                         Delete {
                             allow_partial: self.allow_partial,
                             obj_paths: self.obj_paths,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -135,14 +132,12 @@ impl DeletedObjectResultsBuilder {
                                 },
                             })
                             .collect(),
-                        ..Default::default()
                     })),
                 }),
                 DeleteRespOperationStatus::Failure { err_code, err_msg } => Some(OperationStatus {
                     oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,
                         err_msg,
-                        ..Default::default()
                     })),
                 }),
                 DeleteRespOperationStatus::None => Err(anyhow::anyhow!(""))?,
@@ -184,13 +179,10 @@ impl DeleteRespBuilder {
                                 .into_iter()
                                 .map(DeletedObjectResultsBuilder::build)
                                 .collect::<Result<Vec<_>>>()?,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

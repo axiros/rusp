@@ -82,13 +82,10 @@ impl GetSupportedDMBuilder {
                             return_events: self.return_events,
                             return_params: self.return_params,
                             return_unique_key_sets: self.return_unique_key_sets,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -147,7 +144,6 @@ impl GSDMCommandResult {
             input_arg_names: self.input_arg_names,
             output_arg_names: self.output_arg_names,
             command_type: self.command_type as i32,
-            ..Default::default()
         })
     }
 }
@@ -177,7 +173,6 @@ impl GSDMEventResult {
         Ok(SupportedEventResult {
             event_name: self.event_name,
             arg_names: self.arg_names,
-            ..Default::default()
         })
     }
 }
@@ -300,7 +295,6 @@ impl GSDMParamResult {
             access: self.access as i32,
             value_type: self.value_type as i32,
             value_change: self.value_change as i32,
-            ..Default::default()
         })
     }
 }
@@ -416,7 +410,6 @@ impl GSDMSupportedObjectResultBuilder {
             .into_iter()
             .map(|i| SupportedUniqueKeySet {
                 key_names: i,
-                ..Default::default()
             })
             .collect();
 
@@ -429,7 +422,6 @@ impl GSDMSupportedObjectResultBuilder {
             supported_params,
             divergent_paths: self.divergent_paths,
             unique_key_sets,
-            ..Default::default()
         })
     }
 }
@@ -496,7 +488,6 @@ impl GSDMReqObjectResultBuilder {
             err_msg,
             data_model_inst_uri: self.data_model_inst_uri,
             supported_objs,
-            ..Default::default()
         })
     }
 }
@@ -536,13 +527,10 @@ impl GetSupportedDMRespBuilder {
                     resp_type: Some(RespType::GetSupportedDmResp({
                         GetSupportedDmResp {
                             req_obj_results,
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

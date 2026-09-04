@@ -49,16 +49,12 @@ impl RegisterBuilder {
                                 .into_iter()
                                 .map(|p| RegistrationPath {
                                     path: p,
-                                    ..Default::default()
                                 })
                                 .collect(),
-                            ..Default::default()
                         }
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -112,18 +108,15 @@ impl RegisteredPathResultBuilder {
                     oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,
                         err_msg,
-                        ..Default::default()
                     })),
                 },
                 RegisterOperationStatus::Success(s) => OperationStatus {
                     oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                         registered_path: s,
-                        ..Default::default()
                     })),
                 },
                 RegisterOperationStatus::None => Err(anyhow::anyhow!(""))?,
             }),
-            ..Default::default()
         })
     }
 }
@@ -162,12 +155,9 @@ impl RegisterRespBuilder {
                 Response {
                     resp_type: Some(RespType::RegisterResp(RegisterResp {
                         registered_path_results,
-                        ..Default::default()
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }

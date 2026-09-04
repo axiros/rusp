@@ -32,12 +32,9 @@ impl DeregisterBuilder {
                 Request {
                     req_type: Some(ReqType::Deregister(Deregister {
                         paths: self.paths,
-                        ..Default::default()
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
@@ -91,13 +88,11 @@ impl DeregisteredPathResultBuilder {
                     oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,
                         err_msg,
-                        ..Default::default()
                     })),
                 },
                 DeregisterOperationStatus::Success(s) => OperationStatus {
                     oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
                         deregistered_path: s,
-                        ..Default::default()
                     })),
                 },
                 DeregisterOperationStatus::None => Err(anyhow::anyhow!(""))?,
@@ -140,12 +135,9 @@ impl DeregisterRespBuilder {
                 Response {
                     resp_type: Some(RespType::DeregisterResp(DeregisterResp {
                         deregistered_path_results,
-                        ..Default::default()
                     })),
-                    ..Default::default()
                 }
             })),
-            ..Default::default()
         })
     }
 }
