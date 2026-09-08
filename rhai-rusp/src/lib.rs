@@ -619,25 +619,25 @@ pub mod rhai_rusp_deleteresp {
             .map(|p| {
                 let el = p.try_cast::<Array>()
                     .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
-                let el0 = el.first()
+                let unaffected_path = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
-                let el1 = el.get(1)
+                let err_code = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
+                    .map(|el| u32::try_from(el).unwrap_or(7003))
                     .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
-                let el2 = el.get(2)
+                let err_msg = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
-                let err = fru!(
+                Ok(fru!(
                     UnaffectedPathError {
-                        unaffected_path: el0,
-                        err_code: u32::try_from(el1).unwrap_or(7003),
-                        err_msg: el2,
+                        unaffected_path,
+                        err_code,
+                        err_msg,
                         ..
                     }
-                );
-                Ok(err)
+                ))
             })
             .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
 
@@ -2175,25 +2175,24 @@ pub mod rhai_rusp_add {
             .map(|p| {
                 let el = p.try_cast::<Array>()
                     .ok_or_else(|| "Expected to have an array of arrays [param: &str, value: &str, required: bool]".to_string())?;
-                let el0 = el.first()
+                let param = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
-                let el1 = el.get(1)
+                let value = el.get(1)
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "value (#2) needs to be a string".to_string())?;
-                let el2 = el.get(2)
+                let required = el.get(2)
                     .and_then(|el| el.clone().try_cast::<bool>())
                     .ok_or_else(|| "required (#3) needs to be a bool".to_string())?;
 
-                let param = fru!(
+                Ok(fru!(
                     CreateParamSetting {
-                        param: el0,
-                        value: el1,
-                        required: el2,
+                        param,
+                        value,
+                        required,
                         ..
                     }
-                );
-                Ok(param)
+                ))
             })
             .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
         builder = builder.with_param_settings(param_settings);
@@ -2286,25 +2285,25 @@ pub mod rhai_rusp_addresp {
             .map(|p| {
                 let el = p.try_cast::<Array>()
                     .ok_or_else(|| "Expected to have an array of arrays [param: &str, err_code: u32, err_msg: &str]".to_string())?;
-                let el0 = el.first()
+                let param = el.first()
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "param (#1) needs to be a string".to_string())?;
-                let el1 = el.get(1)
+                let err_code = el.get(1)
                     .and_then(|el| el.clone().try_cast::<i64>())
+                    .map(|el| u32::try_from(el).unwrap_or(7003))
                     .ok_or_else(|| "err_code (#2) needs to be a u32".to_string())?;
-                let el2 = el.get(2)
+                let err_msg = el.get(2)
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
-                let param = fru!(
+                Ok(fru!(
                     ParameterError {
-                        param: el0,
-                        err_code: u32::try_from(el1).unwrap_or(7003),
-                        err_msg: el2,
+                        param,
+                        err_code,
+                        err_msg,
                         ..
                     }
-                );
-                Ok(param)
+                ))
             })
             .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
 

@@ -67,6 +67,9 @@ pub use ::core;
 
 /// Macro to help construct the `non_exhaustive` types in [`usp`] and [`usp_record`]
 ///
+/// Each field can be set either with the longhand `field: value,` or with the shorthand `field,`,
+/// in which case the field is initialized from a variable with the same name as the field.
+///
 /// Example:
 ///
 /// ```rust
@@ -80,7 +83,7 @@ pub use ::core;
 /// let param = fru!(
 ///     ParamError {
 ///         param_path: "Path.Foo".into(),
-///         err_code: err_code,
+///         err_code, // shorthand for `err_code: err_code,`
 ///         err_msg: err_msg.clone(),
 ///         ..
 ///     }
@@ -96,23 +99,35 @@ pub use ::core;
 /// );
 /// ```
 #[macro_export]
-macro_rules! fru {(
-    $Struct:path {
+macro_rules! fru {
+    (
+        $Struct:path {
+            $(
+                $field_name:ident $(: $value:expr)?,
+            )*
+            .. $($initial:expr)?
+        }
+    ) => {{
+        let it = $crate::core::default::Default::default();
         $(
-            $field_name:ident : $value:expr,
+            let () = it;
+            let it = $initial;
+        )?
+        let mut it = it;
+        let $Struct { $($field_name: _,)* .. } = it; // Ensure any `DerefMut` shenanigans are shadowed
+        $(
+            it.$field_name = $crate::fru!(@__value $field_name $($value)?);
         )*
-        .. $($initial:expr)?
-    }
-) => ({
-    let it = $crate::core::default::Default::default();
-    $(
-        let () = it;
-        let it = $initial;
-    )?
-    let mut it = it;
-    let $Struct { $($field_name: _,)* .. } = it; // Ensure any `DerefMut` shenanigans are shadowed
-    $(
-        it.$field_name = $value;
-    )*
-    it
-})}
+        it
+    }};
+    (
+        @__value $field_name:ident $value:expr
+    ) => {
+        $value
+    };
+    (
+        @__value $field_name:ident
+    ) => {
+        $field_name
+    };
+}
