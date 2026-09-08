@@ -408,9 +408,7 @@ impl GSDMSupportedObjectResultBuilder {
         let unique_key_sets: Vec<SupportedUniqueKeySet> = self
             .unique_key_sets
             .into_iter()
-            .map(|i| SupportedUniqueKeySet {
-                key_names: i,
-            })
+            .map(|i| SupportedUniqueKeySet { key_names: i })
             .collect();
 
         Ok(SupportedObjectResult {
@@ -525,9 +523,7 @@ impl GetSupportedDMRespBuilder {
             msg_body: Some(MsgBody::Response({
                 Response {
                     resp_type: Some(RespType::GetSupportedDmResp({
-                        GetSupportedDmResp {
-                            req_obj_results,
-                        }
+                        GetSupportedDmResp { req_obj_results }
                     })),
                 }
             })),

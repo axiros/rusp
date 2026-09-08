@@ -77,11 +77,13 @@ mod tests {
         assert_eq!(bytes, &*bytes2);
         assert_eq!(msg.msg_id(), "add");
 
-        let add_obj = CreateObjectBuilder::new("Device.Foo.".into()).with_param_settings(vec![CreateParamSetting {
-            param: "Param".into(),
-            value: "Value".into(),
-            required: true,
-        }]);
+        let add_obj = CreateObjectBuilder::new("Device.Foo.".into()).with_param_settings(vec![
+            CreateParamSetting {
+                param: "Param".into(),
+                value: "Value".into(),
+                required: true,
+            },
+        ]);
         let expected_body = AddBuilder::new()
             .with_allow_partial(true)
             .with_create_objs(vec![add_obj])
@@ -92,11 +94,13 @@ mod tests {
 
     #[test]
     fn new_request_without_context() {
-        let add_obj = CreateObjectBuilder::new("Device.Foo.".into()).with_param_settings(vec![CreateParamSetting {
-            param: "Param".into(),
-            value: "Value".into(),
-            required: true,
-        }]);
+        let add_obj = CreateObjectBuilder::new("Device.Foo.".into()).with_param_settings(vec![
+            CreateParamSetting {
+                param: "Param".into(),
+                value: "Value".into(),
+                required: true,
+            },
+        ]);
         let body = AddBuilder::new()
             .with_allow_partial(true)
             .with_create_objs(vec![add_obj])

@@ -25,17 +25,7 @@ pub struct Record {
 /// Nested message and enum types in `Record`.
 pub mod record {
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum PayloadSecurity {
         Plaintext = 0,
@@ -107,17 +97,7 @@ pub struct SessionContextRecord {
 /// Nested message and enum types in `SessionContextRecord`.
 pub mod session_context_record {
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum PayloadSarState {
         /// No segmentation
@@ -169,17 +149,7 @@ pub struct MqttConnectRecord {
 /// Nested message and enum types in `MQTTConnectRecord`.
 pub mod mqtt_connect_record {
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum MqttVersion {
         /// Represents MQTT v3.1.1, a.k.a. v4 in the MQTT Spec
@@ -218,17 +188,7 @@ pub struct StompConnectRecord {
 /// Nested message and enum types in `STOMPConnectRecord`.
 pub mod stomp_connect_record {
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum StompVersion {
         V12 = 0,

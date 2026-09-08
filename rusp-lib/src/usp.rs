@@ -22,17 +22,7 @@ pub struct Header {
 /// Nested message and enum types in `Header`.
 pub mod header {
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum MsgType {
         Error = 0,
@@ -179,7 +169,10 @@ pub mod request {
 #[non_exhaustive]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Response {
-    #[prost(oneof = "response::RespType", tags = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11")]
+    #[prost(
+        oneof = "response::RespType",
+        tags = "1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11"
+    )]
     pub resp_type: ::core::option::Option<response::RespType>,
 }
 /// Nested message and enum types in `Response`.
@@ -294,9 +287,7 @@ pub struct GetSupportedDm {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetSupportedDmResp {
     #[prost(message, repeated, tag = "1")]
-    pub req_obj_results: ::prost::alloc::vec::Vec<
-        get_supported_dm_resp::RequestedObjectResult,
-    >,
+    pub req_obj_results: ::prost::alloc::vec::Vec<get_supported_dm_resp::RequestedObjectResult>,
 }
 /// Nested message and enum types in `GetSupportedDMResp`.
 pub mod get_supported_dm_resp {
@@ -373,17 +364,7 @@ pub mod get_supported_dm_resp {
         pub key_names: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     }
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum ParamAccessType {
         ParamReadOnly = 0,
@@ -413,17 +394,7 @@ pub mod get_supported_dm_resp {
         }
     }
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum ObjAccessType {
         ObjReadOnly = 0,
@@ -456,17 +427,7 @@ pub mod get_supported_dm_resp {
         }
     }
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum ParamValueType {
         ParamUnknown = 0,
@@ -520,17 +481,7 @@ pub mod get_supported_dm_resp {
         }
     }
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum ValueChangeType {
         ValueChangeUnknown = 0,
@@ -560,17 +511,7 @@ pub mod get_supported_dm_resp {
         }
     }
     #[non_exhaustive]
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum CmdType {
         CmdUnknown = 0,
@@ -612,9 +553,7 @@ pub struct GetInstances {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetInstancesResp {
     #[prost(message, repeated, tag = "1")]
-    pub req_path_results: ::prost::alloc::vec::Vec<
-        get_instances_resp::RequestedPathResult,
-    >,
+    pub req_path_results: ::prost::alloc::vec::Vec<get_instances_resp::RequestedPathResult>,
 }
 /// Nested message and enum types in `GetInstancesResp`.
 pub mod get_instances_resp {
@@ -797,13 +736,10 @@ pub mod delete_resp {
             #[derive(Clone, PartialEq, ::prost::Message)]
             pub struct OperationSuccess {
                 #[prost(string, repeated, tag = "1")]
-                pub affected_paths: ::prost::alloc::vec::Vec<
-                    ::prost::alloc::string::String,
-                >,
+                pub affected_paths: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
                 #[prost(message, repeated, tag = "2")]
-                pub unaffected_path_errs: ::prost::alloc::vec::Vec<
-                    super::super::UnaffectedPathError,
-                >,
+                pub unaffected_path_errs:
+                    ::prost::alloc::vec::Vec<super::super::UnaffectedPathError>,
             }
             #[non_exhaustive]
             #[derive(Clone, PartialEq, ::prost::Oneof)]
@@ -889,17 +825,15 @@ pub mod set_resp {
                 #[prost(string, tag = "2")]
                 pub err_msg: ::prost::alloc::string::String,
                 #[prost(message, repeated, tag = "3")]
-                pub updated_inst_failures: ::prost::alloc::vec::Vec<
-                    super::super::UpdatedInstanceFailure,
-                >,
+                pub updated_inst_failures:
+                    ::prost::alloc::vec::Vec<super::super::UpdatedInstanceFailure>,
             }
             #[non_exhaustive]
             #[derive(Clone, PartialEq, ::prost::Message)]
             pub struct OperationSuccess {
                 #[prost(message, repeated, tag = "1")]
-                pub updated_inst_results: ::prost::alloc::vec::Vec<
-                    super::super::UpdatedInstanceResult,
-                >,
+                pub updated_inst_results:
+                    ::prost::alloc::vec::Vec<super::super::UpdatedInstanceResult>,
             }
             #[non_exhaustive]
             #[derive(Clone, PartialEq, ::prost::Oneof)]
@@ -953,10 +887,8 @@ pub struct Operate {
     #[prost(bool, tag = "3")]
     pub send_resp: bool,
     #[prost(map = "string, string", tag = "4")]
-    pub input_args: ::std::collections::HashMap<
-        ::prost::alloc::string::String,
-        ::prost::alloc::string::String,
-    >,
+    pub input_args:
+        ::std::collections::HashMap<::prost::alloc::string::String, ::prost::alloc::string::String>,
 }
 #[non_exhaustive]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -1151,9 +1083,7 @@ pub mod register {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RegisterResp {
     #[prost(message, repeated, tag = "1")]
-    pub registered_path_results: ::prost::alloc::vec::Vec<
-        register_resp::RegisteredPathResult,
-    >,
+    pub registered_path_results: ::prost::alloc::vec::Vec<register_resp::RegisteredPathResult>,
 }
 /// Nested message and enum types in `RegisterResp`.
 pub mod register_resp {
@@ -1210,9 +1140,8 @@ pub struct Deregister {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DeregisterResp {
     #[prost(message, repeated, tag = "1")]
-    pub deregistered_path_results: ::prost::alloc::vec::Vec<
-        deregister_resp::DeregisteredPathResult,
-    >,
+    pub deregistered_path_results:
+        ::prost::alloc::vec::Vec<deregister_resp::DeregisteredPathResult>,
 }
 /// Nested message and enum types in `DeregisterResp`.
 pub mod deregister_resp {
@@ -1222,9 +1151,7 @@ pub mod deregister_resp {
         #[prost(string, tag = "1")]
         pub requested_path: ::prost::alloc::string::String,
         #[prost(message, optional, tag = "2")]
-        pub oper_status: ::core::option::Option<
-            deregistered_path_result::OperationStatus,
-        >,
+        pub oper_status: ::core::option::Option<deregistered_path_result::OperationStatus>,
     }
     /// Nested message and enum types in `DeregisteredPathResult`.
     pub mod deregistered_path_result {
@@ -1248,9 +1175,7 @@ pub mod deregister_resp {
             #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
             pub struct OperationSuccess {
                 #[prost(string, repeated, tag = "1")]
-                pub deregistered_path: ::prost::alloc::vec::Vec<
-                    ::prost::alloc::string::String,
-                >,
+                pub deregistered_path: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
             }
             #[non_exhaustive]
             #[derive(Clone, PartialEq, Eq, Hash, ::prost::Oneof)]
