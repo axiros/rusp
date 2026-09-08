@@ -84,10 +84,10 @@ impl CurrInstanceBuilder {
 
 #[derive(Clone)]
 pub struct ReqPathResultBuilder {
-    pub requested_path: String,
-    pub err_code: u32,
-    pub err_msg: Option<String>,
-    pub curr_insts: Vec<CurrInstanceBuilder>,
+    requested_path: String,
+    err_code: u32,
+    err_msg: Option<String>,
+    curr_insts: Vec<CurrInstanceBuilder>,
 }
 
 impl ReqPathResultBuilder {
@@ -165,9 +165,7 @@ impl GetInstancesRespBuilder {
             msg_body: Some(MsgBody::Response({
                 Response {
                     resp_type: Some(RespType::GetInstancesResp({
-                        GetInstancesResp {
-                            req_path_results,
-                        }
+                        GetInstancesResp { req_path_results }
                     })),
                 }
             })),

@@ -11,6 +11,7 @@ use crate::usp::{Body, Notify, NotifyResp, Request, Response};
 use anyhow::{Context, Result};
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum OperationCompleteType {
     OutputArgs(HashMap<String, String>),
     CommandFailure(u32, String),
@@ -193,8 +194,8 @@ impl NotifyBuilder {
     }
 
     pub fn build(self) -> Result<Body> {
-        use crate::usp::notify::Notification;
         use crate::usp::notify::operation_complete::{CommandFailure, OperationResp, OutputArgs};
+        use crate::usp::notify::Notification;
 
         let notify_type = self
             .notify_type
@@ -236,9 +237,7 @@ impl NotifyBuilder {
                 unique_keys: unique_keys.into_iter().collect::<HashMap<_, _>>(),
             }),
             NotifyType::ObjectDeletion { obj_path } => {
-                Notification::ObjDeletion(ObjectDeletion {
-                    obj_path,
-                })
+                Notification::ObjDeletion(ObjectDeletion { obj_path })
             }
             NotifyType::OperationComplete {
                 obj_path,
@@ -250,11 +249,11 @@ impl NotifyBuilder {
                 command_name,
                 command_key,
                 operation_resp: Some(match operation_resp {
-                    OperationCompleteType::OutputArgs(h) => OperationResp::ReqOutputArgs(
-                        OutputArgs {
+                    OperationCompleteType::OutputArgs(h) => {
+                        OperationResp::ReqOutputArgs(OutputArgs {
                             output_args: h.into_iter().collect::<HashMap<_, _>>(),
-                        },
-                    ),
+                        })
+                    }
                     OperationCompleteType::CommandFailure(code, msg) => {
                         OperationResp::CmdFailure(CommandFailure {
                             err_code: code,

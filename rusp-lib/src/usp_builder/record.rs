@@ -12,6 +12,7 @@ use anyhow::anyhow;
 use anyhow::{Context, Result};
 
 #[derive(Clone)]
+#[non_exhaustive]
 enum RecordType {
     None,
     NoSessionContext,
@@ -290,9 +291,7 @@ impl RecordBuilder {
                     .with_context(|| "Cannot produce USP Record without payload")?;
 
                 record.record_type = Some(record::RecordType::NoSessionContext(
-                    NoSessionContextRecord {
-                        payload,
-                    },
+                    NoSessionContextRecord { payload },
                 ));
             }
             RecordType::SessionContext { session_context } => {

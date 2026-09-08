@@ -30,9 +30,7 @@ impl DeregisterBuilder {
         Ok(Body {
             msg_body: Some(MsgBody::Request({
                 Request {
-                    req_type: Some(ReqType::Deregister(Deregister {
-                        paths: self.paths,
-                    })),
+                    req_type: Some(ReqType::Deregister(Deregister { paths: self.paths })),
                 }
             })),
         })
@@ -40,6 +38,7 @@ impl DeregisterBuilder {
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum DeregisterOperationStatus {
     Failure { err_code: u32, err_msg: String },
     Success(Vec<String>),
@@ -48,8 +47,8 @@ pub enum DeregisterOperationStatus {
 
 #[derive(Clone)]
 pub struct DeregisteredPathResultBuilder {
-    pub requested_path: String,
-    pub oper_status: DeregisterOperationStatus,
+    requested_path: String,
+    oper_status: DeregisterOperationStatus,
 }
 
 impl DeregisteredPathResultBuilder {

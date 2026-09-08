@@ -53,8 +53,8 @@ impl GetBuilder {
 
 #[derive(Clone)]
 pub struct ResolvedPathResultBuilder {
-    pub resolved_path: String,
-    pub result_params: Vec<(String, String)>,
+    resolved_path: String,
+    result_params: Vec<(String, String)>,
 }
 
 impl ResolvedPathResultBuilder {
@@ -84,10 +84,10 @@ impl ResolvedPathResultBuilder {
 
 #[derive(Clone)]
 pub struct ReqPathResultBuilder {
-    pub requested_path: String,
-    pub err_code: u32,
-    pub err_msg: Option<String>,
-    pub resolved_path_results: Vec<ResolvedPathResultBuilder>,
+    requested_path: String,
+    err_code: u32,
+    err_msg: Option<String>,
+    resolved_path_results: Vec<ResolvedPathResultBuilder>,
 }
 
 impl ReqPathResultBuilder {
@@ -167,11 +167,7 @@ impl GetRespBuilder {
         Ok(Body {
             msg_body: Some(MsgBody::Response({
                 Response {
-                    resp_type: Some(RespType::GetResp({
-                        GetResp {
-                            req_path_results,
-                        }
-                    })),
+                    resp_type: Some(RespType::GetResp(GetResp { req_path_results })),
                 }
             })),
         })

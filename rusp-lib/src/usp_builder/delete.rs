@@ -52,19 +52,13 @@ impl DeleteBuilder {
 }
 
 #[derive(Clone)]
-pub struct DeleteRespUnaffectedPathError {
-    pub unaffected_path: String,
-    pub err_code: u32,
-    pub err_msg: String,
-}
-
-#[derive(Clone)]
 pub struct DeleteRespOperationSuccessBuilder {
     affected_paths: Vec<String>,
-    unaffected_path_errs: Vec<DeleteRespUnaffectedPathError>,
+    unaffected_path_errs: Vec<UnaffectedPathError>,
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum DeleteRespOperationStatus {
     Failure { err_code: u32, err_msg: String },
     Success(DeleteRespOperationSuccessBuilder),
@@ -99,7 +93,7 @@ impl DeletedObjectResultsBuilder {
     pub fn set_success(
         mut self,
         affected_paths: Vec<String>,
-        unaffected_path_errs: Vec<DeleteRespUnaffectedPathError>,
+        unaffected_path_errs: Vec<UnaffectedPathError>,
     ) -> Self {
         self.oper_status = DeleteRespOperationStatus::Success(DeleteRespOperationSuccessBuilder {
             affected_paths,
@@ -116,24 +110,19 @@ impl DeletedObjectResultsBuilder {
         Ok(DeletedObjectResult {
             requested_path: self.requested_path,
             oper_status: match self.oper_status {
-                DeleteRespOperationStatus::Success(s) => Some(OperationStatus {
-                    oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
-                        affected_paths: s.affected_paths,
-                        unaffected_path_errs: s
-                            .unaffected_path_errs
-                            .into_iter()
-                            .map(|e| UnaffectedPathError {
-                                unaffected_path: e.unaffected_path,
-                                err_code: e.err_code,
-                                err_msg: if e.err_msg.is_empty() {
-                                    usp_errors::get_err_msg(e.err_code).into()
-                                } else {
-                                    e.err_msg
-                                },
-                            })
-                            .collect(),
-                    })),
-                }),
+                DeleteRespOperationStatus::Success(mut s) => {
+                    for err in &mut s.unaffected_path_errs {
+                        if err.err_msg.is_empty() {
+                            err.err_msg = usp_errors::get_err_msg(err.err_code).into();
+                        }
+                    }
+                    Some(OperationStatus {
+                        oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
+                            affected_paths: s.affected_paths,
+                            unaffected_path_errs: s.unaffected_path_errs,
+                        })),
+                    })
+                }
                 DeleteRespOperationStatus::Failure { err_code, err_msg } => Some(OperationStatus {
                     oper_status: Some(OperStatus::OperFailure(OperationFailure {
                         err_code,

@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use crate::usp::body::MsgBody;
+use crate::usp::request::ReqType;
+use crate::usp::response::RespType;
 use crate::usp::set::UpdateObject;
 use crate::usp::set::UpdateParamSetting;
 use crate::usp::set_resp::updated_object_result::OperationStatus;
-use crate::usp::set_resp::{ParameterError, UpdatedInstanceFailure, UpdatedInstanceResult};
 use crate::usp::set_resp::UpdatedObjectResult;
-use crate::usp::request::ReqType;
-use crate::usp::response::RespType;
+use crate::usp::set_resp::{ParameterError, UpdatedInstanceFailure, UpdatedInstanceResult};
 use crate::usp::{Body, Request, Response, Set, SetResp};
 use crate::usp_errors;
 
@@ -179,6 +179,7 @@ pub struct SetOperationFailureBuilder {
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum SetOperationStatus {
     Failure(SetOperationFailureBuilder),
     Success(Vec<SetOperationSuccessBuilder>),

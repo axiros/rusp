@@ -61,3 +61,58 @@ pub mod usp_record;
 pub mod usp_errors;
 
 mod usp_json;
+
+#[doc(hidden)]
+pub use ::core;
+
+/// Macro to help construct the `non_exhaustive` types in [`usp`] and [`usp_record`]
+///
+/// Example:
+///
+/// ```rust
+/// use rusp_lib::fru;
+/// use rusp_lib::usp::error::ParamError;
+/// use rusp_lib::usp::Error;
+/// use rusp_lib::usp_errors::get_err_msg;
+///
+/// let err_code = 7006;
+/// let err_msg: String = get_err_msg(err_code).into();
+/// let param = fru!(
+///     ParamError {
+///         param_path: "Path.Foo".into(),
+///         err_code: err_code,
+///         err_msg: err_msg.clone(),
+///         ..
+///     }
+/// );
+///
+/// let _err = fru!(
+///     Error {
+///         err_code: err_code,
+///         err_msg: err_msg,
+///         param_errs: vec![param],
+///         ..
+///     }
+/// );
+/// ```
+#[macro_export]
+macro_rules! fru {(
+    $Struct:path {
+        $(
+            $field_name:ident : $value:expr,
+        )*
+        .. $($initial:expr)?
+    }
+) => ({
+    let it = $crate::core::default::Default::default();
+    $(
+        let () = it;
+        let it = $initial;
+    )?
+    let mut it = it;
+    let $Struct { $($field_name: _,)* .. } = it; // Ensure any `DerefMut` shenanigans are shadowed
+    $(
+        it.$field_name = $value;
+    )*
+    it
+})}

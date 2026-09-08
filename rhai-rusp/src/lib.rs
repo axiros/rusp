@@ -6,6 +6,7 @@ use rhai::{
     plugin::{combine_with_exported_module, export_module, mem, Dynamic, EvalAltResult},
     Array, Blob, Map, Variant,
 };
+use rusp_lib::fru;
 use rusp_lib::usp::{Body, Msg};
 use rusp_lib::usp_builder;
 use rusp_lib::usp_record::{self, Record};
@@ -50,26 +51,26 @@ where
 ///
 /// Here's a full example:
 /// ```
-    /// # use rusp_lib::usp_record::mqtt_connect_record::MqttVersion;
-    /// # use rusp_lib::usp_record::record::RecordType;
-    /// # use rusp_lib::usp_record::Record;
-    /// // Rhai script
-    /// # let script = r#"
-    /// rusp::record_builder()
-    ///   .with_version("1.3")
-    ///   .with_to_id("proto::to")
-    ///   .with_from_id("proto::from")
-    ///   .as_mqtt_connect_record("V5", "/topic")
-    ///   .build()
-    /// # "#;
-    /// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
-    /// # assert_eq!(record.to_id, "proto::to");
-    /// # assert_eq!(record.from_id, "proto::from");
-    /// # assert!(matches!(
-    /// #     record.record_type,
-    /// #     Some(RecordType::MqttConnect(mqtt))
-    /// #         if mqtt.subscribed_topic == "/topic" && mqtt.version == MqttVersion::V5 as i32
-    /// # ));
+/// # use rusp_lib::usp_record::mqtt_connect_record::MqttVersion;
+/// # use rusp_lib::usp_record::record::RecordType;
+/// # use rusp_lib::usp_record::Record;
+/// // Rhai script
+/// # let script = r#"
+/// rusp::record_builder()
+///   .with_version("1.3")
+///   .with_to_id("proto::to")
+///   .with_from_id("proto::from")
+///   .as_mqtt_connect_record("V5", "/topic")
+///   .build()
+/// # "#;
+/// # let record = rhai_rusp::eval_rusp::<Record>(script).unwrap();
+/// # assert_eq!(record.to_id, "proto::to");
+/// # assert_eq!(record.from_id, "proto::from");
+/// # assert!(matches!(
+/// #     record.record_type,
+/// #     Some(RecordType::MqttConnect(mqtt))
+/// #         if mqtt.subscribed_topic == "/topic" && mqtt.version == MqttVersion::V5 as i32
+/// # ));
 /// ```
 #[export_module]
 pub mod rhai_rusp_record {
@@ -562,9 +563,8 @@ pub mod rhai_rusp_delete {
 /// ```
 #[export_module]
 pub mod rhai_rusp_deleteresp {
-    use usp_builder::{
-        DeleteRespBuilder, DeleteRespUnaffectedPathError, DeletedObjectResultsBuilder,
-    };
+    use rusp_lib::usp::delete_resp::UnaffectedPathError;
+    use usp_builder::{DeleteRespBuilder, DeletedObjectResultsBuilder};
 
     /// Sets up a new USP `DeleteRespBuilder`
     #[must_use]
@@ -629,9 +629,17 @@ pub mod rhai_rusp_deleteresp {
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
-                    Ok(DeleteRespUnaffectedPathError{unaffected_path: el0, err_code: u32::try_from(el1).unwrap_or(7003), err_msg: el2 })
+                let err = fru!(
+                    UnaffectedPathError {
+                        unaffected_path: el0,
+                        err_code: u32::try_from(el1).unwrap_or(7003),
+                        err_msg: el2,
+                        ..
+                    }
+                );
+                Ok(err)
             })
-            .collect::<Result<Vec<DeleteRespUnaffectedPathError>, Box<EvalAltResult>>>()?;
+            .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
 
         Ok(DeletedObjectResultsBuilder::new(requested_path.into())
             .set_success(affected_paths, unaffected_path_errs))
@@ -2125,6 +2133,7 @@ pub mod rhai_rusp_getsupportedprotocolresp {
 /// ```
 #[export_module]
 pub mod rhai_rusp_add {
+    use rusp_lib::usp::add::CreateParamSetting;
     use usp_builder::{AddBuilder, CreateObjectBuilder};
 
     /// Sets up a new USP `AddBuilder`
@@ -2176,9 +2185,17 @@ pub mod rhai_rusp_add {
                     .and_then(|el| el.clone().try_cast::<bool>())
                     .ok_or_else(|| "required (#3) needs to be a bool".to_string())?;
 
-                Ok((el0, el1, el2))
+                let param = fru!(
+                    CreateParamSetting {
+                        param: el0,
+                        value: el1,
+                        required: el2,
+                        ..
+                    }
+                );
+                Ok(param)
             })
-            .collect::<Result<Vec<(String, String, bool)>, Box<EvalAltResult>>>()?;
+            .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
         builder = builder.with_param_settings(param_settings);
 
         Ok(builder)
@@ -2219,9 +2236,8 @@ pub mod rhai_rusp_add {
 /// ```
 #[export_module]
 pub mod rhai_rusp_addresp {
-    use usp_builder::{
-        AddOperationStatus, AddRespBuilder, AddRespParameterError, CreatedObjectResultsBuilder,
-    };
+    use rusp_lib::usp::add_resp::ParameterError;
+    use usp_builder::{AddOperationStatus, AddRespBuilder, CreatedObjectResultsBuilder};
 
     /// Sets up a new USP `AddRespBuilder`
     #[must_use]
@@ -2280,9 +2296,17 @@ pub mod rhai_rusp_addresp {
                     .and_then(|el| el.clone().try_cast::<String>())
                     .ok_or_else(|| "err_msg (#3) needs to be a string".to_string())?;
 
-                Ok(AddRespParameterError{param: el0, err_code: u32::try_from(el1).unwrap_or(7003) , err_msg: el2 })
+                let param = fru!(
+                    ParameterError {
+                        param: el0,
+                        err_code: u32::try_from(el1).unwrap_or(7003),
+                        err_msg: el2,
+                        ..
+                    }
+                );
+                Ok(param)
             })
-            .collect::<Result<Vec<AddRespParameterError>, Box<EvalAltResult>>>()?;
+            .collect::<Result<Vec<_>, Box<EvalAltResult>>>()?;
 
         let unique_keys = unique_keys
             .iter()

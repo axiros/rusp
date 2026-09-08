@@ -47,9 +47,7 @@ impl RegisterBuilder {
                             reg_paths: self
                                 .reg_paths
                                 .into_iter()
-                                .map(|p| RegistrationPath {
-                                    path: p,
-                                })
+                                .map(|p| RegistrationPath { path: p })
                                 .collect(),
                         }
                     })),
@@ -60,6 +58,7 @@ impl RegisterBuilder {
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum RegisterOperationStatus {
     Failure { err_code: u32, err_msg: String },
     Success(String),
@@ -68,8 +67,8 @@ pub enum RegisterOperationStatus {
 
 #[derive(Clone)]
 pub struct RegisteredPathResultBuilder {
-    pub requested_path: String,
-    pub oper_status: RegisterOperationStatus,
+    requested_path: String,
+    oper_status: RegisterOperationStatus,
 }
 
 impl RegisteredPathResultBuilder {

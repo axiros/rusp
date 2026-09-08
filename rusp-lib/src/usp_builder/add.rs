@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use crate::usp::add::{CreateObject, CreateParamSetting};
-use crate::usp::add_resp::{created_object_result::OperationStatus, CreatedObjectResult};
+use crate::usp::add_resp::{
+    created_object_result::OperationStatus, CreatedObjectResult, ParameterError,
+};
 use crate::usp::body::MsgBody;
 use crate::usp::request::ReqType;
 use crate::usp::response::RespType;
@@ -13,7 +15,7 @@ use anyhow::Result;
 #[derive(Clone)]
 pub struct CreateObjectBuilder {
     obj_path: String,
-    param_settings: Vec<(String, String, bool)>,
+    param_settings: Vec<CreateParamSetting>,
 }
 
 impl CreateObjectBuilder {
@@ -26,25 +28,15 @@ impl CreateObjectBuilder {
     }
 
     #[must_use]
-    pub fn with_param_settings(mut self, param_settings: Vec<(String, String, bool)>) -> Self {
+    pub fn with_param_settings(mut self, param_settings: Vec<CreateParamSetting>) -> Self {
         self.param_settings = param_settings;
         self
     }
 
     pub fn build(self) -> Result<CreateObject> {
-        let param_settings = self
-            .param_settings
-            .into_iter()
-            .map(|(n, v, r)| CreateParamSetting {
-                param: n,
-                value: v,
-                required: r,
-            })
-            .collect();
-
         Ok(CreateObject {
             obj_path: self.obj_path,
-            param_settings,
+            param_settings: self.param_settings,
         })
     }
 }
@@ -99,26 +91,20 @@ impl AddBuilder {
 }
 
 #[derive(Clone)]
-pub struct AddRespParameterError {
-    pub param: String,
-    pub err_code: u32,
-    pub err_msg: String,
-}
-
-#[derive(Clone)]
 pub struct AddOperationSuccessBuilder {
-    pub instantiated_path: String,
-    pub param_errs: Vec<AddRespParameterError>,
-    pub unique_keys: HashMap<String, String>,
+    instantiated_path: String,
+    param_errs: Vec<ParameterError>,
+    unique_keys: HashMap<String, String>,
 }
 
 #[derive(Clone)]
 pub struct AddOperationFailureBuilder {
-    pub err_code: u32,
-    pub err_msg: String,
+    err_code: u32,
+    err_msg: String,
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum AddOperationStatus {
     Failure(AddOperationFailureBuilder),
     Success(AddOperationSuccessBuilder),
@@ -143,7 +129,7 @@ impl AddOperationStatus {
     pub fn set_success(
         self,
         instantiated_path: String,
-        param_errs: Vec<AddRespParameterError>,
+        param_errs: Vec<ParameterError>,
         unique_keys: HashMap<String, String>,
     ) -> Self {
         Self::Success(AddOperationSuccessBuilder {
@@ -157,7 +143,6 @@ impl AddOperationStatus {
         use crate::usp::add_resp::created_object_result::operation_status::{
             OperStatus, OperationFailure, OperationSuccess,
         };
-        use crate::usp::add_resp::ParameterError;
         match self {
             Self::Failure(f) => Ok(OperationStatus {
                 oper_status: Some(OperStatus::OperFailure(OperationFailure {
@@ -165,25 +150,20 @@ impl AddOperationStatus {
                     err_msg: f.err_msg,
                 })),
             }),
-            Self::Success(s) => Ok(OperationStatus {
-                oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
-                    instantiated_path: s.instantiated_path,
-                    param_errs: s
-                        .param_errs
-                        .into_iter()
-                        .map(|e| ParameterError {
-                            param: e.param,
-                            err_code: e.err_code,
-                            err_msg: if e.err_msg.is_empty() {
-                                usp_errors::get_err_msg(e.err_code).into()
-                            } else {
-                                e.err_msg
-                            },
-                        })
-                        .collect(),
-                    unique_keys: s.unique_keys.into_iter().collect(),
-                })),
-            }),
+            Self::Success(mut s) => {
+                for param in &mut s.param_errs {
+                    if param.err_msg.is_empty() {
+                        param.err_msg = usp_errors::get_err_msg(param.err_code).into();
+                    }
+                }
+                Ok(OperationStatus {
+                    oper_status: Some(OperStatus::OperSuccess(OperationSuccess {
+                        instantiated_path: s.instantiated_path,
+                        param_errs: s.param_errs,
+                        unique_keys: s.unique_keys,
+                    })),
+                })
+            }
             Self::None => Err(anyhow::anyhow!("")),
         }
     }

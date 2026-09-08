@@ -66,6 +66,7 @@ impl OperateBuilder {
 }
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum OperateRespOperationResult {
     Failure {
         err_code: u32,
